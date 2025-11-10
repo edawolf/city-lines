@@ -1,0 +1,104 @@
+{
+  "entities": [
+    {
+      "id": "paddle",
+      "type": "Paddle",
+      "position": {
+        "x": 400,
+        "y": 550
+      },
+      "config": {
+        "width": 120,
+        "height": 20,
+        "color": "0x4CAF50"
+      },
+      "primitives": [
+        {
+          "type": "InputMovement",
+          "config": {
+            "speed": 8,
+            "axis": "horizontal",
+            "bounds": {
+              "min": 60,
+              "max": 740
+            },
+            "inputType": "keyboard"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ball",
+      "type": "Ball",
+      "position": {
+        "x": 400,
+        "y": 400
+      },
+      "config": {
+        "radius": 8,
+        "color": "0xFFFFFF"
+      },
+      "primitives": [
+        {
+          "type": "LinearMovement",
+          "config": {
+            "velocity": {
+              "x": 3,
+              "y": -5
+            }
+          }
+        },
+        {
+          "type": "BounceCollision",
+          "config": {
+            "bounds": {
+              "left": 8,
+              "right": 792,
+              "top": 8,
+              "bottom": 600
+            },
+            "targets": ["paddle"],
+            "bounceDamping": 1.0,
+            "radius": 8
+          }
+        }
+      ]
+    }
+  ],
+  "layouts": [
+    {
+      "type": "BlockGrid",
+      "config": {
+        "rows": 5,
+        "cols": 10,
+        "startX": 60,
+        "startY": 80,
+        "blockWidth": 68,
+        "blockHeight": 24,
+        "spacingX": 8,
+        "spacingY": 8,
+        "colors": [
+          "0xF44336",
+          "0xFF9800",
+          "0xFFEB3B",
+          "0x4CAF50",
+          "0x2196F3"
+        ],
+        "points": [100, 80, 60, 40, 20]
+      }
+    }
+  ],
+  "ui": [
+    {
+      "type": "ScoreDisplay",
+      "position": {
+        "x": 20,
+        "y": 20
+      }
+    }
+  ],
+  "viewport": {
+    "width": 800,
+    "height": 600
+  }
+}

@@ -1,0 +1,618 @@
+# Ludemic Tuning Knobs System
+
+constraint references {
+  engine: "Ludemic Game Engine (Phaser 3 + Custom ECS)"
+  architecture: "LUDEMIC_INSTRUCTION_SET_ARCHITECTURE(LISA).md"
+  philosophy: "Miyamoto playground test + rapid iteration + designer empowerment"
+  format: "JSON configuration with Zod validation"
+}
+
+## Overview
+
+TuningSystem {
+  purpose: [
+    accelerate_iteration_cycles,
+    enable_gameplay_balance_testing,
+    support_A_B_testing,
+    maintain_environment_separation
+  ]
+
+  philosophy: "Designers modify LISA instruction parameters in runtime without rebuild"
+
+  benefits {
+    faster_iteration => adjust_BALANCE_operations_live
+    consistent_experience => standardized_tuning_across_games
+    safe_separation => dev ≠ staging ≠ production
+    data_driven_decisions => telemetry_tracked_configurations
+  }
+}
+
+## Priority Framework
+
+priority_key {
+  P0_must_have => "required for experience to function"
+  P1_critical => "major impact on usability or player satisfaction"
+  P2_important => "improves quality or engagement; can be deferred"
+  P3_quality => "adds polish or depth; low priority"
+}
+
+## Conditions of Satisfaction
+
+success_criteria {
+  ✓ variables_modified_live_through_browser_debug_menu
+  ✓ changes_apply_immediately_without_reload
+  ✓ configurations_exportable_importable_as_json
+  ✓ A_B_test_labels_and_metadata_supported
+  ✓ default_baseline_configuration_loads_at_startup
+  ✓ non_technical_users_can_adjust_safely
+  ✓ all_changes_logged_for_visibility_rollback_QA
+}
+
+## P0 Tunable Property Categories
+
+TunableProperties {
+  // Maps to LISA instruction parameters
+
+  P0_TimingAndPacing {
+    WAIT_durations // round timers, cooldowns
+    LOOP_intervals // spawn intervals, tick rates
+    TWEEN_speeds // animation durations
+    COMPRESS_windows // decision time pressure
+
+    examples: [
+      "round_timer_seconds: 45",
+      "spawn_cooldown_ms: 2000",
+      "animation_speed_multiplier: 1.0"
+    ]
+  }
+
+  P0_ScoringAndProgression {
+    MOD_values // base points, deltas
+    REWARD_multipliers // score cascades
+    ESCALATE_curves // difficulty scaling
+    UNLOCK_thresholds // progression gates
+
+    examples: [
+      "base_points_per_correct: 100",
+      "combo_multiplier: 1.5",
+      "level_up_threshold: 1000"
+    ]
+  }
+
+  P0_GameplayFlow {
+    SPAWN_counts // entity limits
+    BALANCE_difficulty // adaptive systems
+    GATE_requirements // skill barriers
+    POOL_resources // economy parameters
+
+    examples: [
+      "max_enemies_on_screen: 8",
+      "difficulty_scale_factor: 1.2",
+      "health_pool_size: 100"
+    ]
+  }
+
+  P1_FeatureToggles {
+    BRANCH_conditions // enable/disable mechanics
+    GATE_experimental // prototype features
+
+    examples: [
+      "enable_powerup_system: true",
+      "enable_multiplayer: false"
+    ]
+  }
+
+  P2_PlayerFeedbackUX {
+    JUICE_intensity // screenshake, particles
+    SOUND_volume // audio levels
+    DISPLAY_timing // UI feedback delays
+    HAPTIC_strength // controller rumble
+
+    examples: [
+      "screenshake_intensity: 0.3",
+      "victory_fanfare_volume: 0.8",
+      "score_popup_duration_ms: 1500"
+    ]
+  }
+}
+
+## P0 Interaction Method: Runtime Debug Menu
+
+DebugMenu {
+  activation: "tilde (~) key"
+  display_mode: "full-screen overlay palette"
+  design: "structured layout for quick navigation during live testing"
+
+  interface {
+    numeric_sliders
+    binary_toggles
+    real_time_preview
+    visual_confirmation_on_change
+    reset_to_default_button
+    save_configuration_button
+    export_import_json
+  }
+
+  integration_with_phaser {
+    scene.registry.set('tuningKnobs', config)
+    scene.events.emit('tuningUpdate', { key, value })
+    // All LISA instruction parameters reference registry
+  }
+}
+
+## P2 Control Widget Types
+
+WidgetTypes {
+  Dropdown {
+    use_case: "predefined value sets"
+    examples: [
+      "difficulty_mode: ['easy', 'normal', 'hard', 'expert']",
+      "item_pool: ['starter', 'advanced', 'endgame']"
+    ]
+  }
+
+  BinaryToggle {
+    use_case: "on/off feature switches"
+    examples: [
+      "enable_tutorial: boolean",
+      "debug_mode: boolean"
+    ]
+  }
+
+  InputField {
+    use_case: "numeric or text variables"
+    examples: [
+      "timer_seconds: number",
+      "player_name_prefix: string"
+    ]
+  }
+
+  SliderControl {
+    use_case: "range-based adjustments with visual feedback"
+    examples: [
+      "volume: 0..1 (step 0.1)",
+      "difficulty_multiplier: 0.5..2.0 (step 0.1)"
+    ]
+  }
+}
+
+## P2 Organizational Categories
+
+MenuStructure {
+  CoreGameplay {
+    timers
+    win_thresholds
+    pacing_controls
+  }
+
+  ScoringAndRewards {
+    point_values
+    multipliers
+    bonus_modifiers
+  }
+
+  PlayerFeedback {
+    UI_timing
+    sound_intensity
+    visual_feedback_scaling
+  }
+
+  ExperimentalFeatures {
+    prototype_mechanics_toggles
+    in_development_systems
+  }
+
+  layout: "collapsible groups for focused navigation"
+}
+
+## P1 Quick-Access Actions
+
+QuickActions {
+  top_level_placement: true
+
+  actions {
+    ResetToDefaults {
+      description: "Restore baseline LISA instruction parameters"
+      implementation: "config = loadDefault('baseline.json')"
+    }
+
+    SaveConfiguration {
+      description: "Export all current settings as JSON"
+      implementation: "downloadFile('config.json', JSON.stringify(config))"
+    }
+
+    LoadConfiguration {
+      description: "Import saved file or preset"
+      implementation: "config = JSON.parse(uploadedFile)"
+    }
+
+    ApplyChanges {
+      description: "Confirm edits and update runtime session immediately"
+      implementation: "scene.registry.merge('tuningKnobs', pendingChanges)"
+    }
+  }
+}
+
+## P1 Telemetry and Tracking
+
+TelemetrySystem {
+  purpose: "Product Managers can review player session config settings"
+
+  tracked_data {
+    config_id // unique identifier for configuration
+    adjusted_parameters // array of { key, old_value, new_value, timestamp }
+    session_metadata {
+      build_label
+      environment
+      user_id
+      session_start
+      session_end
+    }
+  }
+
+  logging {
+    all_adjustments_logged_for_QA_reference
+    optionally_annotated_with_config_id_or_build_label
+    instant_reflection_in_analytics_pipeline
+  }
+
+  integration {
+    // Log to centralized analytics service
+    analytics.track('tuning_adjustment', {
+      config_id: config.metadata.config_id,
+      parameter: key,
+      value: newValue,
+      timestamp: Date.now()
+    })
+  }
+}
+
+## Configuration File Schema
+
+ConfigurationSchema {
+  structure {
+    config_id: string // "2025-10-07A"
+    version: string // "1.0.0"
+    created_at: ISO8601
+    metadata {
+      variant: string // "A" | "B"
+      purpose: string // "Scoring balance test"
+      deployed_at: ISO8601
+    }
+    parameters: {
+      [key: string]: number | boolean | string
+    }
+  }
+
+  validation: "Zod schema enforces type safety and constraints"
+
+  example {
+    ```json
+    {
+      "config_id": "2025-10-07A",
+      "version": "1.0.0",
+      "created_at": "2025-10-07T09:00:00Z",
+      "metadata": {
+        "variant": "A",
+        "purpose": "Scoring balance test",
+        "deployed_at": "2025-10-07T09:00:00Z"
+      },
+      "parameters": {
+        "timer_start": 45,
+        "score_multiplier": 1.2,
+        "cooldown_tool": 5,
+        "feature_bonus_enabled": true,
+        "screenshake_intensity": 0.3,
+        "max_enemies": 8
+      }
+    }
+    ```
+  }
+}
+
+## P1 Environment Access Rules
+
+EnvironmentRules {
+  Development {
+    debug_access: "enabled by default"
+    features: [
+      "full real-time editing",
+      "save/load configurations",
+      "hot reloading",
+      "all telemetry visible"
+    ]
+    use_case: "iteration, testing, internal reviews"
+  }
+
+  Staging {
+    debug_access: "restricted behind authentication or build flag"
+    features: [
+      "QA validation",
+      "pre-release testing",
+      "external configuration loading",
+      "sign-off workflows"
+    ]
+    use_case: "QA validation, stakeholder review"
+  }
+
+  Production {
+    debug_access: "disabled for end users"
+    features: [
+      "controlled configuration manifest loading",
+      "hot-swappable configs for A/B tests",
+      "emergency balance fixes",
+      "no UI exposure"
+    ]
+    use_case: "live operations, data-driven tuning"
+  }
+}
+
+## P2 Hot-Swappable Configurations
+
+HotSwapSystem {
+  purpose: "Live tuning without rebuild or deployment"
+
+  mechanism {
+    configs_stored_as_signed_json_on_CDN
+    clients_check_for_updates_at_startup_or_trigger
+    apply_new_configuration_seamlessly
+  }
+
+  use_cases {
+    mid_event_score_adjustments
+    emergency_balance_corrections
+    bug_mitigation
+    A_B_testing_for_live_cohorts
+  }
+
+  implementation {
+    ```typescript
+    async function checkForConfigUpdate() {
+      const remoteConfig = await fetch('https://cdn.ludemic.com/configs/current.json')
+      const config = await remoteConfig.json()
+
+      if (config.config_id !== currentConfigId) {
+        applyConfiguration(config)
+        analytics.track('config_hotswap', {
+          old: currentConfigId,
+          new: config.config_id
+        })
+      }
+    }
+    ```
+  }
+
+  example_manifest {
+    ```json
+    {
+      "config_id": "2025-10-07A",
+      "source": "cdn://ludemic/configs/tuning_set_a.json",
+      "metadata": {
+        "variant": "A",
+        "deployed_at": "2025-10-07T09:00:00Z",
+        "purpose": "Scoring balance test"
+      }
+    }
+    ```
+  }
+
+  security {
+    signed_manifests => prevent_tampering
+    version_control => rollback_capability
+    gradual_rollout => percentage_based_deployment
+  }
+}
+
+## Technical Integration with Ludemic Engine
+
+LudemicEngineIntegration {
+  // Tuning knobs map directly to LISA instruction parameters
+
+  ecs_integration {
+    // Store tuning config in global registry
+    world.set('tuningConfig', config)
+
+    // Components reference config values
+    component.speed = world.get('tuningConfig').player_speed
+  }
+
+  phaser_scene_integration {
+    ```typescript
+    class GameScene extends Phaser.Scene {
+      create() {
+        // Load tuning config
+        const config = this.registry.get('tuningKnobs')
+
+        // Apply to game objects
+        this.timer.duration = config.round_timer_seconds * 1000
+        this.scoreMultiplier = config.score_multiplier
+
+        // Listen for live updates
+        this.registry.events.on('tuningUpdate', this.handleTuningUpdate, this)
+      }
+
+      handleTuningUpdate(data: { key: string, value: any }) {
+        // Apply change immediately
+        if (data.key === 'round_timer_seconds') {
+          this.timer.duration = data.value * 1000
+        }
+      }
+    }
+    ```
+  }
+
+  lisa_instruction_mapping {
+    // LISA instructions read from tuning config
+    SET_value => config.parameters[instruction.key]
+    WAIT_duration => config.parameters.wait_time_ms
+    REWARD_amount => config.parameters.base_reward * config.parameters.multiplier
+    BALANCE_factor => config.parameters.difficulty_scale
+  }
+
+  zod_validation {
+    ```typescript
+    import { z } from 'zod'
+
+    const TuningConfigSchema = z.object({
+      config_id: z.string(),
+      version: z.string(),
+      created_at: z.string().datetime(),
+      metadata: z.object({
+        variant: z.enum(['A', 'B', 'Control']),
+        purpose: z.string(),
+        deployed_at: z.string().datetime()
+      }),
+      parameters: z.record(z.union([
+        z.number(),
+        z.boolean(),
+        z.string()
+      ]))
+    })
+
+    // Validate before applying
+    const validatedConfig = TuningConfigSchema.parse(loadedConfig)
+    ```
+  }
+}
+
+## UI Implementation Pattern
+
+DebugMenuImplementation {
+  // Phaser Scene overlay
+
+  ```typescript
+  class TuningDebugMenu extends Phaser.Scene {
+    constructor() {
+      super({ key: 'TuningDebugMenu', active: false })
+    }
+
+    create() {
+      // Full-screen dark overlay
+      this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x000000, 0.9)
+        .setOrigin(0)
+        .setInteractive()
+
+      // Title
+      this.add.text(40, 40, 'Ludemic Tuning Knobs', {
+        fontSize: '32px',
+        color: '#ffffff'
+      })
+
+      // Category groups (collapsible)
+      this.createCategoryGroup('Core Gameplay', 100, [
+        { key: 'round_timer_seconds', type: 'slider', min: 10, max: 120 },
+        { key: 'score_multiplier', type: 'slider', min: 0.5, max: 3.0, step: 0.1 }
+      ])
+
+      // Quick actions
+      this.createQuickActions(this.scale.height - 100)
+
+      // Close with tilde or ESC
+      this.input.keyboard!.on('keydown-TILDE', () => this.scene.stop())
+      this.input.keyboard!.on('keydown-ESC', () => this.scene.stop())
+    }
+
+    createCategoryGroup(title: string, y: number, controls: any[]) {
+      // Render sliders, toggles, inputs based on control type
+      // Emit 'tuningUpdate' event when values change
+    }
+
+    createQuickActions(y: number) {
+      // Reset, Save, Load, Apply buttons
+    }
+  }
+
+  // Activate from any scene with tilde key
+  this.input.keyboard!.on('keydown-TILDE', () => {
+    this.scene.launch('TuningDebugMenu')
+  })
+  ```
+}
+
+## File Structure
+
+project_structure {
+  src/ {
+    config/ {
+      tuning/ {
+        baseline.json // default configuration
+        variants/ {
+          variant_a.json
+          variant_b.json
+        }
+        schema.ts // Zod validation schemas
+      }
+    }
+    scenes/ {
+      debug/ {
+        TuningDebugMenu.ts
+        ControlWidgets.ts
+      }
+    }
+    systems/ {
+      TuningSystem.ts // load, apply, validate, export
+    }
+  }
+}
+
+## Testing Strategy
+
+TestingApproach {
+  reference: "SINON_TESTING.sudo"
+
+  unit_tests {
+    // Validate config loading
+    test('loads baseline config at startup', () => {
+      const config = loadConfig('baseline.json')
+      expect(config.parameters.round_timer_seconds).toBe(45)
+    })
+
+    // Validate Zod schema enforcement
+    test('rejects invalid config', () => {
+      const invalidConfig = { parameters: { timer: 'not_a_number' } }
+      expect(() => TuningConfigSchema.parse(invalidConfig)).toThrow()
+    })
+  }
+
+  integration_tests {
+    // Validate runtime updates
+    test('applies tuning change immediately', async () => {
+      scene.registry.set('tuningKnobs', { round_timer_seconds: 45 })
+      scene.registry.events.emit('tuningUpdate', {
+        key: 'round_timer_seconds',
+        value: 60
+      })
+      await stepFrames(game, clock, 1)
+      expect(scene.timer.duration).toBe(60000)
+    })
+  }
+}
+
+## Summary
+
+TuningKnobsSystem {
+  unified_framework: "standardized live gameplay balance across Ludemic titles"
+
+  capabilities {
+    runtime_editing => designer_empowerment
+    environment_based_access => safe_separation
+    hot_swappable_configs => rapid_response_to_data
+    LISA_integration => direct_instruction_parameter_tuning
+    Zod_validation => type_safe_configurations
+    telemetry_tracking => data_driven_decisions
+  }
+
+  philosophy {
+    accelerate_iteration_without_compromising_stability
+    enable_Miyamoto_playground_test_at_any_moment
+    prove_balance_through_rapid_experimentation
+    maintain_operational_safety_in_production
+  }
+
+  constraint mission {
+    Empower designers to tune LISA instruction parameters in real-time
+    Validate changes through immediate playtesting
+    Deploy configurations safely across environments
+    Track all adjustments for data-driven decisions
+  }
+}

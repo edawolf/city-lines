@@ -1,0 +1,199 @@
+{
+  "entities": [
+    {
+      "id": "paddle",
+      "type": "Paddle",
+      "position": { "x": 350, "y": 550 },
+      "config": {
+        "width": 100,
+        "height": 20,
+        "color": 4830800
+      },
+      "primitives": [
+        {
+          "type": "InputMovement",
+          "config": {
+            "speed": 6,
+            "axis": "horizontal",
+            "inputType": "keyboard",
+            "bounds": {
+              "minX": 50,
+              "maxX": 750
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "ball",
+      "type": "Ball",
+      "position": { "x": 400, "y": 500 },
+      "config": {
+        "radius": 10,
+        "color": 16777215
+      },
+      "primitives": [
+        {
+          "type": "LinearMovement",
+          "config": {
+            "velocity": { "x": 200, "y": -200 }
+          }
+        },
+        {
+          "type": "BounceCollision",
+          "config": {
+            "targets": ["paddle"],
+            "bounds": {
+              "top": 0,
+              "left": 0,
+              "right": 800
+            }
+          }
+        },
+        {
+          "type": "BoundaryTrigger",
+          "config": {
+            "boundary": "bottom",
+            "threshold": 600,
+            "triggerEvent": "ball_out_of_bounds",
+            "resetPosition": { "x": 400, "y": 500 }
+          }
+        },
+        {
+          "type": "SoundTrigger",
+          "config": {
+            "triggerEvent": "ball_bounce",
+            "soundFile": "sounds/bounce.wav",
+            "volume": 0.3
+          }
+        }
+      ]
+    },
+    {
+      "id": "gameManager",
+      "type": "GameManager",
+      "position": { "x": 0, "y": 0 },
+      "primitives": [
+        {
+          "type": "ScreenShake",
+          "config": {
+            "triggerEvent": "block_destroyed",
+            "intensity": 5,
+            "duration": 0.2,
+            "frequency": 30
+          }
+        },
+        {
+          "type": "ParticleEmitter",
+          "config": {
+            "triggerEvent": "block_destroyed",
+            "particleCount": 15,
+            "color": 16776960,
+            "speed": 200,
+            "spread": 180,
+            "lifetime": 0.8,
+            "gravity": 500,
+            "drag": 0.95
+          }
+        },
+        {
+          "type": "SpeedScaling",
+          "config": {
+            "triggerEvent": "block_destroyed",
+            "targetEntityTypes": ["Ball"],
+            "increaseRate": 0.02,
+            "scaleMode": "multiply",
+            "maxSpeedMultiplier": 2.0
+          }
+        },
+        {
+          "type": "ComboMultiplier",
+          "config": {
+            "triggerEvent": "block_destroyed",
+            "comboWindow": 1.5,
+            "baseMultiplier": 1.0,
+            "incrementPerHit": 0.25,
+            "maxMultiplier": 5.0,
+            "comboResetEvent": "combo_reset"
+          }
+        },
+        {
+          "type": "HealthSystem",
+          "config": {
+            "maxHealth": 3,
+            "startingHealth": 3,
+            "damageEvent": "player_hit",
+            "deathEvent": "player_died"
+          }
+        },
+        {
+          "type": "LevelManager",
+          "config": {
+            "blockEntityType": "Block",
+            "levelCompleteEvent": "level_complete",
+            "blockDestroyedEvent": "block_destroyed",
+            "startLevel": 1
+          }
+        }
+      ]
+    }
+  ],
+  "layouts": [
+    {
+      "type": "BlockGrid",
+      "config": {
+        "rows": 5,
+        "cols": 10,
+        "startX": 50,
+        "startY": 80,
+        "spacing": 10,
+        "blockWidth": 60,
+        "blockHeight": 20,
+        "primitives": [
+          {
+            "type": "DestroyCollision",
+            "config": {
+              "entityTypes": ["Ball"],
+              "destroyEvent": "block_destroyed"
+            }
+          },
+          {
+            "type": "PointsOnDestroy",
+            "config": {
+              "points": 100,
+              "destroyEvent": "block_destroyed"
+            }
+          },
+          {
+            "type": "SoundTrigger",
+            "config": {
+              "triggerEvent": "block_destroyed",
+              "soundFile": "sounds/destroy.wav",
+              "volume": 0.5
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "ui": [
+    {
+      "type": "ScoreDisplay",
+      "position": { "x": 20, "y": 20 }
+    },
+    {
+      "type": "ComboDisplay",
+      "position": { "x": 650, "y": 20 }
+    },
+    {
+      "type": "HealthDisplay",
+      "position": { "x": 350, "y": 20 }
+    },
+    {
+      "type": "GameOverScreen"
+    },
+    {
+      "type": "LevelCompleteScreen"
+    }
+  ]
+}

@@ -1,0 +1,482 @@
+# Sinon Testing Framework: Phaser + TypeScript + Bun
+
+constraint stack {
+  test_runner: "bun:test"
+  spy_stub_mock: "sinon v20"
+  game_engine: "phaser headless"
+  language: "typescript"
+  philosophy: "keep rendering out, isolate gameplay logic, deterministic time/input"
+}
+
+## Installation
+
+install {
+  bun add -d sinon @sinonjs/fake-timers
+  bun add -d happy-dom // optional: faster DOM emulation
+}
+
+package_scripts {
+  "test": "bun test",
+  "test:watch": "bun test --watch",
+  "test:coverage": "bun test --coverage"
+}
+
+## Configuration
+
+bunfig.toml {
+  ```toml
+  [test]
+  preload = ["./test/setupTests.ts"]
+  ```
+}
+
+tsconfig.test.json {
+  extends: "./tsconfig.json"
+  compilerOptions {
+    types: ["bun:test", "sinon"]
+    noEmit: true
+  }
+  include: ["test", "src"]
+}
+
+## Global Setup: Sinon Sandbox Pattern
+
+test/setupTests.ts {
+  ```ts
+  import sinon from 'sinon'
+  import { beforeEach, afterEach } from 'bun:test'
+
+  // Global sandbox per-test; prevents leaks on failure
+  let sandbox: sinon.SinonSandbox
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox()
+    ;(globalThis as any).sandbox = sandbox
+  })
+
+  afterEach(() => {
+    sandbox.restore()
+  })
+
+  // JSDOM/happy-dom canvas shim (Phaser may touch canvas APIs)
+  ;(globalThis as any).HTMLCanvasElement.prototype.getContext = () => null
+  ```
+}
+
+test/types.d.ts {
+  ```ts
+  declare global {
+    const sandbox: import('sinon').SinonSandbox
+  }
+  export {}
+  ```
+}
+
+## Headless Phaser Pattern
+
+HeadlessGame {
+  purpose: "Exercise scenes + systems + game objects without renderer/audio"
+
+  src/test-utils/makeHeadlessGame.ts {
+    ```ts
+    import Phaser from 'phaser'
+
+    export function makeHeadlessGame(
+      scene: Phaser.Types.Scenes.SettingsConfig | Phaser.Scene
+    ) {
+      return new Phaser.Game({
+        type: Phaser.HEADLESS, // no WebGL/Canvas
+        width: 1,
+        height: 1,
+        audio: { noAudio: true },
+        physics: {
+          default: 'arcade',
+          arcade: { debug: false, gravity: { y: 0 } }
+        },
+        scene
+      })
+    }
+    ```
+  }
+
+  example_scene {
+    ```ts
+    // src/scenes/GameScene.ts
+    import Phaser from 'phaser'
+
+    export class GameScene extends Phaser.Scene {
+      public player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
+
+      constructor() { super('game') }
+
+      create() {
+        this.player = this.physics.add.sprite(0, 0, 'player')
+      }
+
+      moveRight() { this.player.setVelocityX(200) }
+    }
+    ```
+  }
+}
+
+## Fake Time Pattern: Sinon + Phaser Clock
+
+TimeControl {
+  challenge: "Phaser has its own Time.Clock (this.time) scheduling events per tick"
+  solution: "Sinon fake timers control JS timers + manually step game loop"
+
+  pattern {
+    ```ts
+    import sinon from 'sinon'
+    import { beforeEach, afterEach, expect, test } from 'bun:test'
+    import Phaser from 'phaser'
+    import { GameScene } from '../src/scenes/GameScene'
+    import { makeHeadlessGame } from '../src/test-utils/makeHeadlessGame'
+
+    let game: Phaser.Game
+    let scene: GameScene
+    let clock: sinon.SinonFakeTimers
+
+    beforeEach(async () => {
+      clock = globalThis.sandbox.useFakeTimers() // Control Date/setTimeout
+      scene = new GameScene()
+      game = makeHeadlessGame(scene)
+
+      // Wait for boot + scene start
+      await new Promise<void>(resolve => {
+        game.events.once(Phaser.Core.Events.READY, () => resolve())
+      })
+    })
+
+    afterEach(async () => {
+      await game.destroy(true)
+    })
+
+    async function step(ms: number) {
+      // Advance JS time for Promise microtasks and timers
+      await clock.tickAsync(ms)
+      // Phaser's internal step: pump systems (physics, tweens, timers)
+      // In headless mode, requestAnimationFrame isn't running
+      ;(game.loop as any).step(ms)
+    }
+
+    test('player moves right after 500ms', async () => {
+      scene.moveRight()
+      await step(500)
+      expect(scene.player.body.velocity.x).toBe(200)
+    })
+    ```
+  }
+
+  step_helper {
+    ```ts
+    // src/test-utils/stepFrames.ts
+    export async function stepFrames(
+      game: Phaser.Game,
+      clock: sinon.SinonFakeTimers,
+      frames: number,
+      dt = 16.6667
+    ) {
+      for (let i = 0; i < frames; i++) {
+        await clock.tickAsync(dt)
+        ;(game.loop as any).step(dt)
+      }
+    }
+    ```
+  }
+
+  notes {
+    use_tickAsync_for_promises: true
+    game_loop_step_simulates_frame_delta: true
+    call_repeatedly_for_fine_grained_control: "16.6667ms per frame"
+  }
+}
+
+## Spy & Stub Patterns
+
+SceneLifecycle {
+  ```ts
+  test('calls create exactly once', async () => {
+    const s = new GameScene()
+    const mock = globalThis.sandbox.mock(s).expects('create').once()
+    const g = makeHeadlessGame(s)
+    await new Promise<void>(r => g.events.once(Phaser.Core.Events.READY, () => r()))
+    mock.verify()
+    await g.destroy(true)
+  })
+  ```
+}
+
+PhysicsInteractions {
+  ```ts
+  test('player collides with wall triggers callback', async () => {
+    const s = new GameScene()
+    const g = makeHeadlessGame(s)
+    await new Promise<void>(r => g.events.once(Phaser.Core.Events.READY, () => r()))
+
+    const wall = s.physics.add.staticSprite(50, 0, 'wall')
+    const cb = globalThis.sandbox.spy()
+    s.physics.add.collider(s.player, wall, cb)
+
+    s.player.setVelocityX(100)
+    for (let i = 0; i < 10; i++) {
+      await stepFrames(g, globalThis.sandbox.clock!, 1)
+    }
+
+    expect(cb.called).toBe(true)
+    await g.destroy(true)
+  })
+  ```
+}
+
+TweensAndTimers {
+  ```ts
+  test('tween completes after 300ms', async () => {
+    const s = new GameScene()
+    const g = makeHeadlessGame(s)
+    await new Promise<void>(r => g.events.once(Phaser.Core.Events.READY, () => r()))
+
+    const onComplete = globalThis.sandbox.spy()
+    s.tweens.add({ targets: s.player, x: 100, duration: 300, onComplete })
+
+    await stepFrames(g, globalThis.sandbox.clock!, 20, 16.6667)
+
+    expect(onComplete.calledOnce).toBe(true)
+    await g.destroy(true)
+  })
+  ```
+}
+
+## Input Simulation
+
+KeyboardPattern {
+  approach: "Spy on handlers; avoid real DOM events for logic-only tests"
+
+  ```ts
+  test('pressing RIGHT calls moveRight', async () => {
+    const s = new GameScene()
+    const g = makeHeadlessGame(s)
+    await new Promise<void>(r => g.events.once(Phaser.Core.Events.READY, () => r()))
+
+    const spy = globalThis.sandbox.spy(s, 'moveRight')
+    // Pretend Input handler calls moveRight when key is down
+    s.input.keyboard!.emit('keydown-RIGHT')
+
+    expect(spy.calledOnce).toBe(true)
+    await g.destroy(true)
+  })
+  ```
+}
+
+PointerPattern {
+  stub_active_pointer {
+    ```ts
+    globalThis.sandbox.replaceGetter(s.input, 'activePointer', () => ({
+      x: 100, y: 50, isDown: true
+    } as any))
+    ```
+  }
+}
+
+## Network & Storage
+
+NetworkStubs {
+  ```ts
+  const fetchStub = globalThis.sandbox.stub(globalThis, 'fetch')
+    .resolves(new Response(JSON.stringify({ score: 9001 }), { status: 200 }))
+  ```
+
+  sequence_responses {
+    ```ts
+    fetchStub
+      .onCall(0).rejects(new Error('net down'))
+      .onCall(1).resolves(new Response('ok'))
+    ```
+  }
+}
+
+StorageStubs {
+  ```ts
+  const storageGet = globalThis.sandbox.stub(Storage.prototype, 'getItem')
+    .withArgs('highscore').returns('8000')
+  ```
+}
+
+## Asset Loading
+
+FakeLoaderCompletion {
+  approach_1 {
+    ```ts
+    const startSpy = globalThis.sandbox.spy(scene.load, 'start')
+    const complete = new Promise<void>(resolve =>
+      scene.load.once('complete', () => resolve())
+    )
+    scene.load.image('player', 'data://fake') // path irrelevant in headless
+    scene.load.start()
+    await complete
+    expect(startSpy.calledOnce).toBe(true)
+    ```
+  }
+
+  approach_2_short_circuit {
+    ```ts
+    globalThis.sandbox.stub(Phaser.Loader.LoaderPlugin.prototype, 'start')
+      .callsFake(function (this: any) {
+        this.emit('complete') // emit complete immediately
+      })
+    ```
+  }
+}
+
+## Scene-to-Scene Contracts
+
+SceneTransitions {
+  test_messages_not_visuals: true
+
+  ```ts
+  const startSpy = globalThis.sandbox.spy(scene.scene, 'start')
+  scene.scene.start('PauseMenu', { from: 'GameScene' })
+  expect(startSpy.calledWithMatch('PauseMenu', { from: 'GameScene' })).toBe(true)
+  ```
+
+  strict_expectations {
+    ```ts
+    const mock = globalThis.sandbox.mock(scene.scene)
+      .expects('launch').once().withExactArgs('HUD', { hp: 3 })
+
+    scene.scene.launch('HUD', { hp: 3 })
+    mock.verify()
+    ```
+  }
+}
+
+## Performance Best Practices
+
+FastFeedback {
+  create_one_headless_game_per_test_or_suite: true
+  destroy_in_afterEach: true
+  centralize_sinon_via_sandbox: true
+  always_restore: true
+  prefer_argument_matchers: ["sinon.match.string", "calledWithMatch"]
+  use_tickAsync_plus_loop_step: "precise advancement without requestAnimationFrame"
+}
+
+## File Structure
+
+structure {
+  src/ {
+    scenes/ {
+      GameScene.ts
+    }
+    test-utils/ {
+      makeHeadlessGame.ts
+      stepFrames.ts
+    }
+  }
+
+  test/ {
+    setupTests.ts
+    types.d.ts
+    scenes/ {
+      GameScene.test.ts
+    }
+  }
+}
+
+## Troubleshooting
+
+issues {
+  sprites_undefined_after_create => "Wait for Phaser.Core.Events.READY before asserting"
+  tween_timer_never_fires => "Advance both fake time (Sinon) AND game loop frames; use tickAsync for promises"
+  canvas_errors_in_jsdom => "Stub getContext (see setupTests.ts) or prefer logic tests"
+  physics_collider_not_triggering => "Ensure bodies overlap (position/velocity) and step enough frames"
+}
+
+## Sinon v20 Cheat Sheet
+
+api {
+  sandbox => sinon.createSandbox()
+  spy => sb.spy(obj, 'method')
+  stub => sb.stub(api, 'call').resolves(42)
+  stub_sequence => stub.onCall(0).rejects(new Error())
+  assert => sinon.assert.calledOnce(spy)
+  assert_match => sinon.assert.calledWithMatch(stub, '/endpoint', sinon.match.object)
+  fake_time => sb.useFakeTimers(); await clock.tickAsync(1000)
+  replace_getter => sb.replaceGetter(obj, 'value', () => 7)
+  cleanup => sb.verifyAndRestore()
+}
+
+## CI Configuration
+
+ci_tips {
+  run: "bun test --coverage"
+  keep_headless: true
+  no_audio: true
+
+  seed_rng {
+    ```ts
+    globalThis.sandbox.stub(Math, 'random').returns(0.1234)
+    ```
+  }
+}
+
+## Copy-Paste Template
+
+template_test {
+  ```ts
+  // test/scenes/GameScene.test.ts
+  import { describe, test, beforeEach, afterEach, expect } from 'bun:test'
+  import sinon from 'sinon'
+  import Phaser from 'phaser'
+  import { GameScene } from '../../src/scenes/GameScene'
+  import { makeHeadlessGame } from '../../src/test-utils/makeHeadlessGame'
+  import { stepFrames } from '../../src/test-utils/stepFrames'
+
+  let game: Phaser.Game
+  let scene: GameScene
+  let clock: sinon.SinonFakeTimers
+
+  describe('GameScene', () => {
+    beforeEach(async () => {
+      clock = globalThis.sandbox.useFakeTimers()
+      scene = new GameScene()
+      game = makeHeadlessGame(scene)
+      await new Promise<void>(r => game.events.once(Phaser.Core.Events.READY, () => r()))
+    })
+
+    afterEach(async () => {
+      await game.destroy(true)
+    })
+
+    test('moves right and collides', async () => {
+      const collided = globalThis.sandbox.spy()
+      const wall = scene.physics.add.staticSprite(40, 0, 'wall')
+      scene.physics.add.collider(scene.player, wall, collided)
+
+      scene.moveRight()
+      await stepFrames(game, clock, 10) // ~166ms
+
+      expect(collided.called).toBe(true)
+    })
+  })
+  ```
+}
+
+## Core Principles
+
+principles {
+  keep_rendering_out_of_tests: true
+  isolate_gameplay_logic: true
+  drive_time_deterministically: true
+  use_headless_phaser: true
+  use_bun_test_runner: true
+  sinon_sandboxes_prevent_leaks: true
+}
+
+constraint testing_philosophy {
+  Test behavior, not implementation
+  Prove mechanics work through logic
+  Visual/audio testing is secondary
+  Fast feedback loops enable rapid iteration
+  Hermetic tests via sandbox isolation
+}

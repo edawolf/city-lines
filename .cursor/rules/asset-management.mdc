@@ -1,0 +1,45 @@
+---
+description: Asset loading and management patterns
+---
+
+# Asset Management Guidelines
+
+## Asset Loading Patterns
+```typescript
+// Load bundles for organized asset groups
+await Assets.loadBundle('level1');
+
+// Background loading for seamless gameplay
+Assets.backgroundLoadBundle('level2');
+
+// Individual asset loading
+const texture = await Assets.load('player.png');
+```
+
+## Asset Organization
+- Store source assets in `raw-assets/` with processing markers:
+  - `{m}` folders for main assets
+  - `{tps}` folders for texture-packed sprites
+- Processed assets go to `public/assets/` automatically via AssetPack
+- Use aliases in manifests for easy reference: `{ alias: 'hero', src: 'characters/hero.png' }`
+
+## Asset Bundle Strategy
+- Group assets by game state/level
+- Use descriptive bundle names: 'ui-common', 'level-1', 'characters'
+- Load essential bundles first, background load others
+- Unload unused bundles to free memory
+
+## Texture Atlas Usage
+- Combine small sprites into atlases for better performance
+- Use .json format for sprite sheet data
+- Support multiple formats: `'sprite.{webp,png}'` for browser compatibility
+
+## Audio Assets
+```typescript
+// PixiJS Sound integration
+import '@pixi/sound';
+
+// Load and play audio
+await Assets.load('bgm-main.mp3');
+sound.play('bgm-main');
+```

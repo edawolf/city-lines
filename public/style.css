@@ -1,0 +1,40 @@
+body {
+    margin: 0;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.87);
+    background-color: #000000;
+}
+
+#app {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* CRITICAL: Center the PixiJS canvas in the viewport */
+#pixi-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Canvas centering - center should be at viewport center */
+canvas {
+    display: block;
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* Ensure html and body also don't force height */
+html, body {
+    height: 100%;
+    overflow: hidden;
+}

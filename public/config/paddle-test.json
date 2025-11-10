@@ -1,0 +1,35 @@
+{
+  "entities": [
+    {
+      "id": "paddle",
+      "type": "Paddle",
+      "position": {
+        "x": 400,
+        "y": 550
+      },
+      "config": {
+        "width": 120,
+        "height": 20,
+        "color": "0x4CAF50"
+      },
+      "primitives": [
+        {
+          "type": "InputMovement",
+          "config": {
+            "speed": 8,
+            "axis": "horizontal",
+            "bounds": {
+              "min": 60,
+              "max": 740
+            },
+            "inputType": "keyboard"
+          }
+        }
+      ]
+    }
+  ],
+  "viewport": {
+    "width": 800,
+    "height": 600
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "entities": [
+    {
+      "id": "paddle",
+      "type": "Paddle",
+      "position": {
+        "x": 400,
+        "y": 550
+      },
+      "config": {
+        "width": 120,
+        "height": 20,
+        "color": "0x4CAF50"
+      },
+      "primitives": [
+        {
+          "type": "InputMovement",
+          "config": {
+            "speed": 8,
+            "axis": "horizontal",
+            "bounds": {
+              "min": 60,
+              "max": 740
+            },
+            "inputType": "keyboard"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ball",
+      "type": "Ball",
+      "position": {
+        "x": 400,
+        "y": 400
+      },
+      "config": {
+        "radius": 8,
+        "color": "0xFFFFFF"
+      },
+      "primitives": [
+        {
+          "type": "LinearMovement",
+          "config": {
+            "velocity": {
+              "x": 3,
+              "y": -5
+            }
+          }
+        },
+        {
+          "type": "BounceCollision",
+          "config": {
+            "bounds": {
+              "left": 8,
+              "right": 792,
+              "top": 8,
+              "bottom": 600
+            },
+            "targets": ["paddle"],
+            "bounceDamping": 1.0,
+            "radius": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "difficulty_manager",
+      "type": "GameManager",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "config": {},
+      "primitives": [
+        {
+          "type": "ParticleEmitter",
+          "config": {
+            "triggerOn": "block_destroyed",
+            "particleCount": 15,
+            "color": "0xFFFF00",
+            "lifetime": 0.6,
+            "spread": 360,
+            "speed": 250,
+            "size": 4,
+            "gravity": 300,
+            "drag": 0.96
+          }
+        },
+        {
+          "type": "ScreenShake",
+          "config": {
+            "triggerOn": "block_destroyed",
+            "intensity": 4,
+            "duration": 0.15,
+            "frequency": 35
+          }
+        },
+        {
+          "type": "SoundTrigger",
+          "config": {
+            "triggerOn": "block_destroyed",
+            "soundId": "sounds/block-break.wav",
+            "volume": 0.7
+          }
+        },
+        {
+          "type": "SpeedScaling",
+          "config": {
+            "targetEntityTypes": ["Ball"],
+            "startSpeed": 1.0,
+            "maxSpeed": 1.2,
+            "increaseRate": 0.001,
+            "triggerOn": "block_destroyed",
+            "scaleMode": "multiply"
+          }
+        },
+        {
+          "type": "ComboMultiplier",
+          "config": {
+            "comboWindow": 2.0,
+            "baseMultiplier": 1.0,
+            "maxMultiplier": 5.0,
+            "incrementPerHit": 0.3,
+            "listenForEvent": "block_destroyed"
+          }
+        }
+      ]
+    }
+  ],
+  "layouts": [
+    {
+      "type": "BlockGrid",
+      "config": {
+        "rows": 5,
+        "cols": 10,
+        "startX": 60,
+        "startY": 80,
+        "blockWidth": 68,
+        "blockHeight": 24,
+        "spacingX": 8,
+        "spacingY": 8,
+        "colors": [
+          "0xF44336",
+          "0xFF9800",
+          "0xFFEB3B",
+          "0x4CAF50",
+          "0x2196F3"
+        ],
+        "points": [100, 80, 60, 40, 20]
+      }
+    }
+  ],
+  "ui": [
+    {
+      "type": "ScoreDisplay",
+      "position": {
+        "x": 20,
+        "y": 20
+      }
+    },
+    {
+      "type": "ComboDisplay",
+      "position": {
+        "x": 650,
+        "y": 20
+      }
+    }
+  ],
+  "viewport": {
+    "width": 800,
+    "height": 600
+  }
+}

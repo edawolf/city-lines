@@ -1,0 +1,212 @@
+---
+description: When planning core gameplay loops for a game, use this guide to refine the loop through 7 stages
+alwaysApply: false
+---
+FunRefiner7.sudo — Multi‑turn SudoLang program for 7‑stage game loop refinement
+
+Preamble {
+Program name: FunRefiner7
+Purpose: Iteratively refine a game concept through 7 explicit stages, one stage per API completion.
+Roles: Game Designer (creates/revises), Playtester/Judge (critiques/decides convergence)
+Persistence: On each completion, emit full UpdatedState to paste back for the next call. Do not assume external memory.
+}
+
+Options { depth: 1..10|String }
+
+State {
+stage = 1            // 1..7
+converged = false
+seedIdea = “”        // user-provided seed idea text
+constraintsNote = “” // optional global constraints from user
+history = []         // ordered list of {stage, role, content, scores?, instructions?}
+design = {}          // latest full game design object
+scores = {}          // latest evaluation scores
+}
+
+Interfaces {
+Designer {
+produceInitialDesign(seedIdea, constraintsNote) -> design
+reviseDesign(design, instructions) -> design
+}
+Judge {
+evaluate(design) -> { strengths:[], weaknesses:[], scores:{ fun:0..10, balance:0..10, flavor:0..10 }, instructions:[], verdict:“continue”|“converged” }
+}
+}
+
+Constraints {
+Never skip stages. One stage per run.
+CRITICAL: Each stage must be a separate completion visible to the user. Never perform evaluations or design work in hidden thinking steps.
+CRITICAL: All work must be shown in the chat console output for user visibility and transparency.
+At the start of each stage, create a todo list using TodoWrite tool showing all 7 stages with current stage marked as in_progress.
+Always emit exactly four sections in this order:
+1) TodoList — mark current stage as in_progress, show all 7 stages
+2) OutputBlock — the artifact for the current stage (fully visible to user in chat console)
+3) UpdatedState — the full JSON-like state for next call (self-contained; include seedIdea, history, design, scores, stage, converged, constraintsNote).
+4) NextCall — a one-line instruction stating which stage to run next.
+Avoid meta-commentary. No extra prose outside the four sections.
+Keep outputs concise, specific, and actionable. Prefer bullet lists and short fields over paragraphs.
+When in Designer role, include: Title, CoreLoop, Characters/Stats, PowerUps(≥3), BalanceMechanics (e.g., rubber-band), ThemeIntegration, Replayability.
+When in Judge role, include quantified scores and concrete, minimally sufficient revision instructions.
+Convergence rule: If all scores ≥ 8 and no critical weaknesses remain, allow verdict = converged. Otherwise verdict = continue.
+Loop rule: If verdict = continue at Stage 6, set next stage = 2 (evaluation) and continue the 2↔5 cycle until converged.
+After completing a stage, mark it as completed in the todo list before emitting output.
+}
+
+// ===== STAGES =====
+
+// Stage 1 — Initialization (Designer)
+function runStage1() {
+design = Designer.produceInitialDesign(seedIdea, constraintsNote)
+history += { stage:1, role:“Designer”, content:design }
+stage = 2
+}
+
+// Stage 2 — First Evaluation (Judge)
+function runStage2() {
+eval = Judge.evaluate(design)
+scores = eval.scores
+history += { stage:2, role:“Judge”, content:{ strengths:eval.strengths, weaknesses:eval.weaknesses, scores:eval.scores, instructions:eval.instructions } }
+stage = 3
+}
+
+// Stage 3 — First Revision (Designer)
+function runStage3() {
+last = history[-1]
+design = Designer.reviseDesign(design, last.content.instructions)
+history += { stage:3, role:“Designer”, content:design }
+stage = 4
+}
+
+// Stage 4 — Second Evaluation (Judge)
+function runStage4() {
+eval = Judge.evaluate(design)
+scores = eval.scores
+history += { stage:4, role:“Judge”, content:{ strengths:eval.strengths, weaknesses:eval.weaknesses, scores:eval.scores, instructions:eval.instructions } }
+stage = 5
+}
+
+// Stage 5 — Second Revision (Designer)
+function runStage5() {
+last = history[-1]
+design = Designer.reviseDesign(design, last.content.instructions)
+history += { stage:5, role:“Designer”, content:design }
+stage = 6
+}
+
+// Stage 6 — Convergence Check (Judge)
+function runStage6() {
+eval = Judge.evaluate(design)
+scores = eval.scores
+converged = (eval.verdict == “converged”)
+history += { stage:6, role:“Judge”, content:{ strengths:eval.strengths, weaknesses:eval.weaknesses, scores:eval.scores, instructions:eval.instructions, verdict:eval.verdict } }
+stage = converged ? 7 : 2
+}
+
+// Stage 7 — Final Output (Designer)
+function runStage7() {
+// Emit final polished specification without further critique
+history += { stage:7, role:“Designer”, content:design }
+}
+
+// ===== RUNTIME DISPATCH =====
+function main() {
+// If seedIdea is empty, the caller must provide it on the first run.
+match(stage) {
+case 1 => runStage1()
+case 2 => runStage2()
+case 3 => runStage3()
+case 4 => runStage4()
+case 5 => runStage5()
+case 6 => runStage6()
+case 7 => runStage7()
+}
+emitOutput()
+}
+
+// ===== OUTPUT/IO CONTRACT =====
+function emitOutput() {
+// 0) TodoList — MUST be first, shows progress through 7 stages
+TodoList = TodoWrite({
+  todos: [
+    { content: "Stage 1: Initial Design", activeForm: "Creating Initial Design", status: stage > 1 ? "completed" : stage == 1 ? "in_progress" : "pending" },
+    { content: "Stage 2: First Evaluation", activeForm: "Performing First Evaluation", status: stage > 2 ? "completed" : stage == 2 ? "in_progress" : "pending" },
+    { content: "Stage 3: First Revision", activeForm: "Revising Design (Round 1)", status: stage > 3 ? "completed" : stage == 3 ? "in_progress" : "pending" },
+    { content: "Stage 4: Second Evaluation", activeForm: "Performing Second Evaluation", status: stage > 4 ? "completed" : stage == 4 ? "in_progress" : "pending" },
+    { content: "Stage 5: Second Revision", activeForm: "Revising Design (Round 2)", status: stage > 5 ? "completed" : stage == 5 ? "in_progress" : "pending" },
+    { content: "Stage 6: Convergence Check", activeForm: "Checking Convergence", status: stage > 6 ? "completed" : stage == 6 ? "in_progress" : "pending" },
+    { content: "Stage 7: Final Output", activeForm: "Generating Final Specification", status: stage == 7 ? "in_progress" : "pending" }
+  ]
+})
+
+// 1) OutputBlock — ALL WORK MUST BE VISIBLE HERE IN CHAT CONSOLE
+OutputBlock = match(stage) {
+case 2 => history[-1]                 // Stage 2 just produced
+case 3 => history[-1]                 // Stage 3 just produced
+case 4 => history[-1]
+case 5 => history[-1]
+case 6 => history[-1]
+case 7 => ({ stage:7, role:"Designer", content:design })
+default => history[-1]                // Stage 1
+}
+
+// 2) UpdatedState (paste this into next call)
+UpdatedState = {
+stage: stage,
+converged: converged,
+seedIdea: seedIdea,
+constraintsNote: constraintsNote,
+design: design,
+scores: scores,
+history: history
+}
+
+// 3) NextCall (single line)
+nextStage = stage
+NextCall = if (stage == 7) "NextCall: COMPLETE" else "NextCall: Paste UpdatedState back and run stage $nextStage"
+
+// Emit in strict order with headings
+wrapWith(code block, "SudoLang")
+log(
+"# TodoList\n",
+TodoList,
+"\n\n# OutputBlock\n",
+OutputBlock,
+"\n\n# UpdatedState\n",
+UpdatedState,
+"\n\n# NextCall\n",
+NextCall
+)
+}
+
+// ===== ROLE IMPLEMENTATIONS (inferred by LLM) =====
+Designer.produceInitialDesign(seedIdea, constraintsNote) {
+// Create concise, feature-complete first draft.
+return {
+Title: short evocative name,
+CoreLoop: bullet list of 4–8 steps,
+Characters_Stats: 3–6 archetypes with Speed/Power/Control tradeoffs,
+PowerUps: [≥3 hockey-flavored items with effect + duration + counterplay],
+BalanceMechanics: [rubber-band rules, cooldowns, spawn fairness],
+ThemeIntegration: [NHL daily matchup skinning, roster mapping, reward hooks],
+Replayability: [progression, unlocks, modes, difficulty tuning]
+}
+}
+
+Designer.reviseDesign(design, instructions) {
+// Apply only needed changes; preserve strengths.
+// Resolve conflicts in favor of balance & clarity.
+return updatedDesign
+}
+
+Judge.evaluate(design) {
+// Score fun/balance/flavor (0..10). List top 3 strengths & weaknesses. Give 3–6 precise revision instructions.
+// If scores all ≥ 8 and no critical weaknesses, verdict = converged; else continue.
+return { strengths, weaknesses, scores:{ fun, balance, flavor }, instructions, verdict }
+}
+
+// ===== HOW TO USE (caller) =====
+// 1) First call: provide seedIdea and optional constraintsNote; stage stays 1. The program will emit OutputBlock (Stage 1 result), UpdatedState, and NextCall.
+// 2) For each subsequent call: paste the entire UpdatedState into State before running main(). Repeat until Stage 7 completes.
+
+// ===== START =====
+main()

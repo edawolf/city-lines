@@ -1,0 +1,748 @@
+import { Container, EventEmitter } from "pixi.js";
+
+import type { GameConfig, EntityConfig } from "./config/types";
+import { EntityFactory } from "./entities/EntityFactory";
+import { PrimitiveFactory } from "./primitives/PrimitiveFactory";
+import type { Primitive, PrimitiveConfig } from "./primitives/Primitive";
+import { BlockGrid } from "./layouts/BlockGrid";
+import { ScoreDisplay } from "./ui/ScoreDisplay";
+import { ComboDisplay } from "./ui/ComboDisplay";
+import { HealthDisplay } from "./ui/HealthDisplay";
+import { GameOverScreen } from "./ui/GameOverScreen";
+import { LevelCompleteScreen } from "./ui/LevelCompleteScreen";
+import { Particle } from "./primitives/juice/Particle";
+import type { TuningSystem } from "./tuning/TuningSystem";
+
+/**
+ * GameContainer
+ *
+ * Main game container that holds all entities and manages update loop.
+ * Provides entity lookup by ID and type for primitive communication.
+ * Extends EventEmitter to allow primitives to emit/listen for game events.
+ * Manages particle system and screen shake effects.
+ */
+export class GameContainer extends Container {
+  private entities: Container[] = [];
+  private entityMap = new Map<string, Container>();
+  private entityTypeMap = new Map<string, Container[]>();
+  private eventEmitter = new EventEmitter();
+  private score = 0;
+  private scoreDisplay?: ScoreDisplay;
+  private comboDisplay?: ComboDisplay;
+
+  // Tuning system for runtime parameter adjustment
+  public tuningSystem?: TuningSystem;
+
+  // Juice systems
+  private particles: Particle[] = [];
+  private shakeOffset = { x: 0, y: 0 };
+  private shakeIntensity = 0;
+  private shakeDuration = 0;
+  private shakeFrequency = 30;
+  private shakeTime = 0;
+  private basePosition = { x: 0, y: 0 };
+
+  // Difficulty systems
+  private scoreMultiplier = 1.0;
+
+  // Game lifecycle systems
+  private healthDisplay?: HealthDisplay;
+  private gameOverScreen?: GameOverScreen;
+  private levelCompleteScreen?: LevelCompleteScreen;
+  private currentLevel = 1;
+  private highScore = 0;
+  private gameState: "playing" | "paused" | "game_over" | "level_complete" =
+    "playing";
+  private gameConfig?: GameConfig;
+
+  /**
+   * Add an entity to the game
+   */
+  addEntity(entity: Container, id?: string, type?: string): void {
+    this.entities.push(entity);
+    this.addChild(entity);
+
+    // Store by ID for quick lookup
+    if (id) {
+      this.entityMap.set(id, entity);
+    }
+
+    // Store by type for batch operations (e.g., get all enemies)
+    if (type) {
+      if (!this.entityTypeMap.has(type)) {
+        this.entityTypeMap.set(type, []);
+      }
+      this.entityTypeMap.get(type)!.push(entity);
+    }
+  }
+
+  /**
+   * Get entity by ID
+   */
+  getEntityById(id: string): Container | undefined {
+    return this.entityMap.get(id);
+  }
+
+  /**
+   * Get all entities of a type
+   */
+  getEntitiesByType(type: string): Container[] {
+    return this.entityTypeMap.get(type) ?? [];
+  }
+
+  /**
+   * Update all entities, particles, and effects
+   */
+  update(deltaTime: number): void {
+    // Update entities
+    this.entities.forEach((entity) => {
+      if ("update" in entity && typeof entity.update === "function") {
+        (entity as any).update(deltaTime);
+      }
+    });
+
+    // Update particles
+    this.particles = this.particles.filter((particle) => {
+      const alive = particle.update(deltaTime);
+      if (!alive) {
+        this.removeChild(particle);
+        particle.destroy();
+      }
+      return alive;
+    });
+
+    // Update screen shake
+    this.updateShake(deltaTime);
+  }
+
+  /**
+   * Update screen shake effect
+   */
+  private updateShake(deltaTime: number): void {
+    if (this.shakeDuration <= 0) {
+      // No shake active, restore position
+      if (this.shakeOffset.x !== 0 || this.shakeOffset.y !== 0) {
+        this.position.set(this.basePosition.x, this.basePosition.y);
+        this.shakeOffset = { x: 0, y: 0 };
+      }
+      return;
+    }
+
+    // Decrease shake duration
+    this.shakeDuration -= deltaTime;
+    this.shakeTime += deltaTime;
+
+    // Calculate shake offset
+    const t = this.shakeTime * this.shakeFrequency;
+    const decay = this.shakeDuration / (this.shakeDuration + deltaTime); // Fade out
+
+    this.shakeOffset.x =
+      Math.sin(t) * this.shakeIntensity * decay * (Math.random() - 0.5);
+    this.shakeOffset.y =
+      Math.cos(t * 1.3) * this.shakeIntensity * decay * (Math.random() - 0.5);
+
+    // Apply shake
+    this.position.set(
+      this.basePosition.x + this.shakeOffset.x,
+      this.basePosition.y + this.shakeOffset.y,
+    );
+  }
+
+  /**
+   * Remove an entity
+   */
+  removeEntity(entity: Container): void {
+    const index = this.entities.indexOf(entity);
+    if (index > -1) {
+      this.entities.splice(index, 1);
+      this.removeChild(entity);
+      entity.destroy();
+    }
+  }
+
+  /**
+   * Emit game event for primitives to listen to
+   */
+  emit(event: string, ...args: any[]): void {
+    this.eventEmitter.emit(event, ...args);
+  }
+
+  /**
+   * Listen for game events
+   */
+  on(event: string, fn: (...args: any[]) => void): void {
+    this.eventEmitter.on(event, fn);
+  }
+
+  /**
+   * Remove event listener
+   */
+  off(event: string, fn: (...args: any[]) => void): void {
+    this.eventEmitter.off(event, fn);
+  }
+
+  /**
+   * Add points to score (with multiplier)
+   */
+  addScore(points: number): void {
+    const multipliedPoints = Math.round(points * this.scoreMultiplier);
+    this.score += multipliedPoints;
+    if (this.scoreDisplay) {
+      this.scoreDisplay.setScore(this.score);
+    }
+    this.emit("score_changed", this.score);
+  }
+
+  /**
+   * Get current score
+   */
+  getScore(): number {
+    return this.score;
+  }
+
+  /**
+   * Set the score display UI component
+   */
+  setScoreDisplay(display: any): void {
+    this.scoreDisplay = display;
+    if (this.scoreDisplay) {
+      this.scoreDisplay.setScore(this.score);
+    }
+  }
+
+  /**
+   * Reset score to zero
+   */
+  resetScore(): void {
+    this.score = 0;
+    if (this.scoreDisplay) {
+      this.scoreDisplay.setScore(this.score);
+    }
+  }
+
+  /**
+   * Add a particle to the game
+   */
+  addParticle(particle: Particle): void {
+    this.particles.push(particle);
+    this.addChild(particle);
+  }
+
+  /**
+   * Trigger screen shake effect
+   */
+  shake(intensity: number, duration: number, frequency?: number): void {
+    // Store base position on first shake
+    if (this.shakeDuration <= 0) {
+      this.basePosition.x = this.position.x;
+      this.basePosition.y = this.position.y;
+    }
+
+    this.shakeIntensity = intensity;
+    this.shakeDuration = duration;
+    this.shakeFrequency = frequency ?? 30;
+    this.shakeTime = 0;
+  }
+
+  /**
+   * Get all particles (for debugging)
+   */
+  getParticles(): Particle[] {
+    return this.particles;
+  }
+
+  /**
+   * Set score multiplier (used by ComboMultiplier primitive)
+   */
+  setScoreMultiplier(multiplier: number): void {
+    this.scoreMultiplier = multiplier;
+  }
+
+  /**
+   * Get current score multiplier
+   */
+  getScoreMultiplier(): number {
+    return this.scoreMultiplier;
+  }
+
+  /**
+   * Set the combo display UI component
+   */
+  setComboDisplay(display: ComboDisplay): void {
+    this.comboDisplay = display;
+
+    // Listen for combo events and update display
+    this.on("combo_updated", (data: { combo: number; multiplier: number }) => {
+      if (this.comboDisplay) {
+        this.comboDisplay.setCombo(data.combo, data.multiplier);
+      }
+    });
+
+    this.on("combo_reset", () => {
+      if (this.comboDisplay) {
+        this.comboDisplay.reset();
+      }
+    });
+  }
+
+  /**
+   * Set the health display UI component
+   */
+  setHealthDisplay(display: HealthDisplay): void {
+    this.healthDisplay = display;
+
+    // Listen for health events and update display
+    this.on(
+      "health_changed",
+      (data: { current: number; max: number; delta: number }) => {
+        if (this.healthDisplay) {
+          this.healthDisplay.setHealth(data.current, data.max);
+          if (data.delta > 0) {
+            this.healthDisplay.animateLoss();
+          }
+        }
+      },
+    );
+  }
+
+  /**
+   * Set the game over screen UI component
+   */
+  setGameOverScreen(screen: GameOverScreen): void {
+    this.gameOverScreen = screen;
+    this.addChild(screen);
+    screen.visible = false;
+  }
+
+  /**
+   * Set the level complete screen UI component
+   */
+  setLevelCompleteScreen(screen: LevelCompleteScreen): void {
+    this.levelCompleteScreen = screen;
+    this.addChild(screen);
+    screen.visible = false;
+  }
+
+  /**
+   * Initialize game lifecycle systems
+   */
+  initializeLifecycle(config: GameConfig, width: number, height: number): void {
+    this.gameConfig = config;
+    this.loadHighScore();
+
+    // Wire ball out of bounds to player damage
+    this.on("ball_out_of_bounds", () => {
+      console.log("[GameContainer] Ball out of bounds! Player takes damage.");
+      this.emit("player_hit", 1); // Damage amount
+    });
+
+    // Listen for player death
+    this.on("player_died", () => {
+      this.handleGameOver(width, height);
+    });
+
+    // Listen for level complete
+    this.on(
+      "level_complete",
+      (data: { level: number; blocksCleared: number }) => {
+        this.handleLevelComplete(data.level, width, height);
+      },
+    );
+  }
+
+  /**
+   * Handle game over
+   */
+  private handleGameOver(width: number, height: number): void {
+    if (this.gameState === "game_over") return;
+
+    this.gameState = "game_over";
+    console.log("[GameContainer] Game Over!");
+
+    // Update high score
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      this.saveHighScore();
+      console.log(`[GameContainer] New high score: ${this.highScore}`);
+    }
+
+    // Show game over screen
+    if (this.gameOverScreen) {
+      this.gameOverScreen.show(
+        this.score,
+        this.currentLevel,
+        this.highScore,
+        width,
+        height,
+      );
+    }
+  }
+
+  /**
+   * Handle level complete
+   */
+  private handleLevelComplete(
+    level: number,
+    width: number,
+    height: number,
+  ): void {
+    if (this.gameState !== "playing") return;
+
+    this.gameState = "level_complete";
+    this.currentLevel = level + 1;
+    console.log(`[GameContainer] Level ${level} complete! Advancing to level ${this.currentLevel}`);
+
+    // Show level complete screen
+    if (this.levelCompleteScreen) {
+      this.levelCompleteScreen.show(level, this.score, width, height);
+    }
+
+    // Regenerate level after delay
+    setTimeout(() => {
+      this.regenerateLevel();
+    }, 2500);
+  }
+
+  /**
+   * Regenerate level (respawn blocks)
+   */
+  private regenerateLevel(): void {
+    if (!this.gameConfig) return;
+
+    console.log(`[GameContainer] Regenerating level ${this.currentLevel}`);
+
+    // Remove all blocks
+    const blocks = this.getEntitiesByType("Block");
+    blocks.forEach((block) => {
+      this.removeEntity(block);
+    });
+
+    // Regenerate blocks from layouts
+    if (this.gameConfig.layouts) {
+      this.gameConfig.layouts.forEach((layoutConfig) => {
+        const entities = GameBuilder["createLayout"](layoutConfig);
+        entities.forEach((entityConfig) => {
+          const entity = GameBuilder["createEntity"](entityConfig, false);
+          this.addEntity(entity, entityConfig.id, entityConfig.type);
+
+          // Attach primitives
+          if (entityConfig.primitives) {
+            GameBuilder["attachPrimitives"](entity, entityConfig.primitives);
+          }
+        });
+      });
+    }
+
+    // Reset ball position
+    const ball = this.getEntityById("ball");
+    if (ball) {
+      ball.position.set(400, 500);
+      // Reset ball velocity through LinearMovement primitive
+      const movement = (
+        ball as Container & {
+          getPrimitive?: (type: string) => any;
+        }
+      ).getPrimitive?.("LinearMovement");
+      if (movement && movement.setVelocity) {
+        movement.setVelocity(200, -200);
+      }
+    }
+
+    // Resume playing
+    this.gameState = "playing";
+  }
+
+  /**
+   * Restart the entire game
+   */
+  restart(width: number, height: number): void {
+    console.log("[GameContainer] Restarting game");
+
+    // Hide screens
+    if (this.gameOverScreen) {
+      this.gameOverScreen.hide();
+    }
+    if (this.levelCompleteScreen) {
+      this.levelCompleteScreen.hide();
+    }
+
+    // Reset score and level
+    this.score = 0;
+    this.currentLevel = 1;
+    this.scoreMultiplier = 1.0;
+    if (this.scoreDisplay) {
+      this.scoreDisplay.setScore(0);
+    }
+    if (this.comboDisplay) {
+      this.comboDisplay.reset();
+    }
+
+    // Reset health
+    const gameManager = this.getEntityById("gameManager");
+    if (gameManager) {
+      const healthSystem = (
+        gameManager as Container & {
+          getPrimitive?: (type: string) => any;
+        }
+      ).getPrimitive?.("HealthSystem");
+      if (healthSystem && healthSystem.reset) {
+        healthSystem.reset();
+      }
+    }
+
+    // Reset level manager
+    if (gameManager) {
+      const levelManager = (
+        gameManager as Container & {
+          getPrimitive?: (type: string) => any;
+        }
+      ).getPrimitive?.("LevelManager");
+      if (levelManager && levelManager.reset) {
+        levelManager.reset();
+      }
+    }
+
+    // Regenerate level
+    this.regenerateLevel();
+
+    this.gameState = "playing";
+  }
+
+  /**
+   * Get current game state
+   */
+  getGameState(): string {
+    return this.gameState;
+  }
+
+  /**
+   * Load high score from localStorage
+   */
+  private loadHighScore(): void {
+    try {
+      const saved = localStorage.getItem("ludemic_high_score");
+      if (saved) {
+        this.highScore = parseInt(saved, 10);
+        console.log(`[GameContainer] Loaded high score: ${this.highScore}`);
+      }
+    } catch (e) {
+      console.warn("[GameContainer] Could not load high score:", e);
+    }
+  }
+
+  /**
+   * Save high score to localStorage
+   */
+  private saveHighScore(): void {
+    try {
+      localStorage.setItem("ludemic_high_score", this.highScore.toString());
+      console.log(`[GameContainer] Saved high score: ${this.highScore}`);
+    } catch (e) {
+      console.warn("[GameContainer] Could not save high score:", e);
+    }
+  }
+
+  /**
+   * Get current level
+   */
+  getLevel(): number {
+    return this.currentLevel;
+  }
+
+  /**
+   * Get high score
+   */
+  getHighScore(): number {
+    return this.highScore;
+  }
+}
+
+/**
+ * GameBuilder
+ *
+ * Constructs a complete game from JSON configuration.
+ * This is where config files become running games.
+ *
+ * Process:
+ * 1. Create entities from config
+ * 2. Attach primitives to entities
+ * 3. Position entities
+ * 4. Return game container ready to add to stage
+ */
+export class GameBuilder {
+  /**
+   * Build a game from JSON configuration
+   */
+  static fromConfig(config: GameConfig, tuningSystem?: any): GameContainer {
+    const game = new GameContainer();
+
+    // Inject tuning system BEFORE primitives are initialized
+    if (tuningSystem) {
+      game.tuningSystem = tuningSystem;
+    }
+
+    // Create entities from config (without primitives first)
+    config.entities.forEach((entityConfig) => {
+      const entity = this.createEntity(entityConfig, false); // Don't attach primitives yet
+      game.addEntity(entity, entityConfig.id, entityConfig.type);
+    });
+
+    // Generate entities from layouts (without primitives first)
+    if (config.layouts) {
+      console.log(
+        `[GameBuilder] Processing ${config.layouts.length} layout(s)`,
+      );
+      config.layouts.forEach((layoutConfig) => {
+        const entities = this.createLayout(layoutConfig);
+        console.log(
+          `[GameBuilder] Layout "${layoutConfig.type}" generated ${entities.length} entities`,
+        );
+        entities.forEach((entityConfig) => {
+          const entity = this.createEntity(entityConfig, false); // Don't attach primitives yet
+          game.addEntity(entity, entityConfig.id, entityConfig.type);
+        });
+      });
+    }
+
+    // Now attach primitives to all entities (now they have parent references)
+    config.entities.forEach((entityConfig) => {
+      const entity = game.getEntityById(entityConfig.id!);
+      if (entity && entityConfig.primitives) {
+        this.attachPrimitives(entity, entityConfig.primitives);
+      }
+    });
+
+    // Attach primitives to layout entities
+    if (config.layouts) {
+      config.layouts.forEach((layoutConfig) => {
+        const entities = this.createLayout(layoutConfig);
+        entities.forEach((entityConfig) => {
+          const entity = game.getEntityById(entityConfig.id!);
+          if (entity && entityConfig.primitives) {
+            this.attachPrimitives(entity, entityConfig.primitives);
+          }
+        });
+      });
+    }
+
+    // Create UI elements
+    if (config.ui) {
+      config.ui.forEach((uiConfig) => {
+        const uiElement = this.createUI(uiConfig);
+        game.addChild(uiElement);
+
+        // Connect UI to game if needed
+        if (uiConfig.type === "ScoreDisplay") {
+          game.setScoreDisplay(uiElement as ScoreDisplay);
+        } else if (uiConfig.type === "ComboDisplay") {
+          game.setComboDisplay(uiElement as ComboDisplay);
+        } else if (uiConfig.type === "HealthDisplay") {
+          game.setHealthDisplay(uiElement as HealthDisplay);
+        } else if (uiConfig.type === "GameOverScreen") {
+          game.setGameOverScreen(uiElement as GameOverScreen);
+        } else if (uiConfig.type === "LevelCompleteScreen") {
+          game.setLevelCompleteScreen(uiElement as LevelCompleteScreen);
+        }
+      });
+    }
+
+    return game;
+  }
+
+  /**
+   * Create a single entity
+   */
+  private static createEntity(
+    config: EntityConfig,
+    attachPrimitivesNow = true,
+  ): Container {
+    // Create the entity
+    const entity = EntityFactory.create(config);
+
+    // Position it
+    entity.position.set(config.position.x, config.position.y);
+
+    // Attach primitives immediately if requested (old behavior)
+    // This is used for standalone entity creation
+    if (attachPrimitivesNow && config.primitives) {
+      this.attachPrimitives(entity, config.primitives);
+    }
+
+    return entity;
+  }
+
+  /**
+   * Attach primitives to an entity
+   * Separated from createEntity to allow two-phase initialization
+   */
+  private static attachPrimitives(
+    entity: Container,
+    primitives: Array<{ type: string; config: PrimitiveConfig }>,
+  ): void {
+    primitives.forEach((primConfig) => {
+      const primitive = PrimitiveFactory.create(primConfig.type);
+      (entity as Container & { addPrimitive?: (type: string, primitive: Primitive, config: PrimitiveConfig) => void }).addPrimitive?.(
+        primConfig.type,
+        primitive,
+        primConfig.config,
+      );
+    });
+  }
+
+  /**
+   * Create entities from a layout generator
+   */
+  private static createLayout(layoutConfig: any): EntityConfig[] {
+    switch (layoutConfig.type) {
+      case "BlockGrid":
+        return BlockGrid.generate(layoutConfig.config);
+      default:
+        console.warn(`Unknown layout type: ${layoutConfig.type}`);
+        return [];
+    }
+  }
+
+  /**
+   * Create a UI element
+   */
+  private static createUI(uiConfig: any): Container {
+    let uiElement: Container;
+
+    switch (uiConfig.type) {
+      case "ScoreDisplay":
+        uiElement = new ScoreDisplay();
+        break;
+      case "ComboDisplay":
+        uiElement = new ComboDisplay();
+        break;
+      case "HealthDisplay":
+        uiElement = new HealthDisplay();
+        break;
+      case "GameOverScreen":
+        uiElement = new GameOverScreen();
+        break;
+      case "LevelCompleteScreen":
+        uiElement = new LevelCompleteScreen();
+        break;
+      default:
+        console.warn(`Unknown UI type: ${uiConfig.type}`);
+        uiElement = new Container();
+    }
+
+    // Position the UI element (if not a full-screen overlay)
+    if (uiConfig.position) {
+      uiElement.position.set(uiConfig.position.x, uiConfig.position.y);
+    }
+
+    return uiElement;
+  }
+
+  /**
+   * Load config from JSON file
+   */
+  static async fromFile(path: string, tuningSystem?: any): Promise<GameContainer> {
+    const response = await fetch(path);
+    const config: GameConfig = await response.json();
+    return this.fromConfig(config, tuningSystem);
+  }
+}

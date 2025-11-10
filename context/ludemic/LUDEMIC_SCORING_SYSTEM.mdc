@@ -1,0 +1,526 @@
+---
+description: Used to create scoring systems that attenuate scores so there's no leaderboard clustering
+alwaysApply: false
+---
+      calculation: "exceeding requirements with optimal efficiency"
+    }
+  }
+
+  generic_parameters {
+    max_pins: 10
+    par_score: number // context-specific
+    ace_score: number // context-specific
+    shaping_exponent: 1.0..1.2 // make top tiers harder to reach
+  }
+
+  tunable_properties {
+    max_pins
+    par_score_formula
+    ace_score_formula
+    shaping_exponent
+  }
+
+  lisa_mapping {
+    ```assembly
+    masteryRatingCalculation:
+        GET final_score
+        GET par_score
+        GET ace_score
+        GET max_pins
+        GET shaping_exponent
+
+        ; Calculate normalized progress
+        SET score_range (ace_score - par_score)
+        SET progress_raw ((final_score - par_score) / score_range)
+        SET progress_shaped (progress_raw ^ shaping_exponent)
+
+        ; Convert to pin count
+        SET pins_float (progress_shaped * max_pins)
+        SET pins_awarded ROUND(CLAMP(pins_float, 0, max_pins))
+
+        REWARD player +personal_milestone
+        INVEST player in_mastery_journey
+        DISPLAY mastery_badge_animation
+        RET
+    ```
+  }
+
+  display_examples {
+    10_pins: "Flawless mastery—setting the standard."
+    8_9_pins: "Elite performance—your craft is undeniable."
+    5_7_pins: "Solid work—keep refining your execution."
+    1_4_pins: "Progress made—study the patterns and improve efficiency."
+  }
+}
+
+## P3 Component: Percentile Rank Badges
+
+PercentileRankBadges {
+  purpose: "Competitive comparison via leaderboard position"
+
+  concept {
+    visual: "tiered badge system with increasing prestige"
+    measures: player_rank_vs_community
+    updates: dynamically_as_leaderboard_shifts
+  }
+
+  badge_tiers {
+    tier_1 {
+      name: "Bronze Tier"
+      percentile: "Top 60%"
+      icon: "shield with 1 star"
+    }
+    tier_2 {
+      name: "Silver Tier"
+      percentile: "Top 40%"
+      icon: "shield with 2 stars"
+    }
+    tier_3 {
+      name: "Gold Tier"
+      percentile: "Top 20%"
+      icon: "shield with 3 stars"
+    }
+    tier_4 {
+      name: "Platinum Tier"
+      percentile: "Top 10%"
+      icon: "wreathed star"
+    }
+    tier_5 {
+      name: "Diamond Tier"
+      percentile: "Top 1%"
+      icon: "laurel with double star"
+    }
+  }
+
+  calculation {
+    player_rank = get_leaderboard_position()
+    total_players = get_total_players()
+    percentile = (player_rank / total_players) × 100
+
+    badge = determine_tier(percentile)
+  }
+
+  generic_parameters {
+    tier_thresholds: number[] // [60, 40, 20, 10, 1]
+    tier_names: string[]
+    tier_icons: string[] // asset references
+  }
+
+  tunable_properties {
+    tier_thresholds // adjust competition difficulty
+  }
+
+  lisa_mapping {
+    ```assembly
+    percentileBadgeCalculation:
+        GET player_rank
+        GET total_players
+        SET percentile ((player_rank / total_players) * 100)
+
+        ; Determine tier
+        CMP percentile <= 1
+        BRANCH tier5 awardDiamond
+
+        CMP percentile <= 10
+        BRANCH tier4 awardPlatinum
+
+        CMP percentile <= 20
+        BRANCH tier3 awardGold
+
+        CMP percentile <= 40
+        BRANCH tier2 awardSilver
+
+        BRANCH tier1 awardBronze
+
+    awardDiamond:
+        SET badge "diamond"
+        BROADCAST player achievement_top_1_percent
+        REWARD player +elite_status
+        RET
+    ```
+  }
+
+  integration_with_leaderboards {
+    display_badge_next_to_player_name
+    animate_tier_upgrades
+    show_progress_to_next_tier
+    update_dynamically_as_rankings_shift
+  }
+}
+
+## P0 Component: Win Screen Celebration
+
+WinScreenCelebration {
+  purpose: "Satisfying animated score reveal with juice"
+
+  philosophy {
+    reference: "LUDEMIC_UI_ENHANCEMENT.sudo"
+    EmotionalResonance => evoke_satisfaction_and_accomplishment
+    GracefulMotion => animations_as_communication
+    MicroInteractions => delightful_physics
+  }
+
+  sequence {
+    1. units_completed_display // "11 / 9 required"
+    2. base_points_animate_up  // "+1,100" with increment SFX
+    3. time_efficiency_display // "+XYZ" with increment SFX
+    4. completeness_bonus_if_applicable // "+200"
+    5. accuracy_multiplier_show // "×1.28" with visual emphasis
+    6. final_score_celebration // BIG number, particles, fanfare
+    7. best_streak_badge // "7" with glow effect
+    8. mastery_rating_pins // each pin pulses in
+    9. percentile_badge_if_upgraded // tier badge with special animation
+  }
+
+  animation_principles {
+    tight_pacing => quick_succession_not_slow
+    increment_sfx => tick_sound_per_number_count_up
+    visual_emphasis => larger_scale_for_important_values
+    particle_effects => confetti_sparks_on_final_score
+    haptic_feedback => rumble_on_milestone_reveals
+  }
+
+  implementation_pattern {
+    ```typescript
+    class WinScreen extends Phaser.Scene {
+      async playScoreCelebration(scoreData: ScoreBreakdown) {
+        // 1. Units completed
+        await this.animateText('Units Completed', scoreData.unitsDisplay, 500)
+
+        // 2. Base points (count up)
+        await this.countUp('Base Points', 0, scoreData.basePoints, 1000)
+
+        // 3. Time efficiency (count up)
+        await this.countUp('Time Bonus', 0, scoreData.timePoints, 1000)
+
+        // 4. Completeness bonus (if > 0)
+        if (scoreData.completenessBonus > 0) {
+          await this.countUp('Completeness', 0, scoreData.completenessBonus, 800)
+        }
+
+        // 5. Accuracy multiplier (emphasis)
+        await this.showMultiplier(scoreData.accuracyMultiplier, 1200)
+
+        // 6. Final score (BIG celebration)
+        await this.celebrateFinalScore(scoreData.finalScore)
+
+        // 7. Best streak
+        await this.showStreakBadge(scoreData.bestStreak)
+
+        // 8. Mastery pins (pulse each)
+        await this.showMasteryPins(scoreData.masteryPins)
+
+        // 9. Percentile badge (if upgraded)
+        if (scoreData.badgeUpgraded) {
+          await this.celebrateBadgeUpgrade(scoreData.newBadge)
+        }
+      }
+
+      async countUp(label: string, start: number, end: number, duration: number) {
+        const text = this.add.text(x, y, label)
+        const valueText = this.add.text(x, y + 40, start.toString())
+
+        const steps = 30
+        const increment = (end - start) / steps
+        const delay = duration / steps
+
+        for (let i = 0; i <= steps; i++) {
+          const value = Math.round(start + increment * i)
+          valueText.setText(`+${value}`)
+          this.sound.play('tick', { volume: 0.3 })
+          await this.sleep(delay)
+        }
+      }
+
+      async showMasteryPins(count: number) {
+        for (let i = 0; i < count; i++) {
+          const pin = this.add.image(x + i * 30, y, 'pin')
+          this.tweens.add({
+            targets: pin,
+            scale: { from: 1.5, to: 1.0 },
+            duration: 200,
+            ease: 'Back.easeOut'
+          })
+          this.sound.play('pin_award')
+          await this.sleep(100)
+        }
+      }
+    }
+    ```
+  }
+
+  lisa_mapping {
+    ```assembly
+    celebrationSequence:
+        DISPLAY units_completed_text
+        WAIT 0.5s
+        SOUND increment_tick
+        JUICE count_up_animation base_points
+
+        WAIT 0.2s
+        SOUND increment_tick
+        JUICE count_up_animation time_points
+
+        BRANCH completenessCheck showCompleteness
+
+    showFinalScore:
+        SOUND fanfare
+        DISPLAY final_score BIG_TEXT
+        JUICE particle_burst confetti
+        HAPTIC rumble 0.3s
+        ESCALATE celebration +maximum
+
+        WAIT 0.5s
+        CALL showStreakBadge
+        CALL showMasteryPins
+        CALL showPercentileBadge
+
+        REWARD player +emotional_satisfaction
+        INVEST player in_replay_desire
+        RET
+    ```
+  }
+
+  tunable_properties {
+    animation_durations
+    sfx_volumes
+    particle_intensity
+    haptic_strength
+    pacing_delays
+  }
+
+  ux_guidelines {
+    emphasis_hierarchy: final_score > multiplier > components
+    color_coding: green_for_bonuses, blue_for_multipliers
+    size_scaling: final_score_2x_larger_than_components
+    timing: complete_full_sequence_in_5_to_8_seconds
+  }
+}
+
+## Configuration Schema
+
+ScoringConfigSchema {
+  zod_validation {
+    ```typescript
+    import { z } from 'zod'
+
+    const ScoringConfigSchema = z.object({
+      base_points: z.object({
+        points_per_unit: z.number().positive()
+      }),
+      time_efficiency: z.object({
+        max_points: z.number().positive(),
+        t_half: z.number().positive(),
+        gamma: z.number().positive()
+      }),
+      streak_multipliers: z.array(z.number().positive()).length(5),
+      completeness_bonus: z.object({
+        points_per_extra: z.number().positive(),
+        units_required: z.number().int().positive()
+      }),
+      accuracy_multiplier: z.object({
+        min_acc: z.number().min(0),
+        max_acc: z.number().min(1),
+        gamma: z.number().positive(),
+        lambda: z.number().positive(),
+        alpha: z.number().positive(),
+        beta: z.number().positive()
+      }),
+      mastery_rating: z.object({
+        max_pins: z.number().int().positive(),
+        par_score: z.number().positive(),
+        ace_score: z.number().positive(),
+        shaping_exponent: z.number().min(1.0).max(2.0)
+      }),
+      percentile_badges: z.object({
+        tier_thresholds: z.array(z.number().min(0).max(100)),
+        tier_names: z.array(z.string()),
+        tier_icons: z.array(z.string())
+      })
+    })
+    ```
+  }
+
+  example_config {
+    ```json
+    {
+      "base_points": {
+        "points_per_unit": 100
+      },
+      "time_efficiency": {
+        "max_points": 120,
+        "t_half": 2.0,
+        "gamma": 2.0
+      },
+      "streak_multipliers": [1.0, 1.6, 2.1, 2.6, 3.1],
+      "completeness_bonus": {
+        "points_per_extra": 100,
+        "units_required": 9
+      },
+      "accuracy_multiplier": {
+        "min_acc": 0.5,
+        "max_acc": 1.5,
+        "gamma": 1.95,
+        "lambda": 1.0,
+        "alpha": 1.0,
+        "beta": 1.0
+      },
+      "mastery_rating": {
+        "max_pins": 10,
+        "par_score": 2000,
+        "ace_score": 5000,
+        "shaping_exponent": 1.1
+      },
+      "percentile_badges": {
+        "tier_thresholds": [60, 40, 20, 10, 1],
+        "tier_names": ["Bronze", "Silver", "Gold", "Platinum", "Diamond"],
+        "tier_icons": ["bronze_shield", "silver_shield", "gold_shield", "platinum_wreath", "diamond_laurel"]
+      }
+    }
+    ```
+  }
+}
+
+## Integration with Ludemic Engine
+
+EngineIntegration {
+  ecs_systems {
+    ScoringSystem {
+      components: [Score, Streak, Accuracy, Timer]
+      runs_every_frame: track_cycle_times
+      runs_on_events: [onSuccess, onFailure, onSessionEnd]
+    }
+  }
+
+  phaser_integration {
+    ```typescript
+    class GameScene extends Phaser.Scene {
+      scoringSystem: ScoringSystem
+
+      create() {
+        const config = this.registry.get('tuningKnobs').scoring
+        this.scoringSystem = new ScoringSystem(config)
+
+        this.events.on('correct', () => {
+          const score = this.scoringSystem.onSuccess(Date.now())
+          this.updateScoreDisplay(score)
+        })
+
+        this.events.on('incorrect', () => {
+          this.scoringSystem.onFailure()
+        })
+
+        this.events.on('session_end', () => {
+          const finalScore = this.scoringSystem.calculateFinalScore()
+          this.scene.start('WinScreen', { scoreData: finalScore })
+        })
+      }
+    }
+    ```
+  }
+
+  tuning_knobs_integration {
+    reference: "LUDEMIC_TUNING_KNOBS.sudo"
+    all_scoring_parameters_tunable_at_runtime
+    designers_can_adjust_curves_live
+    export_balanced_configs_as_presets
+  }
+}
+
+## Testing Strategy
+
+TestingApproach {
+  reference: "SINON_TESTING.sudo"
+
+  unit_tests {
+    ```typescript
+    test('calculates base points correctly', () => {
+      const scoring = new ScoringSystem(config)
+      scoring.onSuccess() // 100 points
+      scoring.onSuccess() // 100 points
+      expect(scoring.getBasePoints()).toBe(200)
+    })
+
+    test('time efficiency decreases with longer cycle times', () => {
+      const scoring = new ScoringSystem(config)
+      const points1 = scoring.calculateTimePoints(1.0) // fast
+      const points2 = scoring.calculateTimePoints(5.0) // slow
+      expect(points1).toBeGreaterThan(points2)
+    })
+
+    test('streak multiplier resets on failure', () => {
+      const scoring = new ScoringSystem(config)
+      scoring.onSuccess() // streak = 1
+      scoring.onSuccess() // streak = 2
+      scoring.onFailure() // streak = 0
+      expect(scoring.getCurrentStreak()).toBe(0)
+    })
+
+    test('accuracy multiplier scales smoothly', () => {
+      const scoring = new ScoringSystem(config)
+      const mult1 = scoring.calculateAccuracyMultiplier(10, 0) // perfect
+      const mult2 = scoring.calculateAccuracyMultiplier(10, 5) // decent
+      const mult3 = scoring.calculateAccuracyMultiplier(10, 20) // poor
+      expect(mult1).toBeCloseTo(1.5)
+      expect(mult2).toBeGreaterThan(0.8)
+      expect(mult3).toBeCloseTo(0.5)
+    })
+  }
+
+  integration_tests {
+    ```typescript
+    test('full scoring pipeline produces expected result', async () => {
+      const scene = new GameScene()
+      const game = makeHeadlessGame(scene)
+      await waitForReady(game)
+
+      // Simulate perfect run
+      scene.scoringSystem.onSuccess() // t=0
+      await stepFrames(game, clock, 30) // 0.5s
+      scene.scoringSystem.onSuccess() // t=0.5
+      await stepFrames(game, clock, 30)
+      scene.scoringSystem.onSuccess() // t=0.5
+
+      const finalScore = scene.scoringSystem.calculateFinalScore()
+      expect(finalScore.finalScore).toBeGreaterThan(500)
+      expect(finalScore.masteryPins).toBeGreaterThan(7)
+    })
+  }
+}
+
+## Summary
+
+LudemicScoringSystem {
+  philosophy: "Continuous curves maximize skill expression and prevent clustering"
+
+  architecture {
+    composite_score => multiple_dimensions_of_mastery
+    continuous_functions => smooth_gradients_not_thresholds
+    multiplicative_scaling => exponential_skill_expression
+    personal_mastery => self_comparison_independent_of_leaderboard
+    percentile_ranking => competitive_comparison
+    celebration => animated_juice_on_success
+  }
+
+  integration {
+    LISA_instructions => MOD, REWARD, ESCALATE, EXTEND, JUICE
+    tuning_knobs => all_parameters_adjustable_at_runtime
+    ECS_systems => efficient_per_frame_tracking
+    Phaser_scenes => event_driven_score_updates
+    Zod_validation => type_safe_configurations
+  }
+
+  benefits {
+    leaderboard_granularity => minimal_ties
+    skill_progression_visible => incremental_improvements_rewarded
+    designer_empowerment => live_tuning_without_rebuild
+    player_satisfaction => satisfying_celebration_sequence
+  }
+
+  constraint mission {
+    Every score difference reflects genuine skill variance
+    Every component measures distinct dimension of mastery
+    Every parameter is tunable for rapid balancing
+    Every success is celebrated with juice and feedback
+  }
+}
