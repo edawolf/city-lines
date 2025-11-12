@@ -330,7 +330,7 @@ export class IntentLibrary {
     }
 
     if (lower.includes("spread out") && lower.includes("without overlapping")) {
-      const region = this.extractRegion(lower);
+      const region = this.extractRegion(lower) as any;
       return this.TEST_GRID(region);
     }
 

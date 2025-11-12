@@ -256,7 +256,7 @@ export class PrimitiveTestScreen extends Container {
       }
 
       // Update level info display
-      this.levelInfoText.text = `Level ${levelIndex + 1}/${CityLinesLevelLoader.getLevelCount()} - ${levelConfig.name}`;
+      this.levelInfoText.text = `Level ${levelIndex + 1}/${CityLinesLevelLoader.getLevelCount()} - ${(levelConfig as any).name}`;
 
       // Listen for path complete event to advance to next level (use once to avoid duplicates)
       console.log(
@@ -279,7 +279,7 @@ export class PrimitiveTestScreen extends Container {
         }, 3000); // Wait 3 seconds after level complete screen
       });
 
-      console.log(`✅ Loaded: ${levelConfig.name}`);
+      console.log(`✅ Loaded: ${(levelConfig as any).name}`);
     } catch (error) {
       console.error(`❌ Failed to load level ${levelIndex + 1}:`, error);
       this.levelInfoText.text = `Error loading level ${levelIndex + 1}`;

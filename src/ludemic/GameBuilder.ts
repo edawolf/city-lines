@@ -173,21 +173,21 @@ export class GameContainer extends Container {
   /**
    * Emit game event for primitives to listen to
    */
-  emit(event: string, ...args: any[]): void {
+  emitGame(event: string, ...args: any[]): void {
     this.eventEmitter.emit(event, ...args);
   }
 
   /**
    * Listen for game events
    */
-  on(event: string, fn: (...args: any[]) => void): void {
+  onGame(event: string, fn: (...args: any[]) => void): void {
     this.eventEmitter.on(event, fn);
   }
 
   /**
    * Remove event listener
    */
-  off(event: string, fn: (...args: any[]) => void): void {
+  offGame(event: string, fn: (...args: any[]) => void): void {
     this.eventEmitter.off(event, fn);
   }
 
@@ -200,7 +200,7 @@ export class GameContainer extends Container {
     if (this.scoreDisplay) {
       this.scoreDisplay.setScore(this.score);
     }
-    this.emit("score_changed", this.score);
+    this.emitGame("score_changed", this.score);
   }
 
   /**
@@ -398,7 +398,7 @@ export class GameContainer extends Container {
     // Wire ball out of bounds to player damage
     this.on("ball_out_of_bounds", () => {
       console.log("[GameContainer] Ball out of bounds! Player takes damage.");
-      this.emit("player_hit", 1); // Damage amount
+      this.emitGame("player_hit", 1); // Damage amount
     });
 
     // Listen for player death
@@ -760,7 +760,7 @@ export class GameBuilder {
         } else if (uiConfig.type === "ComboDisplay") {
           game.setComboDisplay(uiElement as ComboDisplay);
         } else if (uiConfig.type === "HealthDisplay") {
-          game.setHealthDisplay(uiElement as HealthDisplay);
+          game.setHealthDisplay(uiElement as unknown as HealthDisplay);
         } else if (uiConfig.type === "GameOverScreen") {
           game.setGameOverScreen(uiElement as GameOverScreen);
         } else if (uiConfig.type === "LevelCompleteScreen") {
@@ -850,7 +850,7 @@ export class GameBuilder {
         uiElement = new ComboDisplay();
         break;
       case "HealthDisplay":
-        uiElement = new HealthDisplay();
+        uiElement = new HealthDisplay() as any;
         break;
       case "GameOverScreen":
         uiElement = new GameOverScreen();

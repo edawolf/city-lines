@@ -8,7 +8,7 @@ import { Container, Graphics, Text } from "pixi.js";
  */
 export class HealthDisplay extends Container {
   private hearts: Graphics[] = [];
-  private label: Text;
+  private labelText: Text;
   private maxHealth: number;
   private currentHealth: number;
 
@@ -19,7 +19,7 @@ export class HealthDisplay extends Container {
     this.currentHealth = 3;
 
     // Label
-    this.label = new Text({
+    this.labelText = new Text({
       text: "Lives:",
       style: {
         fontSize: 18,
@@ -28,7 +28,7 @@ export class HealthDisplay extends Container {
         fontWeight: "bold",
       },
     });
-    this.addChild(this.label);
+    this.addChild(this.labelText);
 
     // Create heart graphics
     this.updateHearts();

@@ -58,7 +58,7 @@ export class BounceCollision extends Primitive {
   update(_deltaTime: number): void {
     // Lazily get game container (parent is set after init)
     if (!this.game && this.entity.parent) {
-      this.game = this.entity.parent as GameContainer;
+      this.game = this.entity.parent as unknown as GameContainer;
       console.log(
         "[BounceCollision] Game container acquired, targets:",
         this.config.targets,
@@ -127,7 +127,7 @@ export class BounceCollision extends Primitive {
 
     // Emit bounce event for other systems (juice, sound, etc.)
     if (bounced && this.game) {
-      this.game.emit("ball_bounce", this.entity);
+      this.game.emitGame("ball_bounce", this.entity);
     }
   }
 

@@ -65,11 +65,11 @@ export class HeadlineReveal implements Primitive {
   init(entity: Container, config: HeadlineRevealConfig): void {
     this.entity = entity;
     this.config = config;
-    this.game = entity.parent as GameContainer;
+    this.game = entity.parent as unknown as GameContainer;
     this.currentHeadlineIndex = config.currentHeadlineIndex ?? 0;
 
     // Listen for completion event
-    this.game.on(this.config.triggerOn, this.handleCompletion);
+    this.game.onGame(this.config.triggerOn, this.handleCompletion);
 
     console.log(
       `[HeadlineReveal] 📰 Initialized with ${this.config.headlines.length} headlines`,
@@ -124,7 +124,7 @@ export class HeadlineReveal implements Primitive {
     }
 
     // Emit reveal event for other systems (e.g., particles)
-    this.game.emit("headline_revealed", {
+    this.game.emitGame("headline_revealed", {
       headline,
       index: this.currentHeadlineIndex - 1,
     });
@@ -193,7 +193,7 @@ export class HeadlineReveal implements Primitive {
   destroy(): void {
     // Clean up event listener
     if (this.game) {
-      this.game.off(this.config.triggerOn, this.handleCompletion);
+      this.game.offGame(this.config.triggerOn, this.handleCompletion);
     }
 
     console.log(`[HeadlineReveal] 🗑️ Destroyed`);

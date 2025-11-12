@@ -23,8 +23,8 @@ export class ScreenShake extends Primitive {
   private entity!: Container;
   private config!: ScreenShakeConfig;
   private game!: Container & {
-    on: (event: string, fn: (...args: unknown[]) => void) => void;
-    off: (event: string, fn: (...args: unknown[]) => void) => void;
+    onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    offGame: (event: string, fn: (...args: unknown[]) => void) => void;
     shake: (intensity: number, duration: number, frequency?: number) => void;
     tuningSystem?: any;
   };
@@ -34,8 +34,8 @@ export class ScreenShake extends Primitive {
     this.entity = entity;
     this.config = config;
     this.game = entity.parent as Container & {
-      on: (event: string, fn: (...args: unknown[]) => void) => void;
-      off: (event: string, fn: (...args: unknown[]) => void) => void;
+      onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      offGame: (event: string, fn: (...args: unknown[]) => void) => void;
       shake: (intensity: number, duration: number, frequency?: number) => void;
       tuningSystem?: any;
     };
@@ -43,7 +43,7 @@ export class ScreenShake extends Primitive {
     // Listen for trigger event (support both naming conventions)
     const triggerEvent = this.config.triggerEvent ?? this.config.triggerOn;
     if (triggerEvent) {
-      this.game.on(triggerEvent, this.shake);
+      this.game.onGame(triggerEvent, this.shake);
     }
 
     this.setupTuning();
@@ -106,7 +106,7 @@ export class ScreenShake extends Primitive {
   destroy(): void {
     const triggerEvent = this.config.triggerEvent ?? this.config.triggerOn;
     if (triggerEvent) {
-      this.game.off(triggerEvent, this.shake);
+      this.game.offGame(triggerEvent, this.shake);
     }
 
     // Unsubscribe from tuning changes

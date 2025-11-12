@@ -24,7 +24,7 @@ export class BoundaryTrigger extends Primitive {
   private entity!: Container;
   private config!: BoundaryTriggerConfig;
   private game!: Container & {
-    emit: (event: string, ...args: unknown[]) => void;
+    emitGame: (event: string, ...args: unknown[]) => void;
   };
   private hasTriggered = false;
 
@@ -32,7 +32,7 @@ export class BoundaryTrigger extends Primitive {
     this.entity = entity;
     this.config = config;
     this.game = entity.parent as Container & {
-      emit: (event: string, ...args: unknown[]) => void;
+      emitGame: (event: string, ...args: unknown[]) => void;
     };
 
     console.log(
@@ -51,7 +51,7 @@ export class BoundaryTrigger extends Primitive {
           `[BoundaryTrigger] Boundary crossed! Emitting "${this.config.triggerEvent}"`,
         );
 
-        this.game.emit(this.config.triggerEvent, this.entity);
+        this.game.emitGame(this.config.triggerEvent, this.entity);
         this.hasTriggered = true;
 
         // Reset position if configured

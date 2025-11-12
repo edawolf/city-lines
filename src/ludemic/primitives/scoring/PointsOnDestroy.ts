@@ -53,11 +53,11 @@ export class PointsOnDestroy extends Primitive {
   update(_deltaTime: number): void {
     // Lazily get game container and register event listener
     if (!this.game && this.entity.parent) {
-      this.game = this.entity.parent as GameContainer;
+      this.game = this.entity.parent as unknown as GameContainer;
 
       // Register event listener once we have the game container
       if (this.game) {
-        this.game.on(this.config.listenForEvent, this.boundHandler);
+        this.game.onGame(this.config.listenForEvent, this.boundHandler);
       }
     }
   }
@@ -75,7 +75,7 @@ export class PointsOnDestroy extends Primitive {
   destroy(): void {
     // Unregister event listener
     if (this.game && this.boundHandler) {
-      this.game.off(this.config.listenForEvent, this.boundHandler);
+      this.game.offGame(this.config.listenForEvent, this.boundHandler);
     }
   }
 }

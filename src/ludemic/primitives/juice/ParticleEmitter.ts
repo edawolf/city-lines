@@ -30,8 +30,8 @@ export class ParticleEmitter extends Primitive {
   private entity!: Container;
   private config!: ParticleEmitterConfig;
   private game!: Container & {
-    on: (event: string, fn: (...args: unknown[]) => void) => void;
-    off: (event: string, fn: (...args: unknown[]) => void) => void;
+    onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    offGame: (event: string, fn: (...args: unknown[]) => void) => void;
     addParticle: (particle: Particle) => void;
     tuningSystem?: any;
   };
@@ -41,8 +41,8 @@ export class ParticleEmitter extends Primitive {
     this.entity = entity;
     this.config = config;
     this.game = entity.parent as Container & {
-      on: (event: string, fn: (...args: unknown[]) => void) => void;
-      off: (event: string, fn: (...args: unknown[]) => void) => void;
+      onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      offGame: (event: string, fn: (...args: unknown[]) => void) => void;
       addParticle: (particle: Particle) => void;
       tuningSystem?: any;
     };
@@ -50,7 +50,7 @@ export class ParticleEmitter extends Primitive {
     // Listen for trigger event (support both naming conventions)
     const triggerEvent = this.config.triggerEvent ?? this.config.triggerOn;
     if (triggerEvent) {
-      this.game.on(triggerEvent, this.emit);
+      this.game.onGame(triggerEvent, this.emit);
     }
 
     this.setupTuning();
@@ -150,7 +150,7 @@ export class ParticleEmitter extends Primitive {
   destroy(): void {
     const triggerEvent = this.config.triggerEvent ?? this.config.triggerOn;
     if (triggerEvent) {
-      this.game.off(triggerEvent, this.emit);
+      this.game.offGame(triggerEvent, this.emit);
     }
 
     // Unsubscribe from tuning changes

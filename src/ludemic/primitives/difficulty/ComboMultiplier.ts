@@ -24,9 +24,9 @@ export class ComboMultiplier extends Primitive {
   private entity!: Container;
   private config!: ComboMultiplierConfig;
   private game!: Container & {
-    on: (event: string, fn: (...args: unknown[]) => void) => void;
-    off: (event: string, fn: (...args: unknown[]) => void) => void;
-    emit: (event: string, ...args: unknown[]) => void;
+    onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    offGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    emitGame: (event: string, ...args: unknown[]) => void;
     setScoreMultiplier?: (multiplier: number) => void;
   };
 
@@ -38,9 +38,9 @@ export class ComboMultiplier extends Primitive {
     this.entity = entity;
     this.config = config;
     this.game = entity.parent as Container & {
-      on: (event: string, fn: (...args: unknown[]) => void) => void;
-      off: (event: string, fn: (...args: unknown[]) => void) => void;
-      emit: (event: string, ...args: unknown[]) => void;
+      onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      offGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      emitGame: (event: string, ...args: unknown[]) => void;
       setScoreMultiplier?: (multiplier: number) => void;
     };
 
@@ -48,7 +48,7 @@ export class ComboMultiplier extends Primitive {
     this.currentMultiplier = this.config.baseMultiplier;
 
     // Listen for hit events
-    this.game.on(this.config.listenForEvent, this.handleHit);
+    this.game.onGame(this.config.listenForEvent, this.handleHit);
 
     console.log(
       `[ComboMultiplier] Initialized: listening for "${this.config.listenForEvent}"`,
@@ -90,7 +90,7 @@ export class ComboMultiplier extends Primitive {
     }
 
     // Emit combo updated event
-    this.game.emit("combo_updated", {
+    this.game.emitGame("combo_updated", {
       combo: this.currentCombo,
       multiplier: this.currentMultiplier,
     });
@@ -120,7 +120,7 @@ export class ComboMultiplier extends Primitive {
     }
 
     // Emit combo reset event
-    this.game.emit("combo_reset");
+    this.game.emitGame("combo_reset");
   }
 
   /**
@@ -138,6 +138,6 @@ export class ComboMultiplier extends Primitive {
   }
 
   destroy(): void {
-    this.game.off(this.config.listenForEvent, this.handleHit);
+    this.game.offGame(this.config.listenForEvent, this.handleHit);
   }
 }

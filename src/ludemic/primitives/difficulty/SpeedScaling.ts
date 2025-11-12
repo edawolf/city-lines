@@ -24,8 +24,8 @@ export class SpeedScaling extends Primitive {
   private entity!: Container;
   private config!: SpeedScalingConfig;
   private game!: Container & {
-    on: (event: string, fn: (...args: unknown[]) => void) => void;
-    off: (event: string, fn: (...args: unknown[]) => void) => void;
+    onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    offGame: (event: string, fn: (...args: unknown[]) => void) => void;
     getEntitiesByType: (type: string) => Container[];
   };
   private currentSpeedMultiplier = 1.0;
@@ -34,8 +34,8 @@ export class SpeedScaling extends Primitive {
     this.entity = entity;
     this.config = config;
     this.game = entity.parent as Container & {
-      on: (event: string, fn: (...args: unknown[]) => void) => void;
-      off: (event: string, fn: (...args: unknown[]) => void) => void;
+      onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      offGame: (event: string, fn: (...args: unknown[]) => void) => void;
       getEntitiesByType: (type: string) => Container[];
     };
 
@@ -43,7 +43,7 @@ export class SpeedScaling extends Primitive {
     this.currentSpeedMultiplier = this.config.startSpeed ?? 1.0;
 
     // Listen for trigger event
-    this.game.on(this.config.triggerOn, this.escalate);
+    this.game.onGame(this.config.triggerOn, this.escalate);
 
     console.log(
       `[SpeedScaling] Initialized: ${this.config.targetEntityTypes.join(", ")} will scale on "${this.config.triggerOn}"`,
@@ -139,6 +139,6 @@ export class SpeedScaling extends Primitive {
   }
 
   destroy(): void {
-    this.game.off(this.config.triggerOn, this.escalate);
+    this.game.offGame(this.config.triggerOn, this.escalate);
   }
 }

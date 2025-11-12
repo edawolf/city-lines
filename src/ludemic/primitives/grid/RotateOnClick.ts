@@ -99,7 +99,7 @@ export class RotateOnClick extends Primitive {
 
       // Also emit on parent (game/grid) for compatibility
       if (this.game?.emit) {
-        this.game.emit("tile_rotated", eventData);
+        this.game.emitGame("tile_rotated", eventData);
       }
     }
 

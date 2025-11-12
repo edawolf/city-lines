@@ -24,20 +24,20 @@ export class SoundTrigger extends Primitive {
   private entity!: Container;
   private config!: SoundTriggerConfig;
   private game!: Container & {
-    on: (event: string, fn: (...args: unknown[]) => void) => void;
-    off: (event: string, fn: (...args: unknown[]) => void) => void;
+    onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    offGame: (event: string, fn: (...args: unknown[]) => void) => void;
   };
 
   init(entity: Container, config: SoundTriggerConfig): void {
     this.entity = entity;
     this.config = config;
     this.game = entity.parent as Container & {
-      on: (event: string, fn: (...args: unknown[]) => void) => void;
-      off: (event: string, fn: (...args: unknown[]) => void) => void;
+      onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      offGame: (event: string, fn: (...args: unknown[]) => void) => void;
     };
 
     // Listen for trigger event
-    this.game.on(this.config.triggerOn, this.playSound);
+    this.game.onGame(this.config.triggerOn, this.playSound);
   }
 
   update(): void {
@@ -70,6 +70,6 @@ export class SoundTrigger extends Primitive {
   };
 
   destroy(): void {
-    this.game.off(this.config.triggerOn, this.playSound);
+    this.game.offGame(this.config.triggerOn, this.playSound);
   }
 }

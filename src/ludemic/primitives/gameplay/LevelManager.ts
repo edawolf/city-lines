@@ -23,9 +23,9 @@ export class LevelManager extends Primitive {
   private entity!: Container;
   private config!: LevelManagerConfig;
   private game!: Container & {
-    on: (event: string, fn: (...args: unknown[]) => void) => void;
-    off: (event: string, fn: (...args: unknown[]) => void) => void;
-    emit: (event: string, ...args: unknown[]) => void;
+    onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    offGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    emitGame: (event: string, ...args: unknown[]) => void;
     getEntitiesByType: (type: string) => Container[];
   };
 
@@ -36,16 +36,16 @@ export class LevelManager extends Primitive {
     this.entity = entity;
     this.config = config;
     this.game = entity.parent as Container & {
-      on: (event: string, fn: (...args: unknown[]) => void) => void;
-      off: (event: string, fn: (...args: unknown[]) => void) => void;
-      emit: (event: string, ...args: unknown[]) => void;
+      onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      offGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      emitGame: (event: string, ...args: unknown[]) => void;
       getEntitiesByType: (type: string) => Container[];
     };
 
     this.currentLevel = this.config.startLevel ?? 1;
 
     // Listen for block destruction
-    this.game.on(this.config.blockDestroyedEvent, this.onBlockDestroyed);
+    this.game.onGame(this.config.blockDestroyedEvent, this.onBlockDestroyed);
 
     console.log(`[LevelManager] Initialized at level ${this.currentLevel}`);
   }
@@ -59,7 +59,7 @@ export class LevelManager extends Primitive {
         `[LevelManager] Level ${this.currentLevel} complete! ${this.blocksCleared} blocks cleared`,
       );
 
-      this.game.emit(this.config.levelCompleteEvent, {
+      this.game.emitGame(this.config.levelCompleteEvent, {
         level: this.currentLevel,
         blocksCleared: this.blocksCleared,
       });
@@ -103,6 +103,6 @@ export class LevelManager extends Primitive {
   }
 
   destroy(): void {
-    this.game.off(this.config.blockDestroyedEvent, this.onBlockDestroyed);
+    this.game.offGame(this.config.blockDestroyedEvent, this.onBlockDestroyed);
   }
 }

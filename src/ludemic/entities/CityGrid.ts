@@ -281,7 +281,7 @@ export class CityGrid extends Container {
 
     if (this.game && typeof this.game.emit === "function") {
       console.log("📢 [CityGrid] Emitting path_complete on game container");
-      this.game.emit("path_complete", {
+      this.game.emitGame("path_complete", {
         landmarks: this.landmarks,
         turnpikes: this.turnpikes,
         graph: this.connectionGraph,

@@ -62,7 +62,7 @@ export class DestroyCollision extends Primitive {
 
     // Lazily get game container
     if (!this.game && this.entity.parent) {
-      this.game = this.entity.parent as GameContainer;
+      this.game = this.entity.parent as unknown as GameContainer;
     }
 
     if (!this.game) return;
@@ -101,7 +101,7 @@ export class DestroyCollision extends Primitive {
   private handleCollision(target: Container): void {
     // Emit event BEFORE destroying (so other systems can react)
     if (this.config.onDestroy) {
-      this.game.emit(this.config.onDestroy, this.entity);
+      this.game.emitGame(this.config.onDestroy, this.entity);
     }
 
     // Destroy this entity

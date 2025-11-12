@@ -23,9 +23,9 @@ export class HealthSystem extends Primitive {
   private entity!: Container;
   private config!: HealthSystemConfig;
   private game!: Container & {
-    on: (event: string, fn: (...args: unknown[]) => void) => void;
-    off: (event: string, fn: (...args: unknown[]) => void) => void;
-    emit: (event: string, ...args: unknown[]) => void;
+    onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    offGame: (event: string, fn: (...args: unknown[]) => void) => void;
+    emitGame: (event: string, ...args: unknown[]) => void;
   };
 
   private currentHealth: number;
@@ -34,16 +34,16 @@ export class HealthSystem extends Primitive {
     this.entity = entity;
     this.config = config;
     this.game = entity.parent as Container & {
-      on: (event: string, fn: (...args: unknown[]) => void) => void;
-      off: (event: string, fn: (...args: unknown[]) => void) => void;
-      emit: (event: string, ...args: unknown[]) => void;
+      onGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      offGame: (event: string, fn: (...args: unknown[]) => void) => void;
+      emitGame: (event: string, ...args: unknown[]) => void;
     };
 
     // Initialize health
     this.currentHealth = this.config.startHealth ?? this.config.maxHealth;
 
     // Listen for damage events
-    this.game.on(this.config.damageEvent, this.takeDamage);
+    this.game.onGame(this.config.damageEvent, this.takeDamage);
 
     console.log(
       `[HealthSystem] Initialized: ${this.currentHealth}/${this.config.maxHealth} health`,
@@ -66,7 +66,7 @@ export class HealthSystem extends Primitive {
     );
 
     // Emit health changed event
-    this.game.emit("health_changed", {
+    this.game.emitGame("health_changed", {
       current: this.currentHealth,
       max: this.config.maxHealth,
       delta: previousHealth - this.currentHealth,
@@ -75,7 +75,7 @@ export class HealthSystem extends Primitive {
     // Check for death
     if (this.currentHealth <= 0 && previousHealth > 0) {
       console.log(`[HealthSystem] Death! Emitting "${this.config.deathEvent}"`);
-      this.game.emit(this.config.deathEvent);
+      this.game.emitGame(this.config.deathEvent);
     }
   };
 
@@ -104,7 +104,7 @@ export class HealthSystem extends Primitive {
     );
 
     if (this.currentHealth !== previousHealth) {
-      this.game.emit("health_changed", {
+      this.game.emitGame("health_changed", {
         current: this.currentHealth,
         max: this.config.maxHealth,
         delta: this.currentHealth - previousHealth,
@@ -117,7 +117,7 @@ export class HealthSystem extends Primitive {
    */
   reset(): void {
     this.currentHealth = this.config.startHealth ?? this.config.maxHealth;
-    this.game.emit("health_changed", {
+    this.game.emitGame("health_changed", {
       current: this.currentHealth,
       max: this.config.maxHealth,
       delta: 0,
@@ -125,6 +125,6 @@ export class HealthSystem extends Primitive {
   }
 
   destroy(): void {
-    this.game.off(this.config.damageEvent, this.takeDamage);
+    this.game.offGame(this.config.damageEvent, this.takeDamage);
   }
 }

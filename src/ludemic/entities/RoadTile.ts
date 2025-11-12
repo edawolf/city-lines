@@ -134,15 +134,15 @@ export class RoadTile extends Container {
     super();
 
     // Extract road tile specific config
-    const roadConfig = (config.config as RoadTileConfig) ?? {};
+    const roadConfig = ((config.config as RoadTileConfig) ?? {}) as any;
     this.tileType = roadConfig.tileType ?? "straight";
     this.roadType = roadConfig.roadType ?? RoadType.LocalRoad;
     this.rotationDegrees = roadConfig.rotation ?? 0;
     this.rotatable = roadConfig.rotatable ?? true;
     this.gridPos = roadConfig.gridPos ?? { row: 0, col: 0 };
     this.tileSize = roadConfig.size ?? 80;
-    this.landmarkType = roadConfig.landmarkType;
-    this.customIcon = roadConfig.icon;
+    this.landmarkType = (roadConfig as any).landmarkType;
+    this.customIcon = (roadConfig as any).icon;
 
     // Create visual representation
     this.graphics = new Graphics();

@@ -1154,6 +1154,7 @@ export class ResponsiveDebugTest extends Container {
         anchorCluster.forEach((memberId: string, index: number) => {
           const element = this.elementRegistry.get(memberId);
           if (element && spreadPositions[index]) {
+            const oldPos = { x: element.x, y: element.y };
             const newPos = this.validatePosition(spreadPositions[index]);
 
             element.x = newPos.x;
