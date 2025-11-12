@@ -29,6 +29,7 @@ export enum RoadType {
  * Landmark types (service destinations)
  */
 export enum LandmarkType {
+  Home = "home",
   Diner = "diner",
   GasStation = "gas_station",
   Market = "market",
@@ -293,6 +294,8 @@ export class RoadTile extends Container {
 
     // Otherwise use landmark-specific icons
     switch (this.landmarkType) {
+      case LandmarkType.Home:
+        return "🏠";
       case LandmarkType.Diner:
         return "🍔"; // or 🍽️ for restaurant
       case LandmarkType.GasStation:
@@ -300,7 +303,7 @@ export class RoadTile extends Container {
       case LandmarkType.Market:
         return "🏪"; // or 🛒 for shopping cart
       default:
-        return "🏛️"; // Fallback
+        return "🏠"; // Fallback to home icon
     }
   }
 

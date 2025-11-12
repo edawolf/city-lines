@@ -61,6 +61,10 @@ export class GameContainer extends Container {
   private viewportWidth = 800;
   private viewportHeight = 600;
 
+  // Headlines system
+  private headlines: string[] = [];
+  private currentHeadlineIndex = 0;
+
   /**
    * Add an entity to the game
    */
@@ -306,6 +310,27 @@ export class GameContainer extends Container {
   }
 
   /**
+   * Set the headlines to reveal on level completion
+   */
+  setHeadlines(headlines: string[]): void {
+    this.headlines = headlines;
+    this.currentHeadlineIndex = 0;
+    console.log(`[GameContainer] Loaded ${headlines.length} headlines`);
+  }
+
+  /**
+   * Get the next headline (cycles through the list)
+   */
+  private getNextHeadline(): string {
+    if (this.headlines.length === 0) {
+      return "City connection restored!";
+    }
+    const headline = this.headlines[this.currentHeadlineIndex];
+    this.currentHeadlineIndex = (this.currentHeadlineIndex + 1) % this.headlines.length;
+    return headline;
+  }
+
+  /**
    * Set the health display UI component
    */
   setHealthDisplay(display: HealthDisplay): void {
@@ -427,8 +452,14 @@ export class GameContainer extends Container {
     this.currentLevel = level + 1;
     console.log(`[GameContainer] Level ${level} complete! Advancing to level ${this.currentLevel}`);
 
-    // Show level complete screen with current viewport dimensions
-    if (this.levelCompleteScreen) {
+    // Show headline instead of level complete screen
+    if (this.headlineDisplay) {
+      const headline = this.getNextHeadline();
+      const formattedHeadline = `This week: ${headline}`;
+      this.headlineDisplay.show(formattedHeadline);
+      console.log(`[GameContainer] Showing headline: ${formattedHeadline}`);
+    } else if (this.levelCompleteScreen) {
+      // Fallback to level complete screen if no headline display
       this.levelCompleteScreen.show(level, this.score, this.viewportWidth, this.viewportHeight);
     }
 
@@ -727,6 +758,11 @@ export class GameBuilder {
           game.setHeadlineDisplay(uiElement as HeadlineDisplay);
         }
       });
+    }
+
+    // Load headlines if provided in config
+    if ((config as any).headlines) {
+      game.setHeadlines((config as any).headlines);
     }
 
     return game;

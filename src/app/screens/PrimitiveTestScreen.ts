@@ -137,6 +137,24 @@ export class PrimitiveTestScreen extends Container {
         e.preventDefault();
         this.reloadLevel();
       }
+
+      // Number keys 1-4: Jump to specific level
+      if (e.code === "Digit1") {
+        e.preventDefault();
+        this.jumpToLevel(0);
+      }
+      if (e.code === "Digit2") {
+        e.preventDefault();
+        this.jumpToLevel(1);
+      }
+      if (e.code === "Digit3") {
+        e.preventDefault();
+        this.jumpToLevel(2);
+      }
+      if (e.code === "Digit4") {
+        e.preventDefault();
+        this.jumpToLevel(3);
+      }
     };
     window.addEventListener("keydown", this.keydownListener);
   }
@@ -238,6 +256,21 @@ export class PrimitiveTestScreen extends Container {
       // Update level info display
       this.levelInfoText.text = `Level ${levelIndex + 1}/${CityLinesLevelLoader.getLevelCount()} - ${levelConfig.name}`;
 
+      // Listen for path complete event to advance to next level (use once to avoid duplicates)
+      console.log(`[PrimitiveTestScreen] Attaching path_complete listener for level ${levelIndex + 1}`);
+      this.game.once("path_complete", () => {
+        console.log("[PrimitiveTestScreen] ✅ Path complete detected, advancing to next level");
+        setTimeout(() => {
+          const maxLevel = CityLinesLevelLoader.getLevelCount() - 1;
+          if (this.currentLevelIndex < maxLevel) {
+            console.log(`[PrimitiveTestScreen] Calling nextLevel() from ${this.currentLevelIndex + 1} to ${this.currentLevelIndex + 2}`);
+            this.nextLevel();
+          } else {
+            console.log("🎉 All levels complete!");
+          }
+        }, 3000); // Wait 3 seconds after level complete screen
+      });
+
       console.log(`✅ Loaded: ${levelConfig.name}`);
     } catch (error) {
       console.error(`❌ Failed to load level ${levelIndex + 1}:`, error);
@@ -278,6 +311,20 @@ export class PrimitiveTestScreen extends Container {
   private reloadLevel(): void {
     this.loadLevel(this.currentLevelIndex);
     console.log(`🔄 Reloaded level ${this.currentLevelIndex + 1}`);
+  }
+
+  /**
+   * Jump to specific level (0-indexed)
+   */
+  private jumpToLevel(levelIndex: number): void {
+    const maxLevel = CityLinesLevelLoader.getLevelCount() - 1;
+    if (levelIndex >= 0 && levelIndex <= maxLevel) {
+      this.currentLevelIndex = levelIndex;
+      this.loadLevel(this.currentLevelIndex);
+      console.log(`🎯 Jumped to level ${this.currentLevelIndex + 1}`);
+    } else {
+      console.log(`❌ Level ${levelIndex + 1} does not exist!`);
+    }
   }
 
   /**

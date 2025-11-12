@@ -33,6 +33,7 @@ export interface LevelData {
     landmarkType?: string;
     comment?: string;
   }>;
+  headlines?: string[]; // Optional array of headlines to reveal on level complete
 }
 
 /**
@@ -97,8 +98,6 @@ export class CityLinesLevelLoader {
 
     // Create full game config
     const gameConfig: GameConfig = {
-      name: `${levelData.name} (Level ${levelNumber})`,
-      description: levelData.description,
       viewport: {
         width: 800,
         height: 600,
@@ -127,12 +126,13 @@ export class CityLinesLevelLoader {
           id: "headline_manager",
           type: "GameManager",
           position: { x: 0, y: 0 },
+          config: {},
           primitives: [
             {
               type: "HeadlineReveal",
               config: {
                 triggerOn: "path_complete",
-                headlines: [
+                headlines: levelData.headlines || [
                   `🏗️ LEVEL ${levelNumber} COMPLETE: ${levelData.name}`,
                   "🚦 City Roads Successfully Connected!",
                   "🏘️ All Landmarks Now Accessible",
@@ -144,13 +144,15 @@ export class CityLinesLevelLoader {
       ],
       ui: [
         {
-          id: "headline_display",
           type: "HeadlineDisplay",
+          position: { x: 0, y: 0 },
           config: {},
         },
       ],
-      gridTiles,
-    };
+    } as any; // Cast to any to allow gridTiles property
+
+    // Add gridTiles to the config (needed by GameBuilder)
+    (gameConfig as any).gridTiles = gridTiles;
 
     console.log(`[CityLinesLevelLoader] Converted level ${levelNumber}: ${gridDimensions.rows}x${gridDimensions.cols} grid, ${gridTiles.length} tiles`);
 

@@ -36,7 +36,7 @@ export class LevelCompleteScreen extends Container {
 
     // Level info
     this.levelText = new Text({
-      text: "Level 1 Complete",
+      text: "We broke down the best and worst highways in New Jersey.",
       style: {
         fontSize: 32,
         fill: 0xffffff,

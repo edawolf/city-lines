@@ -31,8 +31,8 @@
       "col": 1,
       "tileType": "turnpike",
       "roadType": "turnpike",
-      "solutionRotation": 0,
-      "initialRotation": 0,
+      "solutionRotation": 90,
+      "initialRotation": 90,
       "rotatable": false,
       "comment": "Turnpike (fixed)"
     },
@@ -49,7 +49,7 @@
     {
       "row": 2,
       "col": 3,
-      "tileType": "corner",
+      "tileType": "t_junction",
       "roadType": "local_road",
       "solutionRotation": 180,
       "initialRotation": 90,
