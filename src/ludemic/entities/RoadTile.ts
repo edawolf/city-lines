@@ -58,6 +58,7 @@ export const CONNECTION_RULES: Record<RoadType, RoadType[]> = {
     RoadType.House,
     RoadType.ArterialRoad,
     RoadType.Landmark,
+    RoadType.Turnpike,
   ],
   [RoadType.ArterialRoad]: [
     RoadType.LocalRoad,
@@ -69,7 +70,7 @@ export const CONNECTION_RULES: Record<RoadType, RoadType[]> = {
     RoadType.Highway,
     RoadType.Turnpike,
   ],
-  [RoadType.Turnpike]: [RoadType.Highway, RoadType.Landmark],
+  [RoadType.Turnpike]: [RoadType.Highway, RoadType.Landmark, RoadType.LocalRoad],
   [RoadType.Landmark]: [RoadType.Turnpike, RoadType.LocalRoad],
 };
 

@@ -23,32 +23,32 @@
     {
       "row": 1,
       "col": 1,
-      "tileType": "straight",
+      "tileType": "corner",
       "roadType": "local_road",
-      "solutionRotation": 90,
-      "initialRotation": 0,
+      "solutionRotation": 0,
+      "initialRotation": 90,
       "rotatable": true,
-      "comment": "Road at (1,1)"
+      "comment": "Vertical segment connecting T upward"
     },
     {
       "row": 1,
       "col": 2,
       "tileType": "straight",
       "roadType": "local_road",
-      "solutionRotation": 90,
-      "initialRotation": 180,
+      "solutionRotation": 180,
+      "initialRotation": 0,
       "rotatable": true,
-      "comment": "Road at (1,2)"
+      "comment": "Top-left corner"
     },
     {
       "row": 1,
       "col": 3,
-      "tileType": "straight",
+      "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 90,
-      "initialRotation": 270,
+      "initialRotation": 0,
       "rotatable": true,
-      "comment": "Road at (1,3)"
+      "comment": "Top horizontal segment"
     },
     {
       "row": 2,
@@ -62,51 +62,41 @@
     },
     {
       "row": 2,
-      "col": 2,
+      "col": 3,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 0,
       "initialRotation": 90,
       "rotatable": true,
-      "comment": "Road at (2,2)"
-    },
-    {
-      "row": 2,
-      "col": 4,
-      "tileType": "straight",
-      "roadType": "local_road",
-      "solutionRotation": 0,
-      "initialRotation": 90,
-      "rotatable": true,
-      "comment": "Road at (2,4)"
+      "comment": "Right vertical segment"
     },
     {
       "row": 3,
-      "col": 4,
+      "col": 3,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 0,
       "initialRotation": 90,
       "rotatable": true,
-      "comment": "Road at (3,4)"
+      "comment": "Right vertical segment"
     },
     {
       "row": 4,
-      "col": 4,
+      "col": 3,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 0,
-      "initialRotation": 90,
+      "initialRotation": 0,
       "rotatable": true,
-      "comment": "Road at (4,4)"
+      "comment": "Right vertical segment"
     },
     {
       "row": 5,
       "col": 1,
       "tileType": "landmark",
       "roadType": "landmark",
-      "solutionRotation": 0,
-      "initialRotation": 0,
+      "solutionRotation": 90,
+      "initialRotation": 90,
       "rotatable": false,
       "landmarkType": "home",
       "comment": "Home landmark (fixed)"
@@ -117,19 +107,19 @@
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 90,
-      "initialRotation": 0,
+      "initialRotation": 180,
       "rotatable": true,
-      "comment": "Road at (5,2)"
+      "comment": "Bottom-left corner from H"
     },
     {
       "row": 5,
       "col": 3,
-      "tileType": "straight",
+      "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 90,
-      "initialRotation": 180,
+      "initialRotation": 0,
       "rotatable": true,
-      "comment": "Road at (5,3)"
+      "comment": "Bottom horizontal segment"
     }
   ]
 }
