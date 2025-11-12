@@ -7,6 +7,8 @@ import { Paddle2 } from "./Paddle2";
 import { Ball } from "./Ball";
 import { Block } from "./Block";
 import { GameManager } from "./GameManager";
+import { RoadTile } from "./RoadTile";
+import { CityGrid } from "./CityGrid";
 
 /**
  * EntityFactory
@@ -72,3 +74,7 @@ EntityFactory.register("Paddle2", Paddle2);
 EntityFactory.register("Ball", Ball);
 EntityFactory.register("Block", Block);
 EntityFactory.register("GameManager", GameManager);
+
+// City Lines entities
+EntityFactory.register("RoadTile", RoadTile);
+EntityFactory.register("CityGrid", CityGrid);

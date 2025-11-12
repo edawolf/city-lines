@@ -47,36 +47,25 @@ export class PrimitiveTestScreen extends Container {
     // Show instructions
     this.instructions = new Text({
       text:
-        "LUDEMIC PRIMITIVE TEST - COMPLETE GAME LIFECYCLE!\n\n" +
+        "🏙️ CITY LINES - Ludemic Primitive Test\n\n" +
         "Controls:\n" +
-        "  ← → : Move paddle left/right\n" +
-        "  A D : Alternative movement\n" +
-        "  SPACE : Restart game (on game over)\n\n" +
+        "  Click/Tap tiles to rotate them 90°\n\n" +
+        "Goal:\n" +
+        "  Connect the house (red) to the landmark (green)\n" +
+        "  using road tiles\n\n" +
         "This demonstrates:\n" +
-        "  • InputMovement primitive (LISA: INPUT + MOVE)\n" +
-        "  • LinearMovement primitive (LISA: MOVE)\n" +
-        "  • BounceCollision primitive (LISA: COLLIDE)\n" +
-        "  • DestroyCollision primitive (LISA: COLLIDE + KILL)\n" +
-        "  • PointsOnDestroy primitive (LISA: REWARD)\n" +
-        "  🎆 ParticleEmitter primitive (LISA: JUICE + DISPLAY)\n" +
-        "  💥 ScreenShake primitive (LISA: JUICE)\n" +
-        "  🔊 SoundTrigger primitive (LISA: SOUND)\n" +
-        "  🚀 SpeedScaling primitive (LISA: ESCALATE)\n" +
-        "  🔥 ComboMultiplier primitive (LISA: EXTEND + ESCALATE)\n" +
-        "  ❤️ HealthSystem primitive (LISA: STATE + MANAGE)\n" +
-        "  🎯 BoundaryTrigger primitive (LISA: DETECT + TRIGGER)\n" +
-        "  📊 LevelManager primitive (LISA: MANAGE + PROGRESS)\n\n" +
-        "NEW! Complete Game Lifecycle:\n" +
-        "  - 3 Lives shown as hearts in top-center\n" +
-        "  - Lose a life when ball hits bottom\n" +
-        "  - Clear all blocks to advance to next level\n" +
-        "  - High score tracking across sessions\n" +
-        "  - Game over screen with final stats\n" +
-        "  - Level complete screen between levels\n\n" +
-        "Try editing public/config/breakout-complete.json:\n" +
-        "  - Adjust starting health\n" +
-        "  - Change boundary triggers\n" +
-        "  - Modify difficulty progression",
+        "  🔄 RotateOnClick primitive (LISA: INPUT + ROT)\n" +
+        "  🗺️ PathValidator (LISA: COLLIDE + CMP + LINK)\n" +
+        "  🏗️ CityGrid container (LISA: LINK + DISPLAY + TRIG)\n" +
+        "  🛣️ Road type hierarchy validation\n\n" +
+        "Watch the console for:\n" +
+        "  - Connection graph updates\n" +
+        "  - Path validation results\n" +
+        "  - Success when all landmarks connect!\n\n" +
+        "Try editing public/config/city-lines-minimal.json:\n" +
+        "  - Add more tiles\n" +
+        "  - Change grid size\n" +
+        "  - Add turnpikes and highways",
       style: {
         fontSize: 13,
         fill: 0xffffff,
@@ -91,58 +80,29 @@ export class PrimitiveTestScreen extends Container {
     // Load game from config
     try {
       this.game = await GameBuilder.fromFile(
-        "config/breakout-complete.json",
-        this.tuningSystem, // Pass tuning system so primitives can register listeners during init()
+        "config/city-lines-minimal.json",
+        this.tuningSystem,
       );
 
-      console.log("🎮 GAME CONTAINER CREATED:", {
-        scale: this.game.scale,
-        position: { x: this.game.x, y: this.game.y },
-        visible: this.game.visible,
-        alpha: this.game.alpha,
-      });
-
+      console.log("🏙️ CITY LINES GAME CREATED");
       this.addChild(this.game);
 
-      console.log(
-        "🔍 DEBUG: Game container children count:",
-        this.game.children.length,
-      );
-      console.log(
-        "🔍 DEBUG: Game container children:",
-        this.game.children.map((c: any) => c.constructor.name),
-      );
+      // Initialize grid with current viewport size
+      const cityGrid = this.game.getEntityById('city_grid');
+      if (cityGrid && 'resize' in cityGrid && typeof cityGrid.resize === 'function') {
+        (cityGrid as any).resize(this.screenWidth, this.screenHeight);
+        console.log(`🏙️ Initial grid resize to ${this.screenWidth}x${this.screenHeight}`);
+      }
 
-      // Debug paddle and ball specifically
-      const paddle = this.game.children[0];
-      const ball = this.game.children[1];
-      console.log("🔍 DEBUG Paddle:", {
-        position: { x: paddle.x, y: paddle.y },
-        visible: paddle.visible,
-        alpha: paddle.alpha,
-        bounds: paddle.getBounds(),
-        children: paddle.children.length,
-      });
-      console.log("🔍 DEBUG Ball:", {
-        position: { x: ball.x, y: ball.y },
-        visible: ball.visible,
-        alpha: ball.alpha,
-        bounds: ball.getBounds(),
-        children: ball.children.length,
-      });
+      // Initialize HeadlineDisplay with current viewport size
+      const headlineDisplay = this.game.getHeadlineDisplay();
+      if (headlineDisplay && 'resize' in headlineDisplay && typeof headlineDisplay.resize === 'function') {
+        (headlineDisplay as any).resize(this.screenWidth, this.screenHeight);
+      }
 
-      // Initialize lifecycle with dimensions
-      this.game.initializeLifecycle(
-        await (await fetch("config/breakout-complete.json")).json(),
-        this.screenWidth,
-        this.screenHeight,
-      );
-
-      console.log("✅ Game loaded from config/breakout-complete.json");
-      console.log(
-        "🎮 COMPLETE GAME: Full lifecycle with health, lives, and level progression!",
-      );
-      console.log("🎆 Particle effects enabled");
+      console.log("✅ Game loaded from config/city-lines-minimal.json");
+      console.log("🔄 Click tiles to rotate them!");
+      console.log("🗺️ Watch console for path validation");
       console.log("💥 Screen shake enabled");
       console.log("🔊 Sound triggers enabled (if audio assets loaded)");
       console.log("🚀 Speed scaling enabled (ball speeds up on destruction)");
@@ -202,7 +162,7 @@ export class PrimitiveTestScreen extends Container {
   }
 
   /**
-   * Handle window resize - center the game canvas
+   * Handle window resize - responsive layout for City Lines
    */
   resize(width: number, height: number): void {
     this.screenWidth = width;
@@ -214,36 +174,19 @@ export class PrimitiveTestScreen extends Container {
     }
 
     if (this.game) {
-      // Game is designed for 800x600
-      const gameWidth = 800;
-      const gameHeight = 600;
+      // City Lines uses responsive percentage-based layout
+      // Tell CityGrid to resize based on viewport
+      const cityGrid = this.game.getEntityById('city_grid');
+      if (cityGrid && 'resize' in cityGrid && typeof cityGrid.resize === 'function') {
+        (cityGrid as any).resize(width, height);
+        console.log(`🏙️ City Lines resized to ${width}x${height}`);
+      }
 
-      // Scale game to fit screen while maintaining aspect ratio
-      const scaleX = width / gameWidth;
-      const scaleY = height / gameHeight;
-      const scale = Math.min(scaleX, scaleY, 1); // Don't scale up, only down
-
-      console.log(`🎮 GAME SCALE:`, {
-        screenSize: { width, height },
-        gameSize: { width: gameWidth, height: gameHeight },
-        scaleX,
-        scaleY,
-        finalScale: scale,
-        currentGameScale: this.game.scale.x,
-      });
-
-      this.game.scale.set(scale, scale);
-
-      // Center the scaled game
-      const scaledWidth = gameWidth * scale;
-      const scaledHeight = gameHeight * scale;
-      this.game.x = (width - scaledWidth) / 2;
-      this.game.y = (height - scaledHeight) / 2;
-
-      console.log(`🎮 GAME POSITION:`, {
-        position: { x: this.game.x, y: this.game.y },
-        scaledSize: { width: scaledWidth, height: scaledHeight },
-      });
+      // Resize HeadlineDisplay
+      const headlineDisplay = this.game.getHeadlineDisplay();
+      if (headlineDisplay && 'resize' in headlineDisplay && typeof headlineDisplay.resize === 'function') {
+        (headlineDisplay as any).resize(width, height);
+      }
     }
 
     // HTML tuning controls don't need resize handling (handled by CSS)

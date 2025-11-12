@@ -1,0 +1,158 @@
+{
+  "name": "City Lines - Minimal Test",
+  "description": "Simple 4x4 grid test level with turnpike and landmarks (RESPONSIVE)",
+  "viewport": {
+    "width": 800,
+    "height": 600
+  },
+  "entities": [
+    {
+      "id": "city_grid",
+      "type": "CityGrid",
+      "position": { "x": 0, "y": 0 },
+      "config": {
+        "rows": 4,
+        "cols": 4,
+        "backgroundColor": "0x1a1a2e",
+        "uiConfig": {
+          "position": {
+            "x": 50,
+            "y": 50
+          },
+          "size": {
+            "width": 60,
+            "height": 60
+          },
+          "tileCount": {
+            "rows": 4,
+            "cols": 4
+          },
+          "padding": {
+            "all": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "headline_manager",
+      "type": "GameManager",
+      "position": { "x": 0, "y": 0 },
+      "primitives": [
+        {
+          "type": "HeadlineReveal",
+          "config": {
+            "triggerOn": "path_complete",
+            "headlines": [
+              "🏗️ BREAKING: New Road Connection Restores East Side Access",
+              "🚦 City Council Approves $2M for Traffic Light Restoration",
+              "🏘️ Residents Celebrate as Neighborhood Routes Reconnect"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "ui": [
+    {
+      "id": "headline_display",
+      "type": "HeadlineDisplay",
+      "config": {
+        "uiConfig": {
+          "position": { "x": 50, "y": 10 },
+          "text": "",
+          "fontSizePercent": 3,
+          "color": "0xFFFFFF",
+          "align": "center",
+          "anchor": { "x": 0.5, "y": 0.5 }
+        },
+        "backgroundAlpha": 0.9,
+        "padding": 2,
+        "typewriterSpeed": 30,
+        "displayDuration": 5,
+        "fadeInDuration": 0.5,
+        "fadeOutDuration": 0.5
+      }
+    }
+  ],
+  "gridTiles": [
+    {
+      "row": 0,
+      "col": 1,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "landmarkType": "diner",
+      "rotation": 180,
+      "rotatable": false,
+      "comment": "🍔 Diner - connects South"
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "rotation": 90,
+      "rotatable": true,
+      "solutionRotation": 0,
+      "comment": "Local road - WRONG: horizontal, CORRECT: vertical (0°)"
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "tileType": "t_junction",
+      "roadType": "arterial_road",
+      "rotation": 180,
+      "rotatable": true,
+      "solutionRotation": 0,
+      "comment": "Arterial T-junction - WRONG: ┴, CORRECT: ┬ (0°) N+E+W"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "tileType": "t_junction",
+      "roadType": "highway",
+      "rotation": 0,
+      "rotatable": true,
+      "solutionRotation": 90,
+      "comment": "Highway T-junction - WRONG: ┬, CORRECT: ├ (90°) E+S+W"
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "tileType": "corner",
+      "roadType": "arterial_road",
+      "rotation": 180,
+      "rotatable": true,
+      "solutionRotation": 270,
+      "comment": "Arterial corner - WRONG: S→W, CORRECT: N→W (270°)"
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "rotation": 90,
+      "rotatable": true,
+      "solutionRotation": 0,
+      "comment": "Local road - WRONG: horizontal, CORRECT: vertical (0°)"
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "landmarkType": "gas_station",
+      "rotation": 180,
+      "rotatable": false,
+      "comment": "⛽ Gas Station - connects South"
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "tileType": "turnpike",
+      "roadType": "turnpike",
+      "rotation": 0,
+      "rotatable": false,
+      "comment": "🚧 Turnpike - N-S straight (fixed)"
+    }
+  ]
+}

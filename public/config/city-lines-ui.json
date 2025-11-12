@@ -1,0 +1,61 @@
+{
+  "name": "City Lines - Responsive UI",
+  "description": "Percentage-based responsive layout for City Lines puzzle game",
+
+  "grid": {
+    "position": {
+      "x": 50,
+      "y": 50
+    },
+    "size": {
+      "width": 60,
+      "height": 60
+    },
+    "tileCount": {
+      "rows": 4,
+      "cols": 4
+    },
+    "padding": {
+      "all": 2
+    },
+    "backgroundColor": "0x1a1a2e"
+  },
+
+  "texts": {
+    "title": {
+      "position": {
+        "x": 50,
+        "y": 8
+      },
+      "text": "City Lines",
+      "fontSizePercent": 5,
+      "color": "0xffffff",
+      "align": "center",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    },
+    "instructions": {
+      "position": {
+        "x": 50,
+        "y": 92
+      },
+      "text": "Click tiles to rotate • Connect house to landmark",
+      "fontSizePercent": 2,
+      "color": "0xaaaaaa",
+      "align": "center",
+      "anchor": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  },
+
+  "safeArea": {
+    "top": 5,
+    "bottom": 5,
+    "left": 5,
+    "right": 5
+  }
+}

@@ -1,0 +1,304 @@
+# Responsive UI Configuration - Mandatory Rule
+
+**CRITICAL: ALL UI elements MUST use percentage-based positioning. NO hardcoded pixels allowed.**
+
+## Core Principle
+
+**EVERYTHING in City Lines uses percentage-based responsive layout.**
+
+From this point forward:
+- ❌ **NEVER** hardcode pixel positions (`x: 150`, `y: 100`)
+- ❌ **NEVER** hardcode pixel sizes (`width: 800`, `height: 600`)
+- ✅ **ALWAYS** use percentages (`x: 50`, `y: 50` = center of screen)
+- ✅ **ALWAYS** define UI via `uiConfig` with percentage values
+
+---
+
+## UIConfig System
+
+All UI elements use the UIConfig type system:
+
+```typescript
+import type { GridUIConfig, TextUIConfig, ButtonUIConfig } from "../config/UIConfig";
+import { percentToPx, percentSizeToPx, responsiveFontSize } from "../config/UIConfig";
+```
+
+### Grid Elements
+
+```json
+{
+  "config": {
+    "uiConfig": {
+      "position": { "x": 50, "y": 50 },      // 50% from left, 50% from top (CENTER)
+      "size": { "width": 60, "height": 60 }  // 60% of viewport
+    }
+  }
+}
+```
+
+### Text Elements
+
+```json
+{
+  "texts": {
+    "title": {
+      "position": { "x": 50, "y": 10 },      // Center horizontal, 10% from top
+      "fontSizePercent": 5,                   // 5% of viewport width
+      "text": "City Lines",
+      "align": "center",
+      "anchor": { "x": 0.5, "y": 0.5 }
+    }
+  }
+}
+```
+
+### Button Elements
+
+```json
+{
+  "buttons": {
+    "restart": {
+      "position": { "x": 50, "y": 90 },      // Center bottom
+      "size": { "width": 20, "height": 8 },  // 20% wide, 8% tall
+      "fontSizePercent": 3,
+      "text": "Restart"
+    }
+  }
+}
+```
+
+---
+
+## Implementation Pattern
+
+### Step 1: Define UIConfig Type
+Every new UI component needs a config interface:
+
+```typescript
+export interface MyComponentUIConfig {
+  position: PercentPosition;
+  size?: PercentSize;
+  fontSizePercent?: number;
+  // ... component-specific properties
+}
+```
+
+### Step 2: Accept UIConfig in Constructor
+
+```typescript
+export interface MyComponentConfig {
+  // ... other config
+  uiConfig?: MyComponentUIConfig;  // Always optional with fallback
+}
+
+constructor(config: EntityConfig) {
+  super();
+  this.config = (config.config as MyComponentConfig) ?? {};
+  // Don't position here - wait for resize()
+}
+```
+
+### Step 3: Implement Resize Method
+
+```typescript
+resize(width: number, height: number): void {
+  if (this.config.uiConfig) {
+    // Convert percentages to pixels
+    const pos = percentToPx(this.config.uiConfig.position, width, height);
+    this.position.set(pos.x, pos.y);
+
+    if (this.config.uiConfig.size) {
+      const size = percentSizeToPx(this.config.uiConfig.size, width, height);
+      // Update component size
+    }
+
+    if (this.config.uiConfig.fontSizePercent) {
+      const fontSize = responsiveFontSize(
+        this.config.uiConfig.fontSizePercent,
+        width
+      );
+      // Update font size
+    }
+  }
+}
+```
+
+### Step 4: Wire Resize Call
+
+In PrimitiveTestScreen or parent container:
+
+```typescript
+resize(width: number, height: number): void {
+  // Call resize on all child components
+  const component = this.game.getEntityById('my_component');
+  if (component && 'resize' in component) {
+    (component as any).resize(width, height);
+  }
+}
+```
+
+---
+
+## Utility Functions
+
+Always use these helpers from `UIConfig.ts`:
+
+```typescript
+// Convert percentage position to pixels
+const pos = percentToPx({ x: 50, y: 50 }, viewportWidth, viewportHeight);
+// Result: { x: 400, y: 300 } for 800x600 viewport
+
+// Convert percentage size to pixels
+const size = percentSizeToPx({ width: 60, height: 60 }, viewportWidth, viewportHeight);
+// Result: { width: 480, height: 360 } for 800x600 viewport
+
+// Calculate responsive font size
+const fontSize = responsiveFontSize(5, viewportWidth);
+// Result: 40px for 800px viewport (5% of 800)
+
+// Calculate responsive spacing
+const spacing = responsiveSpacing(10, viewportWidth);
+// Result: 80px for 800px viewport (10% of 800)
+```
+
+---
+
+## JSON Configuration Pattern
+
+### Game Config Structure
+
+```json
+{
+  "name": "City Lines - Level 1",
+  "viewport": {
+    "width": 800,
+    "height": 600
+  },
+  "entities": [
+    {
+      "id": "city_grid",
+      "type": "CityGrid",
+      "position": { "x": 0, "y": 0 },  // Ignored - uiConfig takes precedence
+      "config": {
+        "rows": 4,
+        "cols": 4,
+        "uiConfig": {
+          "position": { "x": 50, "y": 50 },
+          "size": { "width": 60, "height": 60 }
+        }
+      }
+    }
+  ]
+}
+```
+
+---
+
+## Common Percentage Values
+
+### Positions (0-100)
+- `x: 0` - Left edge
+- `x: 50` - Center horizontal
+- `x: 100` - Right edge
+- `y: 0` - Top edge
+- `y: 50` - Center vertical
+- `y: 100` - Bottom edge
+
+### Sizes (0-100)
+- `width: 100` - Full viewport width
+- `width: 60` - 60% of viewport (good for game grids)
+- `width: 20` - 20% of viewport (good for buttons)
+- `height: 80` - 80% of viewport (leaves space for UI)
+
+### Font Sizes (0-10 typical)
+- `2` - Small text (instructions, labels)
+- `3` - Medium text (buttons)
+- `5` - Large text (titles)
+- `8` - Huge text (hero text)
+
+### Safe Areas (Mobile)
+```json
+{
+  "safeArea": {
+    "top": 5,     // 5% from top (notches)
+    "bottom": 5,  // 5% from bottom (home bar)
+    "left": 5,    // 5% from sides
+    "right": 5
+  }
+}
+```
+
+---
+
+## Testing Responsive Layout
+
+### Browser Testing
+1. Resize browser window
+2. Check DevTools responsive mode (Ctrl+Shift+M / Cmd+Shift+M)
+3. Test mobile sizes: 375x667, 768x1024, 1920x1080
+
+### Console Validation
+Look for resize logs:
+```
+[CityGrid] 📐 Resized to 800x600, tile size: 72px
+🏙️ City Lines resized to 800x600
+```
+
+### Visual Checklist
+- ✅ Elements stay centered
+- ✅ Proportions maintained
+- ✅ Text scales readably
+- ✅ No overflow or clipping
+- ✅ Touch targets large enough (min 44px)
+
+---
+
+## Migration from Hardcoded Pixels
+
+If you find hardcoded pixels in existing code:
+
+### Before (BAD)
+```json
+{
+  "position": { "x": 400, "y": 300 },
+  "config": {
+    "width": 480,
+    "height": 360
+  }
+}
+```
+
+### After (GOOD)
+```json
+{
+  "position": { "x": 0, "y": 0 },
+  "config": {
+    "uiConfig": {
+      "position": { "x": 50, "y": 50 },
+      "size": { "width": 60, "height": 60 }
+    }
+  }
+}
+```
+
+---
+
+## Enforcement
+
+**This is not a suggestion - this is MANDATORY.**
+
+- All PRs with hardcoded pixels will be rejected
+- All new UI elements must use UIConfig
+- All existing hardcoded values must be migrated
+- No exceptions without explicit approval
+
+**The goal: City Lines works perfectly on ANY screen size, from mobile to 4K.**
+
+---
+
+## Reference Files
+
+- `src/ludemic/config/UIConfig.ts` - Type definitions and utilities
+- `public/config/city-lines-ui.json` - Example UI config
+- `public/config/city-lines-minimal.json` - Game config example
+- `src/ludemic/entities/CityGrid.ts` - Reference implementation

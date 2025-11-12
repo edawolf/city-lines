@@ -12,6 +12,8 @@ import { ComboMultiplier } from "./difficulty/ComboMultiplier";
 import { HealthSystem } from "./gameplay/HealthSystem";
 import { BoundaryTrigger } from "./gameplay/BoundaryTrigger";
 import { LevelManager } from "./gameplay/LevelManager";
+import { RotateOnClick } from "./grid/RotateOnClick";
+import { HeadlineReveal } from "./narrative/HeadlineReveal";
 
 /**
  * PrimitiveFactory
@@ -101,3 +103,9 @@ PrimitiveFactory.register("ComboMultiplier", ComboMultiplier);
 PrimitiveFactory.register("HealthSystem", HealthSystem);
 PrimitiveFactory.register("BoundaryTrigger", BoundaryTrigger);
 PrimitiveFactory.register("LevelManager", LevelManager);
+
+// Grid primitives (City Lines)
+PrimitiveFactory.register("RotateOnClick", RotateOnClick);
+
+// Narrative primitives (City Lines - Phase 2)
+PrimitiveFactory.register("HeadlineReveal", HeadlineReveal);

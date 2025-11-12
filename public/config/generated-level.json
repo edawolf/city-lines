@@ -1,0 +1,97 @@
+{
+  "name": "Generated Level",
+  "description": "Procedurally generated City Lines level",
+  "viewport": {
+    "width": 800,
+    "height": 600
+  },
+  "entities": [
+    {
+      "id": "city_grid",
+      "type": "CityGrid",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "config": {
+        "rows": 4,
+        "cols": 4,
+        "backgroundColor": "0x1a1a2e"
+      }
+    }
+  ],
+  "gridTiles": [
+    {
+      "row": 0,
+      "col": 1,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "rotation": 180,
+      "rotatable": false,
+      "solutionRotation": 180,
+      "landmarkType": "diner",
+      "comment": "Landmark 1"
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "rotation": 180,
+      "rotatable": false,
+      "solutionRotation": 180,
+      "landmarkType": "gas_station",
+      "comment": "Landmark 2"
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "tileType": "t_junction",
+      "roadType": "local_road",
+      "rotation": 0,
+      "rotatable": true,
+      "solutionRotation": 90,
+      "comment": "t_junction (1,1)"
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "tileType": "t_junction",
+      "roadType": "local_road",
+      "rotation": 270,
+      "rotatable": true,
+      "solutionRotation": 270,
+      "comment": "t_junction (1,2)"
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "tileType": "corner",
+      "roadType": "arterial_road",
+      "rotation": 270,
+      "rotatable": true,
+      "solutionRotation": 0,
+      "comment": "corner (2,1)"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "tileType": "t_junction",
+      "roadType": "arterial_road",
+      "rotation": 90,
+      "rotatable": true,
+      "solutionRotation": 270,
+      "comment": "T-junction (upgraded)"
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "tileType": "turnpike",
+      "roadType": "turnpike",
+      "rotation": 0,
+      "rotatable": false,
+      "solutionRotation": 0,
+      "comment": "🚧 Turnpike (fixed)"
+    }
+  ]
+}
