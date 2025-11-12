@@ -1,0 +1,122 @@
+{
+  "name": "Level 2",
+  "description": "C-shaped path with two landmarks",
+  "difficulty": "easy",
+  "gridDimensions": {
+    "rows": 6,
+    "cols": 6
+  },
+  "turnpike": {
+    "row": 2,
+    "col": 1,
+    "rotation": 0
+  },
+  "landmarks": [
+    {
+      "row": 1,
+      "col": 3,
+      "landmarkType": "home",
+      "rotation": 0
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "landmarkType": "diner",
+      "rotation": 0
+    }
+  ],
+  "tiles": [
+    {
+      "row": 2,
+      "col": 1,
+      "tileType": "turnpike",
+      "roadType": "turnpike",
+      "solutionRotation": 0,
+      "initialRotation": 0,
+      "rotatable": false,
+      "comment": "Turnpike (fixed)"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Horizontal road"
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 180,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Corner up"
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 180,
+      "initialRotation": 180,
+      "rotatable": false,
+      "landmarkType": "home",
+      "comment": "Home landmark (fixed)"
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Horizontal road"
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 270,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Corner down"
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Vertical road"
+    },
+    {
+      "row": 4,
+      "col": 5,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Corner left"
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 90,
+      "initialRotation": 90,
+      "rotatable": false,
+      "landmarkType": "diner",
+      "comment": "Diner landmark (fixed)"
+    }
+  ]
+}

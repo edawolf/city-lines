@@ -57,6 +57,10 @@ export class GameContainer extends Container {
     "playing";
   private gameConfig?: GameConfig;
 
+  // Viewport dimensions (updated on resize)
+  private viewportWidth = 800;
+  private viewportHeight = 600;
+
   /**
    * Add an entity to the game
    */
@@ -340,9 +344,28 @@ export class GameContainer extends Container {
   }
 
   /**
+   * Update viewport dimensions (called on resize)
+   */
+  updateViewport(width: number, height: number): void {
+    this.viewportWidth = width;
+    this.viewportHeight = height;
+
+    // Resize modal screens if they're currently visible
+    if (this.gameOverScreen?.visible) {
+      this.gameOverScreen.resize(width, height);
+    }
+    if (this.levelCompleteScreen?.visible) {
+      this.levelCompleteScreen.resize(width, height);
+    }
+  }
+
+  /**
    * Initialize game lifecycle systems
    */
   initializeLifecycle(config: GameConfig, width: number, height: number): void {
+    // Store initial viewport dimensions
+    this.viewportWidth = width;
+    this.viewportHeight = height;
     this.gameConfig = config;
     this.loadHighScore();
 
@@ -354,14 +377,14 @@ export class GameContainer extends Container {
 
     // Listen for player death
     this.on("player_died", () => {
-      this.handleGameOver(width, height);
+      this.handleGameOver();
     });
 
     // Listen for level complete
     this.on(
       "level_complete",
       (data: { level: number; blocksCleared: number }) => {
-        this.handleLevelComplete(data.level, width, height);
+        this.handleLevelComplete(data.level);
       },
     );
   }
@@ -369,7 +392,7 @@ export class GameContainer extends Container {
   /**
    * Handle game over
    */
-  private handleGameOver(width: number, height: number): void {
+  private handleGameOver(): void {
     if (this.gameState === "game_over") return;
 
     this.gameState = "game_over";
@@ -382,14 +405,14 @@ export class GameContainer extends Container {
       console.log(`[GameContainer] New high score: ${this.highScore}`);
     }
 
-    // Show game over screen
+    // Show game over screen with current viewport dimensions
     if (this.gameOverScreen) {
       this.gameOverScreen.show(
         this.score,
         this.currentLevel,
         this.highScore,
-        width,
-        height,
+        this.viewportWidth,
+        this.viewportHeight,
       );
     }
   }
@@ -397,20 +420,16 @@ export class GameContainer extends Container {
   /**
    * Handle level complete
    */
-  private handleLevelComplete(
-    level: number,
-    width: number,
-    height: number,
-  ): void {
+  private handleLevelComplete(level: number): void {
     if (this.gameState !== "playing") return;
 
     this.gameState = "level_complete";
     this.currentLevel = level + 1;
     console.log(`[GameContainer] Level ${level} complete! Advancing to level ${this.currentLevel}`);
 
-    // Show level complete screen
+    // Show level complete screen with current viewport dimensions
     if (this.levelCompleteScreen) {
-      this.levelCompleteScreen.show(level, this.score, width, height);
+      this.levelCompleteScreen.show(level, this.score, this.viewportWidth, this.viewportHeight);
     }
 
     // Regenerate level after delay
@@ -473,6 +492,10 @@ export class GameContainer extends Container {
    */
   restart(width: number, height: number): void {
     console.log("[GameContainer] Restarting game");
+
+    // Update viewport dimensions
+    this.viewportWidth = width;
+    this.viewportHeight = height;
 
     // Hide screens
     if (this.gameOverScreen) {

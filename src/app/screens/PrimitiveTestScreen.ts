@@ -5,6 +5,7 @@ import { GameBuilder, type GameContainer } from "../../ludemic/GameBuilder";
 import { LayoutIntentCompiler } from "../layout/LayoutIntent";
 import { TuningSystem } from "../../ludemic/tuning/TuningSystem";
 import { TuningControls } from "../../ludemic/tuning/TuningControls";
+import { CityLinesLevelLoader } from "../../ludemic/levels/CityLinesLevelLoader";
 
 /**
  * PrimitiveTestScreen
@@ -29,6 +30,8 @@ export class PrimitiveTestScreen extends Container {
   private keydownListener?: (e: KeyboardEvent) => void;
   private tuningSystem: TuningSystem;
   private tuningControls!: TuningControls;
+  private currentLevelIndex = 0; // Track current level (0-based)
+  private levelInfoText!: Text; // Display current level info
 
   constructor() {
     super();
@@ -77,44 +80,27 @@ export class PrimitiveTestScreen extends Container {
     this.instructions.visible = false; // Hide instructions - game is self-explanatory
     this.addChild(this.instructions);
 
-    // Load game from config
+    // Add level info display at top
+    this.levelInfoText = new Text({
+      text: "Loading level...",
+      style: {
+        fontSize: 20,
+        fill: 0xFFFFFF,
+        fontWeight: "bold",
+      },
+    });
+    this.levelInfoText.anchor.set(0.5, 0);
+    this.addChild(this.levelInfoText);
+
+    // Load first level
     try {
-      this.game = await GameBuilder.fromFile(
-        "config/city-lines-minimal.json",
-        this.tuningSystem,
-      );
-
+      await this.loadLevel(this.currentLevelIndex);
       console.log("🏙️ CITY LINES GAME CREATED");
-      this.addChild(this.game);
 
-      // Initialize grid with current viewport size
-      const cityGrid = this.game.getEntityById('city_grid');
-      if (cityGrid && 'resize' in cityGrid && typeof cityGrid.resize === 'function') {
-        (cityGrid as any).resize(this.screenWidth, this.screenHeight);
-        console.log(`🏙️ Initial grid resize to ${this.screenWidth}x${this.screenHeight}`);
-      }
-
-      // Initialize HeadlineDisplay with current viewport size
-      const headlineDisplay = this.game.getHeadlineDisplay();
-      if (headlineDisplay && 'resize' in headlineDisplay && typeof headlineDisplay.resize === 'function') {
-        (headlineDisplay as any).resize(this.screenWidth, this.screenHeight);
-      }
-
-      console.log("✅ Game loaded from config/city-lines-minimal.json");
+      console.log("✅ Level loaded successfully");
       console.log("🔄 Click tiles to rotate them!");
       console.log("🗺️ Watch console for path validation");
-      console.log("💥 Screen shake enabled");
-      console.log("🔊 Sound triggers enabled (if audio assets loaded)");
-      console.log("🚀 Speed scaling enabled (ball speeds up on destruction)");
-      console.log("🔥 Combo multiplier enabled (2s window, max 5x multiplier)");
-      console.log("❤️ Health system enabled (3 lives)");
-      console.log("🎯 Boundary trigger enabled (lose life on ball out)");
-      console.log("📊 Level manager enabled (progress through levels)");
-      console.log("💾 High score tracking enabled (saved in localStorage)");
-      console.log("🎮 Press ~ (tilde) to open Tuning Knobs menu");
-
-      // Create HTML-based tuning controls
-      this.tuningControls = new TuningControls(this.tuningSystem);
+      console.log(`⬅️➡️ Press LEFT/RIGHT arrows to change levels (Level ${this.currentLevelIndex + 1}/${CityLinesLevelLoader.getLevelCount()})`);
     } catch (error) {
       console.error("❌ Failed to load game config:", error);
 
@@ -132,19 +118,24 @@ export class PrimitiveTestScreen extends Container {
       this.addChild(errorText);
     }
 
-    // Add keyboard listener for restart and tuning menu
+    // Add keyboard listener for level navigation
     this.keydownListener = (e: KeyboardEvent) => {
-      // Space to restart on game over
-      if (e.code === "Space" && this.game.getGameState() === "game_over") {
-        this.game.restart(this.screenWidth, this.screenHeight);
+      // Left arrow: Previous level
+      if (e.code === "ArrowLeft") {
+        e.preventDefault();
+        this.previousLevel();
       }
 
-      // Tilde (~) or Backquote (`) to toggle tuning menu
-      if (e.code === "Backquote") {
+      // Right arrow: Next level
+      if (e.code === "ArrowRight") {
         e.preventDefault();
-        if (this.tuningControls) {
-          this.tuningControls.toggle();
-        }
+        this.nextLevel();
+      }
+
+      // R key: Reload current level
+      if (e.code === "KeyR") {
+        e.preventDefault();
+        this.reloadLevel();
       }
     };
     window.addEventListener("keydown", this.keydownListener);
@@ -173,23 +164,120 @@ export class PrimitiveTestScreen extends Container {
       this.background.clear().rect(0, 0, width, height).fill(0x1e1e1e);
     }
 
+    // Position level info at top center
+    if (this.levelInfoText) {
+      this.levelInfoText.position.set(width / 2, 20);
+    }
+
     if (this.game) {
+      // Update game container viewport dimensions (for modals)
+      this.game.updateViewport(width, height);
+
       // City Lines uses responsive percentage-based layout
       // Tell CityGrid to resize based on viewport
-      const cityGrid = this.game.getEntityById('city_grid');
-      if (cityGrid && 'resize' in cityGrid && typeof cityGrid.resize === 'function') {
+      const cityGrid = this.game.getEntityById("city_grid");
+      if (
+        cityGrid &&
+        "resize" in cityGrid &&
+        typeof cityGrid.resize === "function"
+      ) {
         (cityGrid as any).resize(width, height);
         console.log(`🏙️ City Lines resized to ${width}x${height}`);
       }
 
       // Resize HeadlineDisplay
       const headlineDisplay = this.game.getHeadlineDisplay();
-      if (headlineDisplay && 'resize' in headlineDisplay && typeof headlineDisplay.resize === 'function') {
+      if (
+        headlineDisplay &&
+        "resize" in headlineDisplay &&
+        typeof headlineDisplay.resize === "function"
+      ) {
         (headlineDisplay as any).resize(width, height);
       }
     }
+  }
 
-    // HTML tuning controls don't need resize handling (handled by CSS)
+  /**
+   * Load a specific level
+   */
+  private async loadLevel(levelIndex: number): Promise<void> {
+    // Remove existing game
+    if (this.game) {
+      this.removeChild(this.game);
+      this.game.destroy();
+    }
+
+    try {
+      // Load level config
+      const levelConfig = await CityLinesLevelLoader.loadLevel(levelIndex);
+
+      // Create game from config
+      this.game = await GameBuilder.fromConfig(levelConfig, this.tuningSystem);
+      this.addChild(this.game);
+
+      // Initialize grid with current viewport size
+      const cityGrid = this.game.getEntityById("city_grid");
+      if (
+        cityGrid &&
+        "resize" in cityGrid &&
+        typeof cityGrid.resize === "function"
+      ) {
+        (cityGrid as any).resize(this.screenWidth, this.screenHeight);
+      }
+
+      // Initialize HeadlineDisplay with current viewport size
+      const headlineDisplay = this.game.getHeadlineDisplay();
+      if (
+        headlineDisplay &&
+        "resize" in headlineDisplay &&
+        typeof headlineDisplay.resize === "function"
+      ) {
+        (headlineDisplay as any).resize(this.screenWidth, this.screenHeight);
+      }
+
+      // Update level info display
+      this.levelInfoText.text = `Level ${levelIndex + 1}/${CityLinesLevelLoader.getLevelCount()} - ${levelConfig.name}`;
+
+      console.log(`✅ Loaded: ${levelConfig.name}`);
+    } catch (error) {
+      console.error(`❌ Failed to load level ${levelIndex + 1}:`, error);
+      this.levelInfoText.text = `Error loading level ${levelIndex + 1}`;
+    }
+  }
+
+  /**
+   * Load next level
+   */
+  private nextLevel(): void {
+    const maxLevel = CityLinesLevelLoader.getLevelCount() - 1;
+    if (this.currentLevelIndex < maxLevel) {
+      this.currentLevelIndex++;
+      this.loadLevel(this.currentLevelIndex);
+      console.log(`➡️ Next level: ${this.currentLevelIndex + 1}`);
+    } else {
+      console.log("Already at last level!");
+    }
+  }
+
+  /**
+   * Load previous level
+   */
+  private previousLevel(): void {
+    if (this.currentLevelIndex > 0) {
+      this.currentLevelIndex--;
+      this.loadLevel(this.currentLevelIndex);
+      console.log(`⬅️ Previous level: ${this.currentLevelIndex + 1}`);
+    } else {
+      console.log("Already at first level!");
+    }
+  }
+
+  /**
+   * Reload current level
+   */
+  private reloadLevel(): void {
+    this.loadLevel(this.currentLevelIndex);
+    console.log(`🔄 Reloaded level ${this.currentLevelIndex + 1}`);
   }
 
   /**

@@ -626,6 +626,89 @@ CreationEngine
 
 ---
 
+## UI Component Architecture - CRITICAL RULES
+
+### ALL UI Components MUST Use UI_CONFIG
+
+**MANDATORY:** Every UI component (HeadlineDisplay, ScoreDisplay, ComboDisplay, etc.) MUST:
+
+1. **Read from centralized UI_CONFIG** - All percentages live in one file
+2. **Use percentage-based values** - No hardcoded pixel dimensions
+3. **Students modify UI_CONFIG, not component code** - One place to change all layouts
+4. **Follow TypeScript interfaces** - Type safety via UIConfig.ts interfaces
+
+### Why This Architecture Matters
+
+- **Students see ALL values in ONE place** - `src/ludemic/config/ui-config.ts`
+- **Consistency** - All UI follows same pattern
+- **Composability** - UI components are data-driven like primitives
+- **Mobile-first** - Responsive by default
+- **Centralized control** - Change modal width globally in one line
+
+### The Two-File System
+
+**1. `ui-config.ts` - THE SOURCE OF TRUTH (students edit this)**
+```typescript
+export const UI_CONFIG = {
+  HEADLINE_MODAL: {
+    widthPercent: 0.90,        // ← Students change this to 0.80, 0.95, etc.
+    fontSizePercent: 0.025,
+    paddingPercent: 0.02,
+    backgroundAlpha: 0.9
+  },
+  LEVEL_COMPLETE_SCREEN: {
+    title: {
+      fontSizePercent: 0.07,   // ← Change all title sizes here
+      minFontSize: 24,
+      maxFontSize: 56
+    }
+  }
+}
+```
+
+**2. `UIConfig.ts` - TypeScript type definitions (don't edit)**
+- Contains interfaces (ModalUIConfig, TextUIConfig, etc.)
+- Provides utility functions (responsiveFontSize, percentToPx)
+- Type safety only - no configuration values
+
+### Component Usage Pattern
+
+**WRONG (hardcoded):**
+```typescript
+const modalWidth = this.viewportWidth * 0.9; // ❌ Hardcoded percentage
+```
+
+**RIGHT (reading from UI_CONFIG):**
+```typescript
+import { UI_CONFIG } from '../config/ui-config';
+
+const modalWidth = this.viewportWidth * UI_CONFIG.HEADLINE_MODAL.widthPercent; // ✅ From centralized config
+```
+
+### Example: HeadlineDisplay Implementation
+
+```typescript
+// Read all values from UI_CONFIG
+const config = UI_CONFIG.HEADLINE_MODAL;
+const modalWidth = this.viewportWidth * config.widthPercent;
+const padding = this.viewportWidth * config.paddingPercent;
+const fontSize = responsiveFontSize(
+  config.fontSizePercent * 100, // Convert 0.025 to 2.5%
+  this.viewportWidth,
+  config.minFontSize,
+  config.maxFontSize
+);
+```
+
+### Benefits of Centralized Config
+
+- **Single source of truth** - All modal widths defined in one section
+- **Easy experimentation** - Students change one number, see results everywhere
+- **No code diving** - Students never need to open component .ts files
+- **Consistent scaling** - All components use same percentage system
+
+---
+
 ## Layout System Architecture
 
 ### Three-Layer Layout System

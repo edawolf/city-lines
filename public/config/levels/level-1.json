@@ -1,0 +1,135 @@
+{
+  "name": "Level 1",
+  "description": "Tutorial: Connect the house to the turnpike",
+  "difficulty": "easy",
+  "gridDimensions": {
+    "rows": 7,
+    "cols": 5
+  },
+  "turnpike": {
+    "row": 2,
+    "col": 1,
+    "rotation": 0
+  },
+  "landmarks": [
+    {
+      "row": 5,
+      "col": 1,
+      "landmarkType": "home",
+      "rotation": 0
+    }
+  ],
+  "tiles": [
+    {
+      "row": 1,
+      "col": 1,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Road at (1,1)"
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Road at (1,2)"
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Road at (1,3)"
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "tileType": "turnpike",
+      "roadType": "turnpike",
+      "solutionRotation": 0,
+      "initialRotation": 0,
+      "rotatable": false,
+      "comment": "Turnpike (fixed)"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Road at (2,2)"
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Road at (2,4)"
+    },
+    {
+      "row": 3,
+      "col": 4,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Road at (3,4)"
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Road at (4,4)"
+    },
+    {
+      "row": 5,
+      "col": 1,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 0,
+      "initialRotation": 0,
+      "rotatable": false,
+      "landmarkType": "home",
+      "comment": "Home landmark (fixed)"
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Road at (5,2)"
+    },
+    {
+      "row": 5,
+      "col": 3,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Road at (5,3)"
+    }
+  ]
+}

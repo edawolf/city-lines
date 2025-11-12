@@ -1,0 +1,202 @@
+{
+  "name": "Level 4",
+  "description": "Complex maze with tight passages",
+  "difficulty": "hard",
+  "gridDimensions": {
+    "rows": 8,
+    "cols": 8
+  },
+  "turnpike": {
+    "row": 6,
+    "col": 5,
+    "rotation": 0
+  },
+  "landmarks": [
+    {
+      "row": 2,
+      "col": 5,
+      "landmarkType": "home",
+      "rotation": 0
+    },
+    {
+      "row": 6,
+      "col": 1,
+      "landmarkType": "gas_station",
+      "rotation": 0
+    }
+  ],
+  "tiles": [
+    {
+      "row": 6,
+      "col": 5,
+      "tileType": "turnpike",
+      "roadType": "turnpike",
+      "solutionRotation": 0,
+      "initialRotation": 0,
+      "rotatable": false,
+      "comment": "Turnpike (fixed)"
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Vertical road"
+    },
+    {
+      "row": 4,
+      "col": 5,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Corner right and down"
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Horizontal road"
+    },
+    {
+      "row": 4,
+      "col": 7,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 180,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Corner up and left"
+    },
+    {
+      "row": 3,
+      "col": 7,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Vertical road"
+    },
+    {
+      "row": 2,
+      "col": 7,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Corner left and up"
+    },
+    {
+      "row": 2,
+      "col": 6,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 270,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Corner down and left"
+    },
+    {
+      "row": 2,
+      "col": 5,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 90,
+      "initialRotation": 90,
+      "rotatable": false,
+      "landmarkType": "home",
+      "comment": "Home landmark (fixed)"
+    },
+    {
+      "row": 3,
+      "col": 6,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Vertical road"
+    },
+    {
+      "row": 4,
+      "col": 6,
+      "tileType": "t_junction",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "T-junction branching"
+    },
+    {
+      "row": 4,
+      "col": 4,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Corner"
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Horizontal road"
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 180,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Corner"
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Vertical road"
+    },
+    {
+      "row": 6,
+      "col": 2,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Corner"
+    },
+    {
+      "row": 6,
+      "col": 1,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 90,
+      "initialRotation": 90,
+      "rotatable": false,
+      "landmarkType": "gas_station",
+      "comment": "Gas station landmark (fixed)"
+    }
+  ]
+}

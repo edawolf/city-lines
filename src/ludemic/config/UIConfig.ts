@@ -9,6 +9,10 @@
  * - Everything relative to viewport
  * - Mobile-first scaling
  * - Semantic positioning
+ *
+ * ARCHITECTURE RULE: ALL UI components MUST use these config interfaces.
+ * No hardcoded dimensions allowed - everything comes from JSON configuration.
+ * This ensures students can modify game UI by editing config files, not code.
  */
 
 /**
@@ -75,6 +79,16 @@ export interface ButtonUIConfig {
   fontSizePercent: number;
   color?: string;
   hoverColor?: string;
+}
+
+/**
+ * Modal/Overlay configuration
+ * Used for HeadlineDisplay, notifications, dialogs, etc.
+ */
+export interface ModalUIConfig extends TextUIConfig {
+  widthPercent: number; // Modal width as % of viewport (e.g., 90 for 90%)
+  backgroundAlpha?: number; // Background transparency (0-1)
+  paddingPercent?: number; // Padding as % of modal width
 }
 
 /**

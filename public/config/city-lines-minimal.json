@@ -56,22 +56,7 @@
     {
       "id": "headline_display",
       "type": "HeadlineDisplay",
-      "config": {
-        "uiConfig": {
-          "position": { "x": 50, "y": 15 },
-          "text": "",
-          "fontSizePercent": 2.5,
-          "color": "0xFFFFFF",
-          "align": "center",
-          "anchor": { "x": 0.5, "y": 0.5 }
-        },
-        "backgroundAlpha": 0.9,
-        "padding": 2,
-        "typewriterSpeed": 30,
-        "displayDuration": 5,
-        "fadeInDuration": 0.5,
-        "fadeOutDuration": 0.5
-      }
+      "config": {}
     }
   ],
   "gridTiles": [

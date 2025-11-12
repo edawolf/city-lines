@@ -1,0 +1,196 @@
+{
+  "name": "Level 3",
+  "description": "S-shaped branching paths with four landmarks",
+  "difficulty": "medium",
+  "gridDimensions": {
+    "rows": 7,
+    "cols": 7
+  },
+  "turnpike": {
+    "row": 3,
+    "col": 1,
+    "rotation": 0
+  },
+  "landmarks": [
+    {
+      "row": 1,
+      "col": 2,
+      "landmarkType": "home",
+      "rotation": 0
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "landmarkType": "gas_station",
+      "rotation": 0
+    },
+    {
+      "row": 5,
+      "col": 1,
+      "landmarkType": "diner",
+      "rotation": 0
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "landmarkType": "home",
+      "rotation": 0
+    }
+  ],
+  "tiles": [
+    {
+      "row": 3,
+      "col": 1,
+      "tileType": "turnpike",
+      "roadType": "turnpike",
+      "solutionRotation": 0,
+      "initialRotation": 0,
+      "rotatable": false,
+      "comment": "Turnpike (fixed)"
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "tileType": "t_junction",
+      "roadType": "local_road",
+      "solutionRotation": 270,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "T-junction branching up and down"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 180,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Corner up"
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 180,
+      "initialRotation": 180,
+      "rotatable": false,
+      "landmarkType": "home",
+      "comment": "Home landmark (fixed)"
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Horizontal road"
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 270,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Corner down"
+    },
+    {
+      "row": 1,
+      "col": 4,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Horizontal road"
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 90,
+      "initialRotation": 90,
+      "rotatable": false,
+      "landmarkType": "gas_station",
+      "comment": "Gas station landmark (fixed)"
+    },
+    {
+      "row": 4,
+      "col": 2,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Corner right"
+    },
+    {
+      "row": 4,
+      "col": 3,
+      "tileType": "t_junction",
+      "roadType": "local_road",
+      "solutionRotation": 180,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "T-junction branching down and sides"
+    },
+    {
+      "row": 5,
+      "col": 3,
+      "tileType": "t_junction",
+      "roadType": "local_road",
+      "solutionRotation": 270,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "T-junction branching left and down"
+    },
+    {
+      "row": 5,
+      "col": 2,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Corner left"
+    },
+    {
+      "row": 5,
+      "col": 1,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 90,
+      "initialRotation": 90,
+      "rotatable": false,
+      "landmarkType": "diner",
+      "comment": "Diner landmark (fixed)"
+    },
+    {
+      "row": 5,
+      "col": 4,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 270,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Corner down"
+    },
+    {
+      "row": 5,
+      "col": 5,
+      "tileType": "landmark",
+      "roadType": "landmark",
+      "solutionRotation": 0,
+      "initialRotation": 0,
+      "rotatable": false,
+      "landmarkType": "home",
+      "comment": "Home landmark (fixed)"
+    }
+  ]
+}

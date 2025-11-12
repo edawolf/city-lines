@@ -1,4 +1,5 @@
 import { Container, Graphics, Text } from "pixi.js";
+import { UI_CONFIG } from "../config/ui-config";
 
 /**
  * LevelCompleteScreen UI Overlay
@@ -80,27 +81,63 @@ export class LevelCompleteScreen extends Container {
     this.background
       .clear()
       .rect(0, 0, width, height)
-      .fill({ color: 0x000000, alpha: 0.7 });
+      .fill({
+        color: 0x000000,
+        alpha: UI_CONFIG.LEVEL_COMPLETE_SCREEN.backgroundAlpha,
+      });
 
     // Update texts
     this.levelText.text = `Level ${level} Complete!`;
     this.scoreText.text = `Current Score: ${score}`;
 
+    // Responsive font sizes from UI_CONFIG
+    const titleConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.title;
+    const levelConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.levelText;
+    const scoreConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.scoreText;
+    const instructionConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.instructionText;
+
+    this.titleText.style.fontSize = Math.max(
+      titleConfig.minFontSize,
+      Math.min(titleConfig.maxFontSize, width * titleConfig.fontSizePercent),
+    );
+    this.levelText.style.fontSize = Math.max(
+      levelConfig.minFontSize,
+      Math.min(levelConfig.maxFontSize, width * levelConfig.fontSizePercent),
+    );
+    this.scoreText.style.fontSize = Math.max(
+      scoreConfig.minFontSize,
+      Math.min(scoreConfig.maxFontSize, width * scoreConfig.fontSizePercent),
+    );
+    this.instructionText.style.fontSize = Math.max(
+      instructionConfig.minFontSize,
+      Math.min(
+        instructionConfig.maxFontSize,
+        width * instructionConfig.fontSizePercent,
+      ),
+    );
+
     // Position elements
     const centerX = width / 2;
     const centerY = height / 2;
 
-    this.titleText.position.set(centerX, centerY - 80);
-    this.levelText.position.set(centerX, centerY - 10);
-    this.scoreText.position.set(centerX, centerY + 40);
-    this.instructionText.position.set(centerX, centerY + 100);
+    // Use offsets from UI_CONFIG
+    const titleOffset = height * titleConfig.offsetFromCenterPercent;
+    const levelOffset = height * levelConfig.offsetFromCenterPercent;
+    const scoreOffset = height * scoreConfig.offsetFromCenterPercent;
+    const instructionOffset =
+      height * instructionConfig.offsetFromCenterPercent;
+
+    this.titleText.position.set(centerX, centerY - titleOffset);
+    this.levelText.position.set(centerX, centerY - levelOffset);
+    this.scoreText.position.set(centerX, centerY + scoreOffset);
+    this.instructionText.position.set(centerX, centerY + instructionOffset);
 
     this.visible = true;
 
-    // Auto-hide after 2 seconds
+    // Auto-hide after configured duration
     setTimeout(() => {
       this.hide();
-    }, 2000);
+    }, UI_CONFIG.LEVEL_COMPLETE_SCREEN.displayDuration * 1000);
 
     // Animate title
     this.animateTitle();
@@ -111,6 +148,63 @@ export class LevelCompleteScreen extends Container {
    */
   hide(): void {
     this.visible = false;
+  }
+
+  /**
+   * Resize level complete screen (responsive layout)
+   */
+  resize(width: number, height: number): void {
+    if (!this.visible) return; // Only resize if currently visible
+
+    // Redraw background with new dimensions
+    this.background
+      .clear()
+      .rect(0, 0, width, height)
+      .fill({
+        color: 0x000000,
+        alpha: UI_CONFIG.LEVEL_COMPLETE_SCREEN.backgroundAlpha,
+      });
+
+    // Responsive font sizes from UI_CONFIG
+    const titleConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.title;
+    const levelConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.levelText;
+    const scoreConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.scoreText;
+    const instructionConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.instructionText;
+
+    this.titleText.style.fontSize = Math.max(
+      titleConfig.minFontSize,
+      Math.min(titleConfig.maxFontSize, width * titleConfig.fontSizePercent),
+    );
+    this.levelText.style.fontSize = Math.max(
+      levelConfig.minFontSize,
+      Math.min(levelConfig.maxFontSize, width * levelConfig.fontSizePercent),
+    );
+    this.scoreText.style.fontSize = Math.max(
+      scoreConfig.minFontSize,
+      Math.min(scoreConfig.maxFontSize, width * scoreConfig.fontSizePercent),
+    );
+    this.instructionText.style.fontSize = Math.max(
+      instructionConfig.minFontSize,
+      Math.min(
+        instructionConfig.maxFontSize,
+        width * instructionConfig.fontSizePercent,
+      ),
+    );
+
+    // Reposition elements at new center with offsets from UI_CONFIG
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    const titleOffset = height * titleConfig.offsetFromCenterPercent;
+    const levelOffset = height * levelConfig.offsetFromCenterPercent;
+    const scoreOffset = height * scoreConfig.offsetFromCenterPercent;
+    const instructionOffset =
+      height * instructionConfig.offsetFromCenterPercent;
+
+    this.titleText.position.set(centerX, centerY - titleOffset);
+    this.levelText.position.set(centerX, centerY - levelOffset);
+    this.scoreText.position.set(centerX, centerY + scoreOffset);
+    this.instructionText.position.set(centerX, centerY + instructionOffset);
   }
 
   /**

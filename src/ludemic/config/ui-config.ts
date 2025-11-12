@@ -1,0 +1,143 @@
+/**
+ * UI Configuration - City Lines Game
+ * All values are percentages (0.0 to 1.0) relative to screen dimensions
+ *
+ * ARCHITECTURE RULE: ALL UI components MUST read from this config.
+ * Students can modify layouts by editing these values, not component code.
+ */
+
+export const UI_CONFIG = {
+  /**
+   * HeadlineDisplay Modal (News headline reveals)
+   */
+  HEADLINE_MODAL: {
+    // Modal sizing
+    widthPercent: 0.9, // 90% of screen width
+    paddingPercent: 0.02, // 2% padding as percentage of viewport
+    backgroundAlpha: 0.9, // Semi-transparent background
+
+    // Text styling
+    fontSizePercent: 0.025, // 2.5% of viewport width
+    minFontSize: 16, // Minimum font size in pixels
+    maxFontSize: 36, // Maximum font size in pixels
+
+    // Text wrapping (percentage of modal width)
+    textWrapPercent: 0.85, // 85% of modal width for text
+
+    // Animation timing
+    typewriterSpeed: 30, // Characters per second
+    displayDuration: 5, // Seconds to show headline
+    fadeInDuration: 0.5, // Fade in time in seconds
+    fadeOutDuration: 0.5, // Fade out time in seconds
+  },
+
+  /**
+   * Level Complete Screen (Breakout game completion)
+   */
+  LEVEL_COMPLETE_SCREEN: {
+    // Background
+    backgroundAlpha: 0.7, // Semi-transparent dark overlay
+
+    // Title "LEVEL COMPLETE!"
+    title: {
+      fontSizePercent: 0.07, // 7% of viewport width
+      minFontSize: 24,
+      maxFontSize: 56,
+      offsetFromCenterPercent: 0.13, // 13% above center
+    },
+
+    // Level number text
+    levelText: {
+      fontSizePercent: 0.04, // 4% of viewport width
+      minFontSize: 18,
+      maxFontSize: 32,
+      offsetFromCenterPercent: 0.02, // 2% above center
+    },
+
+    // Score display
+    scoreText: {
+      fontSizePercent: 0.03, // 3% of viewport width
+      minFontSize: 14,
+      maxFontSize: 24,
+      offsetFromCenterPercent: -0.07, // 7% below center (negative = down)
+    },
+
+    // Instructions text
+    instructionText: {
+      fontSizePercent: 0.025, // 2.5% of viewport width
+      minFontSize: 12,
+      maxFontSize: 20,
+      offsetFromCenterPercent: -0.17, // 17% below center
+    },
+
+    // Auto-hide duration
+    displayDuration: 2.0, // Seconds before auto-hiding
+  },
+
+  /**
+   * Game Over Screen (Breakout game over)
+   */
+  GAME_OVER_SCREEN: {
+    // Background
+    backgroundAlpha: 0.8, // Semi-transparent dark overlay
+
+    // Title "GAME OVER"
+    title: {
+      fontSizePercent: 0.08, // 8% of viewport width
+      minFontSize: 28,
+      maxFontSize: 64,
+      offsetFromCenterPercent: 0.2, // 20% above center
+    },
+
+    // Final score text
+    scoreText: {
+      fontSizePercent: 0.04, // 4% of viewport width
+      minFontSize: 18,
+      maxFontSize: 32,
+      offsetFromCenterPercent: 0.07, // 7% above center
+    },
+
+    // Level reached text
+    levelText: {
+      fontSizePercent: 0.03, // 3% of viewport width
+      minFontSize: 14,
+      maxFontSize: 24,
+      offsetFromCenterPercent: -0.02, // 2% below center
+    },
+
+    // High score text
+    highScoreText: {
+      fontSizePercent: 0.03, // 3% of viewport width
+      minFontSize: 14,
+      maxFontSize: 24,
+      offsetFromCenterPercent: -0.08, // 8% below center
+    },
+
+    // Instruction text "Press SPACE to restart"
+    instructionText: {
+      fontSizePercent: 0.025, // 2.5% of viewport width
+      minFontSize: 12,
+      maxFontSize: 20,
+      offsetFromCenterPercent: -0.2, // 20% below center
+    },
+  },
+
+  /**
+   * Common spacing values
+   */
+  SPACING: {
+    // Modal padding
+    modalPaddingPercent: 0.02, // 2% of viewport
+
+    // Button spacing
+    buttonGapPercent: 0.02, // 2% gap between buttons
+
+    // Text line height
+    lineHeightMultiplier: 1.5, // 1.5x font size for line height
+  },
+} as const;
+
+/**
+ * Type-safe access to UI config
+ */
+export type UIConfigType = typeof UI_CONFIG;
