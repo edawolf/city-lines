@@ -2,6 +2,11 @@
   "name": "Level 1",
   "description": "Tutorial: Connect the house to the turnpike",
   "difficulty": "easy",
+  "headlines": [
+    "🏗️ BREAKING: New Road Connection Restores East Side Access",
+    "🚦 City Council Approves $2M for Traffic Light Restoration",
+    "🏘️ Residents Celebrate as Neighborhood Routes Reconnect"
+  ],
   "gridDimensions": {
     "rows": 7,
     "cols": 5

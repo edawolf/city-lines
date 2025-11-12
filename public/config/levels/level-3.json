@@ -2,6 +2,12 @@
   "name": "Level 3",
   "description": "S-shaped branching paths with four landmarks",
   "difficulty": "medium",
+  "headlines": [
+    "🚗 Morning Commute Times Drop 40% Thanks to Road Repairs",
+    "🏪 Local Businesses Report Sales Surge After Route Opens",
+    "🌳 New Bike Lanes Added Along Restored Arterial Roads",
+    "🎉 City Marks Milestone: 50% of Grid Network Operational"
+  ],
   "gridDimensions": {
     "rows": 7,
     "cols": 7

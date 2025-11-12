@@ -12,7 +12,7 @@ export const UI_CONFIG = {
    */
   HEADLINE_MODAL: {
     // Modal sizing
-    widthPercent: 0.9, // 90% of screen width
+    widthPercent: 0.7, // 90% of screen width
     paddingPercent: 0.02, // 2% padding as percentage of viewport
     backgroundAlpha: 0.9, // Semi-transparent background
 
@@ -22,7 +22,7 @@ export const UI_CONFIG = {
     maxFontSize: 36, // Maximum font size in pixels
 
     // Text wrapping (percentage of modal width)
-    textWrapPercent: 0.85, // 85% of modal width for text
+    textWrapPercent: 0.75, // 85% of modal width for text
 
     // Animation timing
     typewriterSpeed: 30, // Characters per second

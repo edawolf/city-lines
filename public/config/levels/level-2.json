@@ -2,6 +2,11 @@
   "name": "Level 2",
   "description": "C-shaped path with two landmarks",
   "difficulty": "easy",
+  "headlines": [
+    "🚌 Public Transit Service Returns After 6-Month Delay",
+    "🏛️ Historic Landmark Now Accessible Via Newly Opened Route",
+    "📰 Mayor Announces Phase 2 of Infrastructure Revival Plan"
+  ],
   "gridDimensions": {
     "rows": 6,
     "cols": 6
