@@ -122,7 +122,7 @@ export class RotateOnClick extends Primitive {
     this.entity.scale.set(1, 1);
   };
 
-  update(deltaTime: number): void {
+  update(_deltaTime: number): void {
     // No per-frame updates needed for click interaction
   }
 

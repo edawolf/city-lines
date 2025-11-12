@@ -55,7 +55,7 @@ export class BounceCollision extends Primitive {
     }
   }
 
-  update(deltaTime: number): void {
+  update(_deltaTime: number): void {
     // Lazily get game container (parent is set after init)
     if (!this.game && this.entity.parent) {
       this.game = this.entity.parent as GameContainer;

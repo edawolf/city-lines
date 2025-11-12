@@ -1,5 +1,5 @@
 import type { RoadTile } from "../entities/RoadTile";
-import { Direction, CONNECTION_RULES } from "../entities/RoadTile";
+import { Direction } from "../entities/RoadTile";
 
 /**
  * PathValidator

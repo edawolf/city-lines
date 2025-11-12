@@ -6,7 +6,6 @@
  */
 
 import type { TuningSystem } from "./TuningSystem";
-import type { TuningParameters } from "./TuningConfig";
 import { TUNING_CATEGORIES } from "./TuningConfig";
 
 export class TuningControls {

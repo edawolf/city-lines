@@ -50,7 +50,7 @@ export class PointsOnDestroy extends Primitive {
     this.boundHandler = this.handleDestroy.bind(this);
   }
 
-  update(deltaTime: number): void {
+  update(_deltaTime: number): void {
     // Lazily get game container and register event listener
     if (!this.game && this.entity.parent) {
       this.game = this.entity.parent as GameContainer;

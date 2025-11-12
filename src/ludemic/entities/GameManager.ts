@@ -18,7 +18,7 @@ export class GameManager extends Container {
   private primitives: Primitive[] = [];
   private primitiveMap = new Map<string, Primitive>();
 
-  constructor(config: EntityConfig) {
+  constructor(_config: EntityConfig) {
     super();
 
     // GameManager is invisible

@@ -56,7 +56,7 @@ export class DestroyCollision extends Primitive {
     // Game container will be set lazily in update
   }
 
-  update(deltaTime: number): void {
+  update(_deltaTime: number): void {
     // Skip if already destroyed
     if (this.destroyed) return;
 

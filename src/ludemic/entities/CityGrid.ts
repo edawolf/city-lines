@@ -321,7 +321,7 @@ export class CityGrid extends Container {
   /**
    * Debug: Highlight a specific path
    */
-  public highlightPath(path: RoadTile[], color: number = 0xffff00): void {
+  public highlightPath(path: RoadTile[], _color: number = 0xffff00): void {
     path.forEach((tile) => {
       tile.alpha = 0.8;
       // Could add glow effect here
@@ -436,7 +436,7 @@ export class CityGrid extends Container {
   /**
    * Update - no per-frame logic needed yet
    */
-  update(deltaTime: number): void {
+  update(_deltaTime: number): void {
     // Future: animate connections, update visual effects
   }
 

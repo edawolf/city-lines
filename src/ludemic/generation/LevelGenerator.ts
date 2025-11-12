@@ -157,7 +157,7 @@ export class LevelGenerator {
    * Place landmarks around the grid edges
    */
   private placeLandmarks(): GeneratedTile[] {
-    const { rows, cols } = this.config.gridSize;
+    const { cols } = this.config.gridSize;
     const landmarks: GeneratedTile[] = [];
     const landmarkTypes = [
       LandmarkType.Diner,
@@ -200,7 +200,7 @@ export class LevelGenerator {
     to: GeneratedTile,
   ): GeneratedTile[] {
     const path: GeneratedTile[] = [from];
-    let current = { row: from.row, col: from.col };
+    const current = { row: from.row, col: from.col };
 
     // Simple path: go down towards turnpike
     while (current.row < to.row - 1) {

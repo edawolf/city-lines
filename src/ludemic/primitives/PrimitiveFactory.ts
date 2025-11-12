@@ -1,4 +1,4 @@
-import type { Primitive, PrimitiveConfig } from "./Primitive";
+import type { Primitive } from "./Primitive";
 import { InputMovement } from "./movement/InputMovement";
 import { LinearMovement } from "./movement/LinearMovement";
 import { BounceCollision } from "./collision/BounceCollision";
