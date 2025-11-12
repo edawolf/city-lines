@@ -224,46 +224,53 @@ export class HeadlineDisplay extends Container {
     this.viewportWidth = width;
     this.viewportHeight = height;
 
-    // Get safe viewport area (5% margin for mobile notches, etc.)
-    const safeViewport = getSafeViewport(width, height, { all: 5 });
+    // Get safe viewport area (10% margin on mobile for notches/status bars)
+    const isMobile = width < 768;
+    const safeMargin = isMobile ? 10 : 5; // Larger margin on mobile
+    const safeViewport = getSafeViewport(width, height, { all: safeMargin });
 
-    // Position based on percentage (clamped to safe area)
-    const requestedPos = percentToPx(
-      this.config.uiConfig.position,
-      width,
-      height,
-    );
-
-    // Clamp position to safe viewport
-    const clampedX = Math.max(
-      safeViewport.x + 50,
-      Math.min(safeViewport.x + safeViewport.width - 50, requestedPos.x),
-    );
-    const clampedY = Math.max(
-      safeViewport.y + 30,
-      Math.min(safeViewport.y + safeViewport.height - 30, requestedPos.y),
-    );
-
-    this.position.set(clampedX, clampedY);
-
-    // Update font size (clamped to safe range)
+    // Calculate font size first (needed for positioning)
     const fontSize = responsiveFontSize(
       this.config.uiConfig.fontSizePercent,
       width,
-      14, // Min font size for readability
-      48, // Max font size to prevent overflow
+      isMobile ? 16 : 14, // Larger min font on mobile
+      isMobile ? 32 : 48, // Smaller max font on mobile to prevent overflow
     );
     this.headlineText.style.fontSize = fontSize;
 
-    // Update word wrap width (use safe viewport width - margins)
-    const maxTextWidth = safeViewport.width * 0.85; // 85% of safe area
-    this.headlineText.style.wordWrapWidth = Math.max(200, maxTextWidth); // Min 200px
+    // Update word wrap width (use safe viewport width)
+    const maxTextWidth = safeViewport.width * (isMobile ? 0.9 : 0.85);
+    this.headlineText.style.wordWrapWidth = Math.max(200, maxTextWidth);
+
+    // Position based on percentage WITHIN safe viewport (not full viewport)
+    const requestedPosPercent = this.config.uiConfig.position;
+
+    // Convert percentage to position within SAFE viewport
+    const posInSafeViewport = {
+      x: safeViewport.x + (requestedPosPercent.x / 100) * safeViewport.width,
+      y: safeViewport.y + (requestedPosPercent.y / 100) * safeViewport.height,
+    };
+
+    // Add extra buffer based on estimated text height
+    const estimatedTextHeight = fontSize * 3; // Estimate 3 lines max
+    const minY = safeViewport.y + estimatedTextHeight / 2 + 20; // 20px top buffer
+    const maxY =
+      safeViewport.y + safeViewport.height - estimatedTextHeight / 2 - 20;
+
+    // Clamp position to safe viewport with text height consideration
+    const clampedX = Math.max(
+      safeViewport.x + 50,
+      Math.min(safeViewport.x + safeViewport.width - 50, posInSafeViewport.x),
+    );
+    const clampedY = Math.max(minY, Math.min(maxY, posInSafeViewport.y));
+
+    this.position.set(clampedX, clampedY);
 
     // Redraw background
     this.drawBackground();
 
     console.log(
-      `[HeadlineDisplay] 📐 Resized: viewport ${width}x${height}, safe area ${safeViewport.width}x${safeViewport.height}, font ${fontSize}px`,
+      `[HeadlineDisplay] 📐 Resized: viewport ${width}x${height}, safe area ${safeViewport.width}x${safeViewport.height}, font ${fontSize}px, pos (${Math.round(clampedX)}, ${Math.round(clampedY)})`,
     );
   }
 

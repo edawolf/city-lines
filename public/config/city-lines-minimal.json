@@ -58,9 +58,9 @@
       "type": "HeadlineDisplay",
       "config": {
         "uiConfig": {
-          "position": { "x": 50, "y": 10 },
+          "position": { "x": 50, "y": 15 },
           "text": "",
-          "fontSizePercent": 3,
+          "fontSizePercent": 2.5,
           "color": "0xFFFFFF",
           "align": "center",
           "anchor": { "x": 0.5, "y": 0.5 }
