@@ -42,7 +42,8 @@ export class PointsOnDestroy extends Primitive {
     // Normalize config to support both naming conventions
     this.config = {
       ...config,
-      listenForEvent: config.destroyEvent ?? config.listenForEvent ?? "destroyed",
+      listenForEvent:
+        config.destroyEvent ?? config.listenForEvent ?? "destroyed",
     };
 
     // Create bound handler for cleanup

@@ -17,7 +17,7 @@ import { Direction, RoadType, LandmarkType } from "../entities/RoadTile";
 export interface LevelGeneratorConfig {
   gridSize: { rows: number; cols: number };
   landmarkCount: number;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   seed?: number; // For reproducible levels
 }
 
@@ -76,7 +76,9 @@ export class LevelGenerator {
 
     // Step 1: Place turnpike
     const turnpike = this.placeTurnpike();
-    console.log(`[LevelGenerator] 🚧 Placed turnpike at (${turnpike.row}, ${turnpike.col})`);
+    console.log(
+      `[LevelGenerator] 🚧 Placed turnpike at (${turnpike.row}, ${turnpike.col})`,
+    );
 
     // Step 2: Place landmarks
     const landmarks = this.placeLandmarks();
@@ -87,15 +89,19 @@ export class LevelGenerator {
     for (const landmark of landmarks) {
       const path = this.generatePath(landmark, turnpike);
       solutionPaths.push({
-        landmark: landmark.landmarkType || 'unknown',
-        path
+        landmark: landmark.landmarkType || "unknown",
+        path,
       });
-      console.log(`[LevelGenerator] 🛣️ Generated path: ${landmark.landmarkType} → turnpike (${path.length} tiles)`);
+      console.log(
+        `[LevelGenerator] 🛣️ Generated path: ${landmark.landmarkType} → turnpike (${path.length} tiles)`,
+      );
     }
 
     // Step 4: Calculate proper tile rotations based on neighbors
     this.calculateTileRotations();
-    console.log(`[LevelGenerator] 🔄 Calculated tile rotations based on connections`);
+    console.log(
+      `[LevelGenerator] 🔄 Calculated tile rotations based on connections`,
+    );
 
     // Step 5: Validate no dangling openings
     this.validateNoEmptyOpenings();
@@ -105,18 +111,20 @@ export class LevelGenerator {
 
     // Step 6: Collect all tiles
     const tiles: GeneratedTile[] = [];
-    this.grid.forEach(row => {
-      row.forEach(tile => {
+    this.grid.forEach((row) => {
+      row.forEach((tile) => {
         if (tile) tiles.push(tile);
       });
     });
 
-    console.log(`[LevelGenerator] ✅ Level generated with ${tiles.length} tiles`);
+    console.log(
+      `[LevelGenerator] ✅ Level generated with ${tiles.length} tiles`,
+    );
 
     return {
       gridSize: this.config.gridSize,
       tiles,
-      solutionPaths
+      solutionPaths,
     };
   }
 
@@ -133,12 +141,12 @@ export class LevelGenerator {
     const turnpike: GeneratedTile = {
       row,
       col,
-      tileType: 'turnpike',
+      tileType: "turnpike",
       roadType: RoadType.Turnpike,
       rotation: 0, // N-S straight
       scrambledRotation: 0,
       rotatable: false,
-      comment: '🚧 Turnpike (fixed)'
+      comment: "🚧 Turnpike (fixed)",
     };
 
     this.grid[row][col] = turnpike;
@@ -151,7 +159,11 @@ export class LevelGenerator {
   private placeLandmarks(): GeneratedTile[] {
     const { rows, cols } = this.config.gridSize;
     const landmarks: GeneratedTile[] = [];
-    const landmarkTypes = [LandmarkType.Diner, LandmarkType.GasStation, LandmarkType.Market];
+    const landmarkTypes = [
+      LandmarkType.Diner,
+      LandmarkType.GasStation,
+      LandmarkType.Market,
+    ];
 
     // Place landmarks in top row for now (simple approach)
     const spacing = Math.floor(cols / (this.config.landmarkCount + 1));
@@ -163,13 +175,13 @@ export class LevelGenerator {
       const landmark: GeneratedTile = {
         row,
         col,
-        tileType: 'landmark',
+        tileType: "landmark",
         roadType: RoadType.Landmark,
         rotation: 180, // Face down (South)
         scrambledRotation: 180,
         rotatable: false,
         landmarkType: landmarkTypes[i % landmarkTypes.length],
-        comment: `Landmark ${i + 1}`
+        comment: `Landmark ${i + 1}`,
       };
 
       this.grid[row][col] = landmark;
@@ -183,7 +195,10 @@ export class LevelGenerator {
    * Generate a valid path from landmark to turnpike
    * Following road hierarchy: Landmark → Local → Arterial → Highway → Turnpike
    */
-  private generatePath(from: GeneratedTile, to: GeneratedTile): GeneratedTile[] {
+  private generatePath(
+    from: GeneratedTile,
+    to: GeneratedTile,
+  ): GeneratedTile[] {
     const path: GeneratedTile[] = [from];
     let current = { row: from.row, col: from.col };
 
@@ -228,12 +243,12 @@ export class LevelGenerator {
     const tile: GeneratedTile = {
       row,
       col,
-      tileType: 'straight',
+      tileType: "straight",
       roadType: this.selectRoadType(row),
       rotation: 0, // Will be calculated
       scrambledRotation: 0,
       rotatable: true,
-      comment: `Road (${row},${col})`
+      comment: `Road (${row},${col})`,
     };
 
     this.grid[row][col] = tile;
@@ -256,15 +271,19 @@ export class LevelGenerator {
   /**
    * Upgrade tile to T-junction or crossroads if multiple paths intersect
    */
-  private upgradeTileIfNeeded(tile: GeneratedTile, row: number, col: number): GeneratedTile {
+  private upgradeTileIfNeeded(
+    tile: GeneratedTile,
+    row: number,
+    col: number,
+  ): GeneratedTile {
     // Count how many directions this tile needs to connect
     const neighbors = this.countNeighbors(row, col);
 
-    if (neighbors >= 3 && tile.tileType === 'straight') {
-      tile.tileType = 't_junction';
+    if (neighbors >= 3 && tile.tileType === "straight") {
+      tile.tileType = "t_junction";
       tile.comment = `T-junction (upgraded)`;
-    } else if (neighbors === 4 && tile.tileType === 't_junction') {
-      tile.tileType = 'crossroads';
+    } else if (neighbors === 4 && tile.tileType === "t_junction") {
+      tile.tileType = "crossroads";
       tile.comment = `Crossroads (upgraded)`;
     }
 
@@ -278,9 +297,9 @@ export class LevelGenerator {
     let count = 0;
     const directions = [
       { dr: -1, dc: 0 }, // North
-      { dr: 0, dc: 1 },  // East
-      { dr: 1, dc: 0 },  // South
-      { dr: 0, dc: -1 }  // West
+      { dr: 0, dc: 1 }, // East
+      { dr: 1, dc: 0 }, // South
+      { dr: 0, dc: -1 }, // West
     ];
 
     directions.forEach(({ dr, dc }) => {
@@ -308,13 +327,16 @@ export class LevelGenerator {
           { dir: Direction.North, dr: -1, dc: 0 },
           { dir: Direction.East, dr: 0, dc: 1 },
           { dir: Direction.South, dr: 1, dc: 0 },
-          { dir: Direction.West, dr: 0, dc: -1 }
+          { dir: Direction.West, dr: 0, dc: -1 },
         ];
 
         directions.forEach(({ dir, dr, dc }) => {
           const neighborRow = rowIndex + dr;
           const neighborCol = colIndex + dc;
-          if (this.isValidPos(neighborRow, neighborCol) && this.grid[neighborRow][neighborCol]) {
+          if (
+            this.isValidPos(neighborRow, neighborCol) &&
+            this.grid[neighborRow][neighborCol]
+          ) {
             requiredDirections.push(dir);
           }
         });
@@ -327,7 +349,10 @@ export class LevelGenerator {
         }
 
         // Calculate rotation based on required directions and tile type
-        tile.rotation = this.calculateRotationForDirections(tile.tileType, requiredDirections);
+        tile.rotation = this.calculateRotationForDirections(
+          tile.tileType,
+          requiredDirections,
+        );
       });
     });
   }
@@ -339,9 +364,9 @@ export class LevelGenerator {
     const count = requiredDirections.length;
 
     if (count === 4) {
-      return 'crossroads';
+      return "crossroads";
     } else if (count === 3) {
-      return 't_junction';
+      return "t_junction";
     } else if (count === 2) {
       // Check if directions are opposite (straight) or adjacent (corner)
       const [dir1, dir2] = requiredDirections;
@@ -351,16 +376,19 @@ export class LevelGenerator {
         (dir1 === Direction.East && dir2 === Direction.West) ||
         (dir1 === Direction.West && dir2 === Direction.East);
 
-      return opposite ? 'straight' : 'corner';
+      return opposite ? "straight" : "corner";
     } else {
-      return 'straight'; // Fallback for 1 or 0 connections
+      return "straight"; // Fallback for 1 or 0 connections
     }
   }
 
   /**
    * Calculate rotation needed to align tile openings with required directions
    */
-  private calculateRotationForDirections(tileType: string, required: Direction[]): number {
+  private calculateRotationForDirections(
+    tileType: string,
+    required: Direction[],
+  ): number {
     const baseOpenings = this.getBaseTileOpenings(tileType);
 
     // Try each rotation (0, 90, 180, 270) and see which one matches
@@ -387,7 +415,10 @@ export class LevelGenerator {
   /**
    * Check if two sets of directions match (all required directions present in openings)
    */
-  private directionsMatch(openings: Direction[], required: Direction[]): boolean {
+  private directionsMatch(
+    openings: Direction[],
+    required: Direction[],
+  ): boolean {
     return required.every((req) => openings.includes(req));
   }
 
@@ -395,7 +426,8 @@ export class LevelGenerator {
    * Validate no tile has openings pointing to empty space
    */
   private validateNoEmptyOpenings(): void {
-    const danglingOpenings: { tile: GeneratedTile; direction: Direction }[] = [];
+    const danglingOpenings: { tile: GeneratedTile; direction: Direction }[] =
+      [];
 
     this.grid.forEach((row, rowIndex) => {
       row.forEach((tile, colIndex) => {
@@ -406,7 +438,11 @@ export class LevelGenerator {
 
         // Check each opening
         openings.forEach((direction) => {
-          const adjacentPos = this.getAdjacentPosition(rowIndex, colIndex, direction);
+          const adjacentPos = this.getAdjacentPosition(
+            rowIndex,
+            colIndex,
+            direction,
+          );
 
           // Check if opening points to empty space (not edge, not tile)
           if (
@@ -415,7 +451,7 @@ export class LevelGenerator {
           ) {
             danglingOpenings.push({ tile, direction });
             console.warn(
-              `[LevelGenerator] ⚠️ Dangling opening at (${rowIndex},${colIndex}) pointing ${Direction[direction]}`
+              `[LevelGenerator] ⚠️ Dangling opening at (${rowIndex},${colIndex}) pointing ${Direction[direction]}`,
             );
           }
         });
@@ -424,15 +460,17 @@ export class LevelGenerator {
 
     if (danglingOpenings.length > 0) {
       console.error(
-        `[LevelGenerator] ❌ Found ${danglingOpenings.length} dangling opening(s)! Level generation failed.`
+        `[LevelGenerator] ❌ Found ${danglingOpenings.length} dangling opening(s)! Level generation failed.`,
       );
       danglingOpenings.forEach(({ tile, direction }) => {
         console.error(
-          `   - Tile at (${tile.row},${tile.col}) [${tile.tileType}] has opening pointing ${Direction[direction]} to empty space`
+          `   - Tile at (${tile.row},${tile.col}) [${tile.tileType}] has opening pointing ${Direction[direction]} to empty space`,
         );
       });
     } else {
-      console.log("[LevelGenerator] ✅ No dangling openings - all tile connections valid");
+      console.log(
+        "[LevelGenerator] ✅ No dangling openings - all tile connections valid",
+      );
     }
   }
 
@@ -465,7 +503,12 @@ export class LevelGenerator {
       case "t_junction":
         return [Direction.North, Direction.East, Direction.West];
       case "crossroads":
-        return [Direction.North, Direction.East, Direction.South, Direction.West];
+        return [
+          Direction.North,
+          Direction.East,
+          Direction.South,
+          Direction.West,
+        ];
       case "turnpike":
         return [Direction.North, Direction.South];
       case "landmark":
@@ -499,7 +542,7 @@ export class LevelGenerator {
   private getAdjacentPosition(
     row: number,
     col: number,
-    direction: Direction
+    direction: Direction,
   ): { row: number; col: number } {
     switch (direction) {
       case Direction.North:
@@ -519,11 +562,13 @@ export class LevelGenerator {
    * Scramble tile rotations to create puzzle
    */
   private scrambleRotations(): void {
-    this.grid.forEach(row => {
-      row.forEach(tile => {
+    this.grid.forEach((row) => {
+      row.forEach((tile) => {
         if (tile && tile.rotatable) {
           // Randomly rotate by 0, 90, 180, or 270 degrees
-          const randomRotation = [0, 90, 180, 270][Math.floor(this.random() * 4)];
+          const randomRotation = [0, 90, 180, 270][
+            Math.floor(this.random() * 4)
+          ];
           tile.scrambledRotation = randomRotation;
         }
       });
@@ -534,8 +579,12 @@ export class LevelGenerator {
    * Check if position is valid
    */
   private isValidPos(row: number, col: number): boolean {
-    return row >= 0 && row < this.config.gridSize.rows &&
-           col >= 0 && col < this.config.gridSize.cols;
+    return (
+      row >= 0 &&
+      row < this.config.gridSize.rows &&
+      col >= 0 &&
+      col < this.config.gridSize.cols
+    );
   }
 
   /**
@@ -554,11 +603,11 @@ export class LevelGenerator {
           config: {
             rows: level.gridSize.rows,
             cols: level.gridSize.cols,
-            backgroundColor: "0x1a1a2e"
-          }
-        }
+            backgroundColor: "0x1a1a2e",
+          },
+        },
       ],
-      gridTiles: level.tiles.map(tile => ({
+      gridTiles: level.tiles.map((tile) => ({
         row: tile.row,
         col: tile.col,
         tileType: tile.tileType,
@@ -567,8 +616,8 @@ export class LevelGenerator {
         rotatable: tile.rotatable,
         solutionRotation: tile.rotation,
         landmarkType: tile.landmarkType,
-        comment: tile.comment
-      }))
+        comment: tile.comment,
+      })),
     };
 
     return JSON.stringify(config, null, 2);

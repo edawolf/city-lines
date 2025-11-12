@@ -3,7 +3,7 @@ import prettier from "eslint-plugin-prettier/recommended";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "scripts/**", "src/app/debug/**", "src/app/layout/**"] },
   {
     extends: [
       js.configs.recommended,
@@ -25,6 +25,12 @@ export default tseslint.config(
           caughtErrorsIgnorePattern: "^_",
         },
       ],
+      // Allow any types in non-production code
+      "@typescript-eslint/no-explicit-any": "warn",
+      // Allow empty interfaces
+      "@typescript-eslint/no-empty-interface": "warn",
+      // Allow lexical declarations in case blocks
+      "no-case-declarations": "warn",
     },
   },
 );

@@ -85,7 +85,7 @@ export class PrimitiveTestScreen extends Container {
       text: "Loading level...",
       style: {
         fontSize: 20,
-        fill: 0xFFFFFF,
+        fill: 0xffffff,
         fontWeight: "bold",
       },
     });
@@ -100,7 +100,9 @@ export class PrimitiveTestScreen extends Container {
       console.log("✅ Level loaded successfully");
       console.log("🔄 Click tiles to rotate them!");
       console.log("🗺️ Watch console for path validation");
-      console.log(`⬅️➡️ Press LEFT/RIGHT arrows to change levels (Level ${this.currentLevelIndex + 1}/${CityLinesLevelLoader.getLevelCount()})`);
+      console.log(
+        `⬅️➡️ Press LEFT/RIGHT arrows to change levels (Level ${this.currentLevelIndex + 1}/${CityLinesLevelLoader.getLevelCount()})`,
+      );
     } catch (error) {
       console.error("❌ Failed to load game config:", error);
 
@@ -257,13 +259,19 @@ export class PrimitiveTestScreen extends Container {
       this.levelInfoText.text = `Level ${levelIndex + 1}/${CityLinesLevelLoader.getLevelCount()} - ${levelConfig.name}`;
 
       // Listen for path complete event to advance to next level (use once to avoid duplicates)
-      console.log(`[PrimitiveTestScreen] Attaching path_complete listener for level ${levelIndex + 1}`);
+      console.log(
+        `[PrimitiveTestScreen] Attaching path_complete listener for level ${levelIndex + 1}`,
+      );
       this.game.once("path_complete", () => {
-        console.log("[PrimitiveTestScreen] ✅ Path complete detected, advancing to next level");
+        console.log(
+          "[PrimitiveTestScreen] ✅ Path complete detected, advancing to next level",
+        );
         setTimeout(() => {
           const maxLevel = CityLinesLevelLoader.getLevelCount() - 1;
           if (this.currentLevelIndex < maxLevel) {
-            console.log(`[PrimitiveTestScreen] Calling nextLevel() from ${this.currentLevelIndex + 1} to ${this.currentLevelIndex + 2}`);
+            console.log(
+              `[PrimitiveTestScreen] Calling nextLevel() from ${this.currentLevelIndex + 1} to ${this.currentLevelIndex + 2}`,
+            );
             this.nextLevel();
           } else {
             console.log("🎉 All levels complete!");

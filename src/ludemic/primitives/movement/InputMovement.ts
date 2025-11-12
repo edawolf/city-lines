@@ -53,7 +53,13 @@ export class InputMovement extends Primitive {
     // Listen for tuning system parameter changes
     const game = this.entity.parent as any;
     if (game?.tuningSystem) {
-      const handleParameterChange = ({ key, value }: { key: string; value: any }) => {
+      const handleParameterChange = ({
+        key,
+        value,
+      }: {
+        key: string;
+        value: any;
+      }) => {
         if (key === "paddle_speed") {
           this.config.speed = value;
           console.log(`[InputMovement] 🎛️ Paddle speed updated to ${value}`);

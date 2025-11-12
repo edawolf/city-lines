@@ -32,9 +32,7 @@ export class TuningSystem extends EventEmitter {
   /**
    * Get specific parameter value
    */
-  getParameter<K extends keyof TuningParameters>(
-    key: K,
-  ): TuningParameters[K] {
+  getParameter<K extends keyof TuningParameters>(key: K): TuningParameters[K] {
     return this.config.parameters[key];
   }
 
@@ -62,9 +60,7 @@ export class TuningSystem extends EventEmitter {
     // Emit update event for listeners
     this.emit("parameterChanged", { key, value, oldValue });
 
-    console.log(
-      `[TuningSystem] ${key}: ${oldValue} → ${value}`,
-    );
+    console.log(`[TuningSystem] ${key}: ${oldValue} → ${value}`);
 
     // Auto-save to localStorage
     this.saveConfig();

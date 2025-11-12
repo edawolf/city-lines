@@ -55,11 +55,15 @@ export class CityLinesLevelLoader {
    */
   static async loadLevel(levelIndex: number): Promise<GameConfig> {
     if (levelIndex < 0 || levelIndex >= this.levelPaths.length) {
-      throw new Error(`Level ${levelIndex + 1} does not exist. Available levels: 1-${this.levelPaths.length}`);
+      throw new Error(
+        `Level ${levelIndex + 1} does not exist. Available levels: 1-${this.levelPaths.length}`,
+      );
     }
 
     const levelPath = this.levelPaths[levelIndex];
-    console.log(`[CityLinesLevelLoader] Loading level ${levelIndex + 1} from ${levelPath}`);
+    console.log(
+      `[CityLinesLevelLoader] Loading level ${levelIndex + 1} from ${levelPath}`,
+    );
 
     const response = await fetch(levelPath);
     if (!response.ok) {
@@ -80,11 +84,14 @@ export class CityLinesLevelLoader {
   /**
    * Convert level data to GameConfig format
    */
-  private static convertToGameConfig(levelData: LevelData, levelNumber: number): GameConfig {
+  private static convertToGameConfig(
+    levelData: LevelData,
+    levelNumber: number,
+  ): GameConfig {
     const { gridDimensions, tiles } = levelData;
 
     // Build gridTiles array from level tiles
-    const gridTiles = tiles.map(tile => ({
+    const gridTiles = tiles.map((tile) => ({
       row: tile.row,
       col: tile.col,
       tileType: tile.tileType,
@@ -154,7 +161,9 @@ export class CityLinesLevelLoader {
     // Add gridTiles to the config (needed by GameBuilder)
     (gameConfig as any).gridTiles = gridTiles;
 
-    console.log(`[CityLinesLevelLoader] Converted level ${levelNumber}: ${gridDimensions.rows}x${gridDimensions.cols} grid, ${gridTiles.length} tiles`);
+    console.log(
+      `[CityLinesLevelLoader] Converted level ${levelNumber}: ${gridDimensions.rows}x${gridDimensions.cols} grid, ${gridTiles.length} tiles`,
+    );
 
     return gameConfig;
   }

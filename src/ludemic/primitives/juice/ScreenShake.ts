@@ -52,7 +52,13 @@ export class ScreenShake extends Primitive {
   private setupTuning(): void {
     // Listen for tuning system parameter changes
     if (this.game.tuningSystem) {
-      const handleParameterChange = ({ key, value }: { key: string; value: any }) => {
+      const handleParameterChange = ({
+        key,
+        value,
+      }: {
+        key: string;
+        value: any;
+      }) => {
         if (key === "screenshake_intensity") {
           this.config.intensity = value;
           console.log(`[ScreenShake] 🎛️ Intensity updated to ${value}`);
@@ -62,7 +68,9 @@ export class ScreenShake extends Primitive {
         } else if (key === "enable_screenshake") {
           // Store enabled state in config
           (this.config as any).enabled = value;
-          console.log(`[ScreenShake] 🎛️ Screenshake ${value ? 'enabled' : 'disabled'}`);
+          console.log(
+            `[ScreenShake] 🎛️ Screenshake ${value ? "enabled" : "disabled"}`,
+          );
         }
       };
 

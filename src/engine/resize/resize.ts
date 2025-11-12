@@ -9,11 +9,11 @@ export function resize(
   let canvasWidth = w;
   let canvasHeight = h;
 
-  console.log('📐 RESIZE CALCULATION:', {
+  console.log("📐 RESIZE CALCULATION:", {
     input: { w, h },
     minSize: { minWidth, minHeight },
     aspectRatio,
-    letterbox
+    letterbox,
   });
 
   if (letterbox) {
@@ -40,10 +40,10 @@ export function resize(
   const width = Math.floor(canvasWidth * scale);
   const height = Math.floor(canvasHeight * scale);
 
-  console.log('📐 RESIZE RESULT:', {
+  console.log("📐 RESIZE RESULT:", {
     canvasSize: { canvasWidth, canvasHeight },
     scale: { scaleX, scaleY, final: scale },
-    output: { width, height }
+    output: { width, height },
   });
 
   return { width, height };

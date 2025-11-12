@@ -73,7 +73,9 @@ export class RotateOnClick extends Primitive {
 
     // Only rotate if tile is rotatable
     if (!this.roadTile.rotatable) {
-      console.log(`[RotateOnClick] ⚠️ Tile at (${this.roadTile.gridPos.row}, ${this.roadTile.gridPos.col}) is not rotatable`);
+      console.log(
+        `[RotateOnClick] ⚠️ Tile at (${this.roadTile.gridPos.row}, ${this.roadTile.gridPos.col}) is not rotatable`,
+      );
       return;
     }
 
@@ -81,7 +83,7 @@ export class RotateOnClick extends Primitive {
     this.roadTile.rotate();
 
     console.log(
-      `[RotateOnClick] 🔄 Tile rotated to ${this.roadTile.rotation}° at (${this.roadTile.gridPos.row}, ${this.roadTile.gridPos.col})`
+      `[RotateOnClick] 🔄 Tile rotated to ${this.roadTile.rotation}° at (${this.roadTile.gridPos.row}, ${this.roadTile.gridPos.col})`,
     );
 
     // Emit event for path validation (emit on BOTH tile and grid)

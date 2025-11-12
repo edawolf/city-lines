@@ -146,7 +146,12 @@ export class TuningDebugMenu extends Container {
       const bg = tab.children[0] as Graphics;
       const text = tab.children[1] as Text;
 
-      bg.clear().rect(0, 0, (this.background.width - 80) / this.tabs.length - 10, 40);
+      bg.clear().rect(
+        0,
+        0,
+        (this.background.width - 80) / this.tabs.length - 10,
+        40,
+      );
       bg.fill(i === index ? 0x444444 : 0x222222);
       text.style.fill = i === index ? 0xffffff : 0xaaaaaa;
     });
@@ -219,9 +224,7 @@ export class TuningDebugMenu extends Container {
 
     // Control input (simplified - would need proper HTML overlay for real sliders)
     if (control.type === "slider") {
-      const sliderBg = new Graphics()
-        .rect(400, 8, 300, 4)
-        .fill(0x444444);
+      const sliderBg = new Graphics().rect(400, 8, 300, 4).fill(0x444444);
       widget.addChild(sliderBg);
 
       const min = control.min ?? 0;
@@ -312,9 +315,7 @@ export class TuningDebugMenu extends Container {
     button.eventMode = "static";
     button.cursor = "pointer";
 
-    const bg = new Graphics()
-      .rect(0, 0, width, 40)
-      .fill(0x444444);
+    const bg = new Graphics().rect(0, 0, width, 40).fill(0x444444);
 
     const text = new Text({
       text: label,
@@ -371,7 +372,10 @@ export class TuningDebugMenu extends Container {
    */
   resize(width: number, height: number): void {
     if (this.background) {
-      this.background.clear().rect(0, 0, width, height).fill({ color: 0x000000, alpha: 0.95 });
+      this.background
+        .clear()
+        .rect(0, 0, width, height)
+        .fill({ color: 0x000000, alpha: 0.95 });
     }
   }
 }

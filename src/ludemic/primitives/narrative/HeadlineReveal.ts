@@ -72,7 +72,7 @@ export class HeadlineReveal implements Primitive {
     this.game.on(this.config.triggerOn, this.handleCompletion);
 
     console.log(
-      `[HeadlineReveal] 📰 Initialized with ${this.config.headlines.length} headlines`
+      `[HeadlineReveal] 📰 Initialized with ${this.config.headlines.length} headlines`,
     );
   }
 
@@ -87,7 +87,7 @@ export class HeadlineReveal implements Primitive {
       const valid = this.validateLandmarks(data);
       if (!valid) {
         console.log(
-          `[HeadlineReveal] ⚠️ Required landmarks not all connected, skipping reveal`
+          `[HeadlineReveal] ⚠️ Required landmarks not all connected, skipping reveal`,
         );
         return;
       }
@@ -97,7 +97,7 @@ export class HeadlineReveal implements Primitive {
     this.headlineDisplay = this.game.getHeadlineDisplay();
     if (!this.headlineDisplay) {
       console.warn(
-        `[HeadlineReveal] ⚠️ No HeadlineDisplay found in game, cannot reveal headline`
+        `[HeadlineReveal] ⚠️ No HeadlineDisplay found in game, cannot reveal headline`,
       );
       return;
     }
@@ -106,7 +106,7 @@ export class HeadlineReveal implements Primitive {
     const headline = this.getNextHeadline();
     if (!headline) {
       console.log(
-        `[HeadlineReveal] 📰 All headlines revealed, no more to show`
+        `[HeadlineReveal] 📰 All headlines revealed, no more to show`,
       );
       return;
     }
@@ -118,7 +118,9 @@ export class HeadlineReveal implements Primitive {
     // Play sound if configured
     if (this.config.soundId) {
       // TODO: Integrate with audio system
-      console.log(`[HeadlineReveal] 🔊 Would play sound: ${this.config.soundId}`);
+      console.log(
+        `[HeadlineReveal] 🔊 Would play sound: ${this.config.soundId}`,
+      );
     }
 
     // Emit reveal event for other systems (e.g., particles)
@@ -152,7 +154,7 @@ export class HeadlineReveal implements Primitive {
     const connectedIds = connectedLandmarks.map((l: any) => l.id || "");
 
     return this.config.requiredLandmarks.every((id) =>
-      connectedIds.includes(id)
+      connectedIds.includes(id),
     );
   }
 
@@ -177,7 +179,7 @@ export class HeadlineReveal implements Primitive {
   public setCurrentIndex(index: number): void {
     this.currentHeadlineIndex = Math.max(
       0,
-      Math.min(index, this.config.headlines.length)
+      Math.min(index, this.config.headlines.length),
     );
   }
 

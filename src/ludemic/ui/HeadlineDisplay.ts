@@ -1,9 +1,5 @@
 import { Container, Text, Graphics } from "pixi.js";
-import {
-  responsiveFontSize,
-  responsiveSpacing,
-  getSafeViewport,
-} from "../config/UIConfig";
+import { responsiveFontSize, responsiveSpacing } from "../config/UIConfig";
 import { UI_CONFIG } from "../config/ui-config";
 
 /**

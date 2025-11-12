@@ -31,11 +31,7 @@ export class GameManager extends Container {
   /**
    * Add a primitive to this entity
    */
-  addPrimitive(
-    name: string,
-    primitive: Primitive,
-    config: any,
-  ): void {
+  addPrimitive(name: string, primitive: Primitive, config: any): void {
     primitive.init(this, config);
     this.primitives.push(primitive);
     this.primitiveMap.set(name, primitive);

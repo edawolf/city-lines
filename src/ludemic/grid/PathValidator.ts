@@ -39,12 +39,12 @@ export class PathValidator {
   public static validateConnection(
     tileA: RoadTile,
     tileB: RoadTile,
-    direction: Direction
+    direction: Direction,
   ): ConnectionResult {
     // Check direction compatibility
     const { directionsMatch, typesCompatible } = tileA.connectsTo(
       tileB,
-      direction
+      direction,
     );
 
     if (!directionsMatch) {
@@ -68,7 +68,9 @@ export class PathValidator {
    * Build a connection graph from a grid of tiles
    * Returns Map<tile, connected_tiles[]>
    */
-  public static buildConnectionGraph(grid: RoadTile[][]): Map<RoadTile, RoadTile[]> {
+  public static buildConnectionGraph(
+    grid: RoadTile[][],
+  ): Map<RoadTile, RoadTile[]> {
     const graph = new Map<RoadTile, RoadTile[]>();
     const rows = grid.length;
     const cols = grid[0]?.length ?? 0;
@@ -87,7 +89,7 @@ export class PathValidator {
             const result = this.validateConnection(
               tile,
               northTile,
-              Direction.North
+              Direction.North,
             );
             if (result.connected) {
               connectedNeighbors.push(northTile);
@@ -102,7 +104,7 @@ export class PathValidator {
             const result = this.validateConnection(
               tile,
               eastTile,
-              Direction.East
+              Direction.East,
             );
             if (result.connected) {
               connectedNeighbors.push(eastTile);
@@ -117,7 +119,7 @@ export class PathValidator {
             const result = this.validateConnection(
               tile,
               southTile,
-              Direction.South
+              Direction.South,
             );
             if (result.connected) {
               connectedNeighbors.push(southTile);
@@ -132,7 +134,7 @@ export class PathValidator {
             const result = this.validateConnection(
               tile,
               westTile,
-              Direction.West
+              Direction.West,
             );
             if (result.connected) {
               connectedNeighbors.push(westTile);
@@ -153,7 +155,7 @@ export class PathValidator {
   public static findPath(
     start: RoadTile,
     end: RoadTile,
-    graph: Map<RoadTile, RoadTile[]>
+    graph: Map<RoadTile, RoadTile[]>,
   ): PathResult {
     if (start === end) {
       return { exists: true, path: [start], length: 0 };
@@ -208,7 +210,7 @@ export class PathValidator {
    */
   public static validateAllLandmarksConnected(
     landmarks: RoadTile[],
-    graph: Map<RoadTile, RoadTile[]>
+    graph: Map<RoadTile, RoadTile[]>,
   ): { allConnected: boolean; disconnectedPairs?: [RoadTile, RoadTile][] } {
     if (landmarks.length < 2) {
       return { allConnected: true };
@@ -228,7 +230,8 @@ export class PathValidator {
 
     return {
       allConnected: disconnectedPairs.length === 0,
-      disconnectedPairs: disconnectedPairs.length > 0 ? disconnectedPairs : undefined,
+      disconnectedPairs:
+        disconnectedPairs.length > 0 ? disconnectedPairs : undefined,
     };
   }
 
@@ -239,14 +242,16 @@ export class PathValidator {
   public static validateLandmarksConnectToTurnpikes(
     landmarks: RoadTile[],
     turnpikes: RoadTile[],
-    graph: Map<RoadTile, RoadTile[]>
+    graph: Map<RoadTile, RoadTile[]>,
   ): { allConnected: boolean; disconnectedLandmarks?: RoadTile[] } {
     if (landmarks.length === 0) {
       return { allConnected: true };
     }
 
     if (turnpikes.length === 0) {
-      console.warn("⚠️ No turnpikes found! Every level must have at least one turnpike.");
+      console.warn(
+        "⚠️ No turnpikes found! Every level must have at least one turnpike.",
+      );
       return { allConnected: false, disconnectedLandmarks: landmarks };
     }
 
@@ -271,7 +276,8 @@ export class PathValidator {
 
     return {
       allConnected: disconnectedLandmarks.length === 0,
-      disconnectedLandmarks: disconnectedLandmarks.length > 0 ? disconnectedLandmarks : undefined,
+      disconnectedLandmarks:
+        disconnectedLandmarks.length > 0 ? disconnectedLandmarks : undefined,
     };
   }
 
@@ -283,7 +289,7 @@ export class PathValidator {
     allTiles: RoadTile[],
     landmarks: RoadTile[],
     turnpikes: RoadTile[],
-    graph: Map<RoadTile, RoadTile[]>
+    graph: Map<RoadTile, RoadTile[]>,
   ): { allConnected: boolean; disconnectedTiles?: RoadTile[] } {
     const disconnectedTiles: RoadTile[] = [];
 
@@ -323,7 +329,8 @@ export class PathValidator {
 
     return {
       allConnected: disconnectedTiles.length === 0,
-      disconnectedTiles: disconnectedTiles.length > 0 ? disconnectedTiles : undefined,
+      disconnectedTiles:
+        disconnectedTiles.length > 0 ? disconnectedTiles : undefined,
     };
   }
 
@@ -334,8 +341,12 @@ export class PathValidator {
     console.log("🗺️ Connection Graph:");
     graph.forEach((neighbors, tile) => {
       const pos = tile.gridPos;
-      const neighborPos = neighbors.map((n) => `(${n.gridPos.row},${n.gridPos.col})`).join(", ");
-      console.log(`  (${pos.row},${pos.col}) ${tile.roadType} → [${neighborPos}]`);
+      const neighborPos = neighbors
+        .map((n) => `(${n.gridPos.row},${n.gridPos.col})`)
+        .join(", ");
+      console.log(
+        `  (${pos.row},${pos.col}) ${tile.roadType} → [${neighborPos}]`,
+      );
     });
   }
 

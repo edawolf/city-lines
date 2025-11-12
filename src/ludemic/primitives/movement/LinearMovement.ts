@@ -41,7 +41,7 @@ export class LinearMovement extends Primitive {
 
     // Store initial speed for tuning adjustments
     this.initialSpeed = Math.sqrt(
-      this.config.velocity.x ** 2 + this.config.velocity.y ** 2
+      this.config.velocity.x ** 2 + this.config.velocity.y ** 2,
     );
 
     this.setupTuning();
@@ -51,11 +51,17 @@ export class LinearMovement extends Primitive {
     // Listen for tuning system parameter changes
     const game = this.entity.parent as any;
     if (game?.tuningSystem) {
-      const handleParameterChange = ({ key, value }: { key: string; value: any }) => {
+      const handleParameterChange = ({
+        key,
+        value,
+      }: {
+        key: string;
+        value: any;
+      }) => {
         if (key === "ball_initial_speed") {
           // Recalculate velocity maintaining direction but changing magnitude
           const currentSpeed = Math.sqrt(
-            this.config.velocity.x ** 2 + this.config.velocity.y ** 2
+            this.config.velocity.x ** 2 + this.config.velocity.y ** 2,
           );
           if (currentSpeed > 0) {
             const scale = value / currentSpeed;
@@ -67,7 +73,9 @@ export class LinearMovement extends Primitive {
         } else if (key === "ball_max_speed_multiplier") {
           if (this.config.maxSpeed) {
             this.config.maxSpeed = this.initialSpeed * value;
-            console.log(`[LinearMovement] 🎛️ Ball max speed updated to ${this.config.maxSpeed}`);
+            console.log(
+              `[LinearMovement] 🎛️ Ball max speed updated to ${this.config.maxSpeed}`,
+            );
           }
         }
       };

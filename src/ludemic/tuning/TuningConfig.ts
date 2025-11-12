@@ -317,7 +317,7 @@ export const TUNING_CATEGORIES: Record<string, ControlWidget[]> = {
     },
   ],
 
-  "Debug": [
+  Debug: [
     {
       key: "invincible_mode",
       label: "Invincible Mode",

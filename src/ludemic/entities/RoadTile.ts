@@ -43,7 +43,12 @@ const BASE_OPENINGS: Record<string, Direction[]> = {
   straight: [Direction.North, Direction.South],
   corner: [Direction.North, Direction.East],
   t_junction: [Direction.North, Direction.East, Direction.West],
-  crossroads: [Direction.North, Direction.East, Direction.South, Direction.West],
+  crossroads: [
+    Direction.North,
+    Direction.East,
+    Direction.South,
+    Direction.West,
+  ],
   house: [Direction.South], // Houses connect downward
   landmark: [Direction.North], // Landmarks connect upward
   turnpike: [Direction.North, Direction.South], // Turnpikes are like straight roads
@@ -71,7 +76,11 @@ export const CONNECTION_RULES: Record<RoadType, RoadType[]> = {
     RoadType.Highway,
     RoadType.Turnpike,
   ],
-  [RoadType.Turnpike]: [RoadType.Highway, RoadType.Landmark, RoadType.LocalRoad],
+  [RoadType.Turnpike]: [
+    RoadType.Highway,
+    RoadType.Landmark,
+    RoadType.LocalRoad,
+  ],
   [RoadType.Landmark]: [RoadType.Turnpike, RoadType.LocalRoad],
 };
 
@@ -218,22 +227,42 @@ export class RoadTile extends Container {
       switch (direction) {
         case Direction.North:
           this.graphics
-            .rect(-roadWidth / 2, -halfSize, roadWidth, halfSize - this.tileSize * 0.3)
+            .rect(
+              -roadWidth / 2,
+              -halfSize,
+              roadWidth,
+              halfSize - this.tileSize * 0.3,
+            )
             .fill(0x95a5a6);
           break;
         case Direction.South:
           this.graphics
-            .rect(-roadWidth / 2, this.tileSize * 0.2, roadWidth, halfSize - this.tileSize * 0.2)
+            .rect(
+              -roadWidth / 2,
+              this.tileSize * 0.2,
+              roadWidth,
+              halfSize - this.tileSize * 0.2,
+            )
             .fill(0x95a5a6);
           break;
         case Direction.East:
           this.graphics
-            .rect(this.tileSize * 0.2, -roadWidth / 2, halfSize - this.tileSize * 0.2, roadWidth)
+            .rect(
+              this.tileSize * 0.2,
+              -roadWidth / 2,
+              halfSize - this.tileSize * 0.2,
+              roadWidth,
+            )
             .fill(0x95a5a6);
           break;
         case Direction.West:
           this.graphics
-            .rect(-halfSize, -roadWidth / 2, halfSize - this.tileSize * 0.3, roadWidth)
+            .rect(
+              -halfSize,
+              -roadWidth / 2,
+              halfSize - this.tileSize * 0.3,
+              roadWidth,
+            )
             .fill(0x95a5a6);
           break;
       }
@@ -261,22 +290,42 @@ export class RoadTile extends Container {
       switch (direction) {
         case Direction.North:
           this.graphics
-            .rect(-roadWidth / 2, -halfSize, roadWidth, halfSize - this.tileSize * 0.3)
+            .rect(
+              -roadWidth / 2,
+              -halfSize,
+              roadWidth,
+              halfSize - this.tileSize * 0.3,
+            )
             .fill(0x95a5a6);
           break;
         case Direction.South:
           this.graphics
-            .rect(-roadWidth / 2, this.tileSize * 0.2, roadWidth, halfSize - this.tileSize * 0.2)
+            .rect(
+              -roadWidth / 2,
+              this.tileSize * 0.2,
+              roadWidth,
+              halfSize - this.tileSize * 0.2,
+            )
             .fill(0x95a5a6);
           break;
         case Direction.East:
           this.graphics
-            .rect(this.tileSize * 0.2, -roadWidth / 2, halfSize - this.tileSize * 0.2, roadWidth)
+            .rect(
+              this.tileSize * 0.2,
+              -roadWidth / 2,
+              halfSize - this.tileSize * 0.2,
+              roadWidth,
+            )
             .fill(0x95a5a6);
           break;
         case Direction.West:
           this.graphics
-            .rect(-halfSize, -roadWidth / 2, halfSize - this.tileSize * 0.3, roadWidth)
+            .rect(
+              -halfSize,
+              -roadWidth / 2,
+              halfSize - this.tileSize * 0.3,
+              roadWidth,
+            )
             .fill(0x95a5a6);
           break;
       }
@@ -319,12 +368,22 @@ export class RoadTile extends Container {
       switch (direction) {
         case Direction.North:
           this.graphics
-            .rect(-roadWidth / 2, -halfSize, roadWidth, halfSize + roadWidth / 2)
+            .rect(
+              -roadWidth / 2,
+              -halfSize,
+              roadWidth,
+              halfSize + roadWidth / 2,
+            )
             .fill(color);
           break;
         case Direction.South:
           this.graphics
-            .rect(-roadWidth / 2, -roadWidth / 2, roadWidth, halfSize + roadWidth / 2)
+            .rect(
+              -roadWidth / 2,
+              -roadWidth / 2,
+              roadWidth,
+              halfSize + roadWidth / 2,
+            )
             .fill(color);
           break;
       }
@@ -354,7 +413,7 @@ export class RoadTile extends Container {
             -roadWidth / 2,
             -halfSize,
             roadWidth,
-            halfSize + roadWidth / 2
+            halfSize + roadWidth / 2,
           );
           break;
         case Direction.East:
@@ -362,7 +421,7 @@ export class RoadTile extends Container {
             -roadWidth / 2,
             -roadWidth / 2,
             halfSize + roadWidth / 2,
-            roadWidth
+            roadWidth,
           );
           break;
         case Direction.South:
@@ -370,7 +429,7 @@ export class RoadTile extends Container {
             -roadWidth / 2,
             -roadWidth / 2,
             roadWidth,
-            halfSize + roadWidth / 2
+            halfSize + roadWidth / 2,
           );
           break;
         case Direction.West:
@@ -378,7 +437,7 @@ export class RoadTile extends Container {
             -halfSize,
             -roadWidth / 2,
             halfSize + roadWidth / 2,
-            roadWidth
+            roadWidth,
           );
           break;
       }
@@ -395,7 +454,10 @@ export class RoadTile extends Container {
     }
 
     // Add road markings for highways
-    if (this.roadType === RoadType.Highway || this.roadType === RoadType.ArterialRoad) {
+    if (
+      this.roadType === RoadType.Highway ||
+      this.roadType === RoadType.ArterialRoad
+    ) {
       this.drawRoadMarkings(roadWidth, openings);
     }
   }
@@ -415,7 +477,12 @@ export class RoadTile extends Container {
           // Vertical dashed line
           for (let i = 0; i < 3; i++) {
             this.graphics
-              .rect(0, -this.tileSize / 2 + i * (dashLength + dashGap), lineWidth, dashLength)
+              .rect(
+                0,
+                -this.tileSize / 2 + i * (dashLength + dashGap),
+                lineWidth,
+                dashLength,
+              )
               .fill(0xf1c40f);
           }
           break;
@@ -424,7 +491,12 @@ export class RoadTile extends Container {
           // Horizontal dashed line
           for (let i = 0; i < 3; i++) {
             this.graphics
-              .rect(-this.tileSize / 2 + i * (dashLength + dashGap), 0, dashLength, lineWidth)
+              .rect(
+                -this.tileSize / 2 + i * (dashLength + dashGap),
+                0,
+                dashLength,
+                lineWidth,
+              )
               .fill(0xf1c40f);
           }
           break;
@@ -504,7 +576,7 @@ export class RoadTile extends Container {
    */
   public connectsTo(
     other: RoadTile,
-    direction: Direction
+    direction: Direction,
   ): { directionsMatch: boolean; typesCompatible: boolean } {
     // Check if this tile has an opening in the given direction
     const myOpenings = this.getOpenings();

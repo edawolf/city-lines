@@ -326,7 +326,8 @@ export class GameContainer extends Container {
       return "City connection restored!";
     }
     const headline = this.headlines[this.currentHeadlineIndex];
-    this.currentHeadlineIndex = (this.currentHeadlineIndex + 1) % this.headlines.length;
+    this.currentHeadlineIndex =
+      (this.currentHeadlineIndex + 1) % this.headlines.length;
     return headline;
   }
 
@@ -450,7 +451,9 @@ export class GameContainer extends Container {
 
     this.gameState = "level_complete";
     this.currentLevel = level + 1;
-    console.log(`[GameContainer] Level ${level} complete! Advancing to level ${this.currentLevel}`);
+    console.log(
+      `[GameContainer] Level ${level} complete! Advancing to level ${this.currentLevel}`,
+    );
 
     // Show headline instead of level complete screen
     if (this.headlineDisplay) {
@@ -460,7 +463,12 @@ export class GameContainer extends Container {
       console.log(`[GameContainer] Showing headline: ${formattedHeadline}`);
     } else if (this.levelCompleteScreen) {
       // Fallback to level complete screen if no headline display
-      this.levelCompleteScreen.show(level, this.score, this.viewportWidth, this.viewportHeight);
+      this.levelCompleteScreen.show(
+        level,
+        this.score,
+        this.viewportWidth,
+        this.viewportHeight,
+      );
     }
 
     // Regenerate level after delay
@@ -661,15 +669,17 @@ export class GameBuilder {
     if ((config as any).gridTiles) {
       const cityGrid = game.getEntityById("city_grid") as any;
       if (cityGrid && cityGrid.addTile) {
-        console.log(`[GameBuilder] Adding ${(config as any).gridTiles.length} grid tiles`);
+        console.log(
+          `[GameBuilder] Adding ${(config as any).gridTiles.length} grid tiles`,
+        );
         (config as any).gridTiles.forEach((tileConfig: any) => {
           const tileEntityConfig: EntityConfig = {
             type: "RoadTile",
             position: { x: 0, y: 0 }, // Will be positioned by grid
             config: tileConfig,
-            primitives: tileConfig.rotatable ? [
-              { type: "RotateOnClick", config: {} }
-            ] : undefined
+            primitives: tileConfig.rotatable
+              ? [{ type: "RotateOnClick", config: {} }]
+              : undefined,
           };
           const tile = this.createEntity(tileEntityConfig, false);
           cityGrid.addTile(tile, tileConfig.row, tileConfig.col);
@@ -709,12 +719,13 @@ export class GameBuilder {
         const tiles = cityGrid.getAllTiles();
         tiles.forEach((tile: any) => {
           // Find matching config by grid position, not by array index!
-          const tileConfig = (config as any).gridTiles.find((tc: any) =>
-            tc.row === tile.gridPos.row && tc.col === tile.gridPos.col
+          const tileConfig = (config as any).gridTiles.find(
+            (tc: any) =>
+              tc.row === tile.gridPos.row && tc.col === tile.gridPos.col,
           );
           if (tileConfig && tileConfig.rotatable) {
             this.attachPrimitives(tile, [
-              { type: "RotateOnClick", config: {} }
+              { type: "RotateOnClick", config: {} },
             ]);
           }
         });
@@ -800,11 +811,15 @@ export class GameBuilder {
   ): void {
     primitives.forEach((primConfig) => {
       const primitive = PrimitiveFactory.create(primConfig.type);
-      (entity as Container & { addPrimitive?: (type: string, primitive: Primitive, config: PrimitiveConfig) => void }).addPrimitive?.(
-        primConfig.type,
-        primitive,
-        primConfig.config,
-      );
+      (
+        entity as Container & {
+          addPrimitive?: (
+            type: string,
+            primitive: Primitive,
+            config: PrimitiveConfig,
+          ) => void;
+        }
+      ).addPrimitive?.(primConfig.type, primitive, primConfig.config);
     });
   }
 
@@ -862,7 +877,10 @@ export class GameBuilder {
   /**
    * Load config from JSON file
    */
-  static async fromFile(path: string, tuningSystem?: any): Promise<GameContainer> {
+  static async fromFile(
+    path: string,
+    tuningSystem?: any,
+  ): Promise<GameContainer> {
     const response = await fetch(path);
     const config: GameConfig = await response.json();
     return this.fromConfig(config, tuningSystem);

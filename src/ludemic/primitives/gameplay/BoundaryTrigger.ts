@@ -62,7 +62,9 @@ export class BoundaryTrigger extends Primitive {
           );
 
           // Also reset velocity if entity has LinearMovement primitive
-          const movement = (this.entity as any).getPrimitive?.("LinearMovement");
+          const movement = (this.entity as any).getPrimitive?.(
+            "LinearMovement",
+          );
           if (movement && movement.setVelocity) {
             // Reset to initial upward velocity
             movement.setVelocity(200, -200);

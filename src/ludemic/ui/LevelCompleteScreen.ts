@@ -78,13 +78,10 @@ export class LevelCompleteScreen extends Container {
    */
   show(level: number, score: number, width: number, height: number): void {
     // Draw background
-    this.background
-      .clear()
-      .rect(0, 0, width, height)
-      .fill({
-        color: 0x000000,
-        alpha: UI_CONFIG.LEVEL_COMPLETE_SCREEN.backgroundAlpha,
-      });
+    this.background.clear().rect(0, 0, width, height).fill({
+      color: 0x000000,
+      alpha: UI_CONFIG.LEVEL_COMPLETE_SCREEN.backgroundAlpha,
+    });
 
     // Update texts
     this.levelText.text = `Level ${level} Complete!`;
@@ -157,13 +154,10 @@ export class LevelCompleteScreen extends Container {
     if (!this.visible) return; // Only resize if currently visible
 
     // Redraw background with new dimensions
-    this.background
-      .clear()
-      .rect(0, 0, width, height)
-      .fill({
-        color: 0x000000,
-        alpha: UI_CONFIG.LEVEL_COMPLETE_SCREEN.backgroundAlpha,
-      });
+    this.background.clear().rect(0, 0, width, height).fill({
+      color: 0x000000,
+      alpha: UI_CONFIG.LEVEL_COMPLETE_SCREEN.backgroundAlpha,
+    });
 
     // Responsive font sizes from UI_CONFIG
     const titleConfig = UI_CONFIG.LEVEL_COMPLETE_SCREEN.title;
