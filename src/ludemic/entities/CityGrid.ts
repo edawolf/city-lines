@@ -56,8 +56,8 @@ export class CityGrid extends Container {
   private backgroundGraphics: Graphics;
   private connectionGraph?: Map<RoadTile, RoadTile[]>;
   private titleText?: Text;
-  private viewportWidth = 800;
-  private viewportHeight = 600;
+  private viewportWidth = 0; // Will be set by resize() - no hardcoded default
+  private viewportHeight = 0; // Will be set by resize() - no hardcoded default
   private calculatedTileSize = 80;
   private game?: any; // Reference to GameContainer for event emission
 

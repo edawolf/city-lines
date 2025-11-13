@@ -58,8 +58,8 @@ export class GameContainer extends Container {
   private gameConfig?: GameConfig;
 
   // Viewport dimensions (updated on resize)
-  private viewportWidth = 800;
-  private viewportHeight = 600;
+  private viewportWidth = 0; // Will be set by updateViewport() - no hardcoded default
+  private viewportHeight = 0; // Will be set by updateViewport() - no hardcoded default
 
   // Headlines system
   private headlines: string[] = [];

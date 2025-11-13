@@ -25,8 +25,8 @@ export class PrimitiveTestScreen extends Container {
   private background!: Graphics;
   private instructions!: Text;
   private layoutEngine: LayoutIntentCompiler;
-  private screenWidth = 800;
-  private screenHeight = 600;
+  private screenWidth = 0; // Will be set by resize() - no hardcoded default
+  private screenHeight = 0; // Will be set by resize() - no hardcoded default
   private keydownListener?: (e: KeyboardEvent) => void;
   private tuningSystem: TuningSystem;
   private tuningControls!: TuningControls;
@@ -259,6 +259,18 @@ export class PrimitiveTestScreen extends Container {
         typeof headlineDisplay.resize === "function"
       ) {
         (headlineDisplay as any).resize(this.screenWidth, this.screenHeight);
+      }
+
+      // Update HeadlineDisplay level number
+      if (
+        headlineDisplay &&
+        "setLevel" in headlineDisplay &&
+        typeof headlineDisplay.setLevel === "function"
+      ) {
+        (headlineDisplay as any).setLevel(levelIndex + 1);
+        console.log(
+          `[PrimitiveTestScreen] Set HeadlineDisplay level to ${levelIndex + 1}`,
+        );
       }
 
       // Update level info display

@@ -34,8 +34,8 @@ export class HeadlineDisplay extends Container {
   private continueButtonText: Text; // "Continue" button text
   private levelText: Text; // "Level: X" display at top of modal
   private levelContainer: Container; // Persistent container for level text (always visible)
-  private viewportWidth = 800;
-  private viewportHeight = 600;
+  private viewportWidth = 0; // Will be set by resize() - no hardcoded default
+  private viewportHeight = 0; // Will be set by resize() - no hardcoded default
   private currentLevel = 1; // Track current level number
 
   // Animation state
@@ -44,6 +44,7 @@ export class HeadlineDisplay extends Container {
   private typewriterTimer = 0;
   private displayTimer = 0;
   private state: "hidden" | "typing" | "displaying" | "fading" = "hidden";
+  private hasEmittedContinue = false; // Track if continue event already emitted
 
   constructor(config: HeadlineDisplayConfig = {}) {
     super();
@@ -169,7 +170,10 @@ export class HeadlineDisplay extends Container {
   private handleContinueClick(): void {
     console.log("[HeadlineDisplay] Continue button clicked");
     // Emit event so PrimitiveTestScreen can advance to next level
-    this.emit("continue_clicked");
+    if (!this.hasEmittedContinue) {
+      this.hasEmittedContinue = true;
+      this.emit("continue_clicked");
+    }
     // Hide the modal immediately when button is clicked
     this.hide();
   }
@@ -178,11 +182,19 @@ export class HeadlineDisplay extends Container {
    * Show a new headline with typewriter animation
    */
   public show(headline: string): void {
+    console.log(
+      `[HeadlineDisplay] 🎬 show() called with headline: "${headline}"`,
+    );
+    console.log(
+      `[HeadlineDisplay] Current viewport: ${this.viewportWidth}x${this.viewportHeight}`,
+    );
+
     this.currentHeadline = headline;
     this.displayedChars = 0;
     this.typewriterTimer = 0;
     this.displayTimer = 0;
     this.state = "typing";
+    this.hasEmittedContinue = false; // Reset flag for new headline
 
     // Show modal elements
     this.modalOverlay.visible = true;
@@ -192,8 +204,33 @@ export class HeadlineDisplay extends Container {
     this.modalOverlay.alpha = 0;
     this.modalContainer.alpha = 0;
 
+    console.log(
+      `[HeadlineDisplay] Modal elements shown, overlay alpha: ${this.modalOverlay.alpha}, container alpha: ${this.modalContainer.alpha}`,
+    );
+
+    // If viewport dimensions haven't been set yet (still 0x0), try to get them from the parent
+    if (this.viewportWidth === 0 || this.viewportHeight === 0) {
+      // Try to get dimensions from parent GameContainer
+      const parent = this.parent;
+      if (parent && "viewportWidth" in parent && "viewportHeight" in parent) {
+        this.viewportWidth = (parent as any).viewportWidth;
+        this.viewportHeight = (parent as any).viewportHeight;
+        console.log(
+          `[HeadlineDisplay] 🔧 Auto-detected viewport from parent: ${this.viewportWidth}x${this.viewportHeight}`,
+        );
+      } else {
+        console.warn(
+          `[HeadlineDisplay] ⚠️ Viewport dimensions not set! Using fallback 800x600`,
+        );
+        this.viewportWidth = 800;
+        this.viewportHeight = 600;
+      }
+    }
+
     // Recalculate position with actual headline text
     this.resize(this.viewportWidth, this.viewportHeight);
+
+    console.log(`[HeadlineDisplay] ✅ show() complete, state: ${this.state}`);
   }
 
   /**
@@ -293,6 +330,17 @@ export class HeadlineDisplay extends Container {
       this.modalContainer.visible = false;
       this.state = "hidden";
       this.headlineText.text = "";
+
+      // Emit continue event when modal finishes fading out
+      // This allows the game to proceed to next level automatically
+      // Only emit if user didn't already click Continue button
+      if (!this.hasEmittedContinue) {
+        console.log(
+          "[HeadlineDisplay] Modal fade out complete, emitting continue_clicked",
+        );
+        this.hasEmittedContinue = true;
+        this.emit("continue_clicked");
+      }
     }
   }
 
@@ -300,13 +348,20 @@ export class HeadlineDisplay extends Container {
    * Draw modal layout (overlay + white container + buttons)
    */
   private drawBackground(): void {
+    console.log(
+      `[HeadlineDisplay] 🎨 drawBackground() called, text length: ${this.headlineText.text.length}`,
+    );
+
     this.modalOverlay.clear();
     this.modalContainer.clear();
     this.backgroundPanel.clear();
     this.buttonBackground.clear();
     this.continueButtonBackground.clear();
 
-    if (this.headlineText.text.length === 0) return;
+    if (this.headlineText.text.length === 0) {
+      console.log(`[HeadlineDisplay] ⚠️ drawBackground() skipped - no text`);
+      return;
+    }
 
     // Draw fullscreen semi-transparent overlay
     this.modalOverlay
@@ -319,15 +374,14 @@ export class HeadlineDisplay extends Container {
     );
 
     // Calculate modal dimensions with viewport constraints
-    const isMobile = this.viewportWidth < 768;
-
-    // Modal width from config (90% of screen width)
+    // Modal width from config (70% of screen width)
     const modalWidth =
       this.viewportWidth * UI_CONFIG.HEADLINE_MODAL.widthPercent;
     const modalPadding = padding * 4; // More padding for modal
 
-    // Viewport margin for height calculations
-    const viewportMargin = isMobile ? 20 : 40;
+    // Maximum modal height from config (80% of screen height)
+    const maxModalHeight =
+      this.viewportHeight * UI_CONFIG.HEADLINE_MODAL.heightPercent;
 
     // Update text wrap width to fit modal
     const maxTextWidth = modalWidth * UI_CONFIG.HEADLINE_MODAL.textWrapPercent;
@@ -339,33 +393,53 @@ export class HeadlineDisplay extends Container {
     // Button dimensions - READ HERE is smaller
     const readButtonWidth = modalWidth * 0.5; // Smaller button (50% instead of 80%)
     const continueButtonWidth = modalWidth * 0.8; // Continue button full width
-    const buttonHeight = 50; // Reduced from 60 to 50
+    const buttonHeight = 50; // Fixed button height
     const buttonSpacing = padding * 2; // Spacing between buttons
 
-    // Total modal height: text + 2 buttons + spacing + padding
-    const modalHeight =
-      textBounds.height +
-      buttonHeight * 2 +
-      buttonSpacing * 2 +
-      modalPadding * 2;
+    // Calculate required space for buttons and padding
+    const buttonsAndPadding =
+      buttonHeight * 2 + buttonSpacing * 2 + modalPadding * 2;
 
-    // Ensure modal fits within viewport with margins
-    const maxModalHeight = this.viewportHeight - viewportMargin * 2; // Leave margin top and bottom
-    const constrainedModalHeight = Math.min(modalHeight, maxModalHeight);
+    // Calculate ideal modal height (text + buttons + padding)
+    const idealModalHeight = textBounds.height + buttonsAndPadding;
+
+    // Constrain modal height to fit viewport (use smaller of ideal or max)
+    const constrainedModalHeight = Math.min(idealModalHeight, maxModalHeight);
+
+    // Calculate available height for text after reserving space for buttons
+    const availableTextHeight = constrainedModalHeight - buttonsAndPadding;
 
     // Draw white modal container (centered) - use constrained height
     const modalX = -modalWidth / 2;
     const modalY = -constrainedModalHeight / 2;
 
+    // Get actual screen bounds
+    const actualBounds = this.getBounds();
+    const modalContainerBounds = this.modalContainer.getBounds();
+
+    // Debug logging
+    console.log(`[HeadlineDisplay] Modal sizing:
+      Viewport: ${this.viewportWidth}x${this.viewportHeight}
+      Modal width: ${Math.round(modalWidth)}px (${UI_CONFIG.HEADLINE_MODAL.widthPercent * 100}%)
+      Modal X range (calculated): ${Math.round(this.viewportWidth / 2 + modalX)} to ${Math.round(this.viewportWidth / 2 + modalX + modalWidth)}
+      HeadlineDisplay position: (${Math.round(this.x)}, ${Math.round(this.y)})
+      HeadlineDisplay bounds: X ${Math.round(actualBounds.x)} to ${Math.round(actualBounds.x + actualBounds.width)}, Y ${Math.round(actualBounds.y)} to ${Math.round(actualBounds.y + actualBounds.height)}
+      ModalContainer actual bounds: X ${Math.round(modalContainerBounds.x)} to ${Math.round(modalContainerBounds.x + modalContainerBounds.width)}
+      Max modal height: ${Math.round(maxModalHeight)}px (${UI_CONFIG.HEADLINE_MODAL.heightPercent * 100}%)
+      Text bounds: ${Math.round(textBounds.width)}x${Math.round(textBounds.height)}px
+      Text wrap width: ${Math.round(maxTextWidth)}px
+      Buttons+padding: ${Math.round(buttonsAndPadding)}px
+      Ideal height: ${Math.round(idealModalHeight)}px
+      Constrained height: ${Math.round(constrainedModalHeight)}px
+      Available text height: ${Math.round(availableTextHeight)}px
+      Modal container position: (${Math.round(this.viewportWidth / 2)}, ${Math.round(this.viewportHeight / 2)})
+      Modal local bounds: X ${Math.round(modalX)} to ${Math.round(modalX + modalWidth)}, Y ${Math.round(modalY)} to ${Math.round(modalY + constrainedModalHeight)}
+    `);
+
     this.modalContainer
       .roundRect(modalX, modalY, modalWidth, constrainedModalHeight, 10)
       .fill({ color: 0xf5f5f5, alpha: 1.0 })
       .stroke({ width: 2, color: 0xcccccc });
-
-    // Calculate available space for text (total height - buttons - padding)
-    const buttonsAndPadding =
-      buttonHeight * 2 + buttonSpacing * 2 + modalPadding * 2;
-    const availableTextHeight = constrainedModalHeight - buttonsAndPadding;
 
     // Position headline text at top of modal, centered in available space
     const textY =
@@ -418,6 +492,9 @@ export class HeadlineDisplay extends Container {
    * Modal is centered in viewport
    */
   public resize(width: number, height: number): void {
+    console.log(
+      `[HeadlineDisplay] 📏 resize() called with: ${width}x${height} (previous: ${this.viewportWidth}x${this.viewportHeight})`,
+    );
     this.viewportWidth = width;
     this.viewportHeight = height;
 
