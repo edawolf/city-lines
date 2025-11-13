@@ -1,4 +1,5 @@
 import type { GameConfig } from "../config/types";
+import { UI_CONFIG } from "../config/ui-config";
 
 /**
  * Level data structure from our level JSON files
@@ -117,7 +118,7 @@ export class CityLinesLevelLoader {
           config: {
             rows: gridDimensions.rows,
             cols: gridDimensions.cols,
-            backgroundColor: "0x1a1a2e",
+            backgroundColor: `0x${UI_CONFIG.COLORS.gridBackground.toString(16)}`,
             uiConfig: {
               position: { x: 50, y: 50 },
               size: { width: 60, height: 60 },

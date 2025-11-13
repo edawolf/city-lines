@@ -6,6 +6,7 @@ import { LayoutIntentCompiler } from "../layout/LayoutIntent";
 import { TuningSystem } from "../../ludemic/tuning/TuningSystem";
 import { TuningControls } from "../../ludemic/tuning/TuningControls";
 import { CityLinesLevelLoader } from "../../ludemic/levels/CityLinesLevelLoader";
+import { UI_CONFIG } from "../../ludemic/config/ui-config";
 
 /**
  * PrimitiveTestScreen
@@ -187,7 +188,7 @@ export class PrimitiveTestScreen extends Container {
 
     // Redraw full-screen background
     if (this.background) {
-      this.background.clear().rect(0, 0, width, height).fill(0x1e1e1e);
+      this.background.clear().rect(0, 0, width, height).fill(UI_CONFIG.COLORS.screenBackground);
     }
 
     // Position level info at top center

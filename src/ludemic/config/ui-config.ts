@@ -136,6 +136,36 @@ export const UI_CONFIG = {
     // Text line height
     lineHeightMultiplier: 1.5, // 1.5x font size for line height
   },
+
+  /**
+   * Game Colors (hex values)
+   */
+  COLORS: {
+    // Background colors
+    screenBackground: 0x5a7a5a, // Main screen background (muted green)
+    gridBackground: 0x6b8e6b, // CityGrid background (lighter muted green)
+    gridStroke: 0x4a6b4a, // CityGrid border color (darker green)
+
+    // Tile colors
+    tileBackground: 0x7d9d7d, // Tile background (medium green)
+    tileRotationIndicator: 0xa5c4a5, // Rotation indicator dot (light green)
+    tileGridLine: 0x5a7a5a, // Tile grid border (medium-dark green)
+    roadColor: 0x3a4a3a, // Road surface color (darker gray-green)
+    roadMarkings: 0xd4e4d4, // Road markings/dashes (light cream-green)
+
+    // Road type colors (different road hierarchy levels)
+    roadTypeColors: {
+      house: 0xe74c3c, // Red (starting point)
+      localRoad: 0x5a6a6a, // Dark gray (local streets)
+      arterialRoad: 0xf39c12, // Orange (main roads)
+      highway: 0xe67e22, // Dark orange (highways)
+      turnpike: 0x9b59b6, // Purple (toll roads)
+      landmark: 0x2ecc71, // Green (destinations)
+    },
+
+    // UI element colors
+    textWhite: 0xffffff, // White text
+  },
 } as const;
 
 /**

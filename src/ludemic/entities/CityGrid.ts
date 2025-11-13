@@ -11,6 +11,7 @@ import {
   getSafeViewport,
   applySafeArea,
 } from "../config/UIConfig";
+import { UI_CONFIG } from "../config/ui-config";
 
 /**
  * CityGrid Configuration
@@ -70,7 +71,7 @@ export class CityGrid extends Container {
       cols: 4,
       tileSize: 80,
       padding: 10,
-      backgroundColor: 0x1a1a2e,
+      backgroundColor: UI_CONFIG.COLORS.gridBackground,
     };
 
     // Initialize calculated tile size (will be updated in resize())
@@ -106,8 +107,8 @@ export class CityGrid extends Container {
     // Background rectangle
     this.backgroundGraphics
       .rect(-padding, -padding, width, height)
-      .fill(backgroundColor ?? 0x1a1a2e)
-      .stroke({ width: 2, color: 0x0f3460 });
+      .fill(backgroundColor ?? UI_CONFIG.COLORS.gridBackground)
+      .stroke({ width: 2, color: UI_CONFIG.COLORS.gridStroke });
   }
 
   /**

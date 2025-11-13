@@ -8,17 +8,17 @@
     "🏘️ Residents Celebrate as Neighborhood Routes Reconnect"
   ],
   "gridDimensions": {
-    "rows": 7,
-    "cols": 5
+    "rows": 4,
+    "cols": 4
   },
   "turnpike": {
-    "row": 2,
+    "row": 1,
     "col": 1,
     "rotation": 0
   },
   "landmarks": [
     {
-      "row": 5,
+      "row": 4,
       "col": 1,
       "landmarkType": "home",
       "rotation": 0
@@ -26,17 +26,17 @@
   ],
   "tiles": [
     {
-      "row": 1,
-      "col": 1,
+      "row": 0,
+      "col": 0,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 0,
-      "initialRotation": 90,
+      "initialRotation": 1800,
       "rotatable": true,
       "comment": "Vertical segment connecting T upward"
     },
     {
-      "row": 1,
+      "row": 0,
       "col": 2,
       "tileType": "straight",
       "roadType": "local_road",
@@ -46,7 +46,17 @@
       "comment": "Top-left corner"
     },
     {
-      "row": 1,
+      "row": 0,
+      "col": 1,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 180,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Top-left corner"
+    },
+    {
+      "row": 0,
       "col": 3,
       "tileType": "corner",
       "roadType": "local_road",
@@ -56,14 +66,24 @@
       "comment": "Top horizontal segment"
     },
     {
-      "row": 2,
-      "col": 1,
+      "row": 1,
+      "col": 0,
       "tileType": "turnpike",
       "roadType": "turnpike",
       "solutionRotation": 0,
       "initialRotation": 0,
       "rotatable": false,
       "comment": "Turnpike (fixed)"
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Right vertical segment"
     },
     {
       "row": 2,
@@ -77,26 +97,6 @@
     },
     {
       "row": 3,
-      "col": 3,
-      "tileType": "straight",
-      "roadType": "local_road",
-      "solutionRotation": 0,
-      "initialRotation": 90,
-      "rotatable": true,
-      "comment": "Right vertical segment"
-    },
-    {
-      "row": 4,
-      "col": 3,
-      "tileType": "straight",
-      "roadType": "local_road",
-      "solutionRotation": 0,
-      "initialRotation": 0,
-      "rotatable": true,
-      "comment": "Right vertical segment"
-    },
-    {
-      "row": 5,
       "col": 1,
       "tileType": "landmark",
       "roadType": "landmark",
@@ -107,7 +107,7 @@
       "comment": "Home landmark (fixed)"
     },
     {
-      "row": 5,
+      "row": 3,
       "col": 2,
       "tileType": "straight",
       "roadType": "local_road",
@@ -117,7 +117,7 @@
       "comment": "Bottom-left corner from H"
     },
     {
-      "row": 5,
+      "row": 3,
       "col": 3,
       "tileType": "corner",
       "roadType": "local_road",

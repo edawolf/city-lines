@@ -2,6 +2,7 @@ import { Container, Graphics, Text } from "pixi.js";
 
 import type { Primitive } from "../primitives/Primitive";
 import type { EntityConfig } from "../config/types";
+import { UI_CONFIG } from "../config/ui-config";
 
 /**
  * Direction enum for road connections
@@ -153,7 +154,7 @@ export class RoadTile extends Container {
       text: this.tileType[0].toUpperCase(),
       style: {
         fontSize: 12,
-        fill: 0xffffff,
+        fill: UI_CONFIG.COLORS.textWhite,
       },
     });
     this.labelText.anchor.set(0.5);
@@ -175,12 +176,12 @@ export class RoadTile extends Container {
     // Draw background
     this.graphics
       .rect(-halfSize, -halfSize, this.tileSize, this.tileSize)
-      .fill(0x2c3e50);
+      .fill(UI_CONFIG.COLORS.tileBackground);
 
     // Draw grid lines
     this.graphics
       .rect(-halfSize, -halfSize, this.tileSize, this.tileSize)
-      .stroke({ width: 1, color: 0x34495e });
+      .stroke({ width: 1, color: UI_CONFIG.COLORS.tileGridLine });
 
     // Draw based on specific type with icons
     switch (this.roadType) {
@@ -198,13 +199,13 @@ export class RoadTile extends Container {
         break;
     }
 
-    // Visual indicator if rotatable
-    if (this.rotatable) {
-      this.graphics
-        .circle(halfSize * 0.7, halfSize * 0.7, 6)
-        .fill(0x3498db)
-        .stroke({ width: 1, color: 0xffffff });
-    }
+    // Visual indicator if rotatable (removed for cleaner look)
+    // if (this.rotatable) {
+    //   this.graphics
+    //     .circle(halfSize * 0.7, halfSize * 0.7, 6)
+    //     .fill(UI_CONFIG.COLORS.tileRotationIndicator)
+    //     .stroke({ width: 1, color: UI_CONFIG.COLORS.textWhite });
+    // }
   }
 
   /**
@@ -233,7 +234,7 @@ export class RoadTile extends Container {
               roadWidth,
               halfSize - this.tileSize * 0.3,
             )
-            .fill(0x95a5a6);
+            .fill(UI_CONFIG.COLORS.roadColor);
           break;
         case Direction.South:
           this.graphics
@@ -243,7 +244,7 @@ export class RoadTile extends Container {
               roadWidth,
               halfSize - this.tileSize * 0.2,
             )
-            .fill(0x95a5a6);
+            .fill(UI_CONFIG.COLORS.roadColor);
           break;
         case Direction.East:
           this.graphics
@@ -253,7 +254,7 @@ export class RoadTile extends Container {
               halfSize - this.tileSize * 0.2,
               roadWidth,
             )
-            .fill(0x95a5a6);
+            .fill(UI_CONFIG.COLORS.roadColor);
           break;
         case Direction.West:
           this.graphics
@@ -263,7 +264,7 @@ export class RoadTile extends Container {
               halfSize - this.tileSize * 0.3,
               roadWidth,
             )
-            .fill(0x95a5a6);
+            .fill(UI_CONFIG.COLORS.roadColor);
           break;
       }
     });
@@ -296,7 +297,7 @@ export class RoadTile extends Container {
               roadWidth,
               halfSize - this.tileSize * 0.3,
             )
-            .fill(0x95a5a6);
+            .fill(UI_CONFIG.COLORS.roadColor);
           break;
         case Direction.South:
           this.graphics
@@ -306,7 +307,7 @@ export class RoadTile extends Container {
               roadWidth,
               halfSize - this.tileSize * 0.2,
             )
-            .fill(0x95a5a6);
+            .fill(UI_CONFIG.COLORS.roadColor);
           break;
         case Direction.East:
           this.graphics
@@ -316,7 +317,7 @@ export class RoadTile extends Container {
               halfSize - this.tileSize * 0.2,
               roadWidth,
             )
-            .fill(0x95a5a6);
+            .fill(UI_CONFIG.COLORS.roadColor);
           break;
         case Direction.West:
           this.graphics
@@ -326,7 +327,7 @@ export class RoadTile extends Container {
               halfSize - this.tileSize * 0.3,
               roadWidth,
             )
-            .fill(0x95a5a6);
+            .fill(UI_CONFIG.COLORS.roadColor);
           break;
       }
     });
@@ -450,7 +451,7 @@ export class RoadTile extends Container {
       this.graphics
         .circle(0, 0, roadWidth / 2)
         .fill(color)
-        .stroke({ width: 2, color: 0xffffff });
+        .stroke({ width: 2, color: UI_CONFIG.COLORS.textWhite });
     }
 
     // Add road markings for highways
@@ -483,7 +484,7 @@ export class RoadTile extends Container {
                 lineWidth,
                 dashLength,
               )
-              .fill(0xf1c40f);
+              .fill(UI_CONFIG.COLORS.roadMarkings);
           }
           break;
         case Direction.East:
@@ -497,7 +498,7 @@ export class RoadTile extends Container {
                 dashLength,
                 lineWidth,
               )
-              .fill(0xf1c40f);
+              .fill(UI_CONFIG.COLORS.roadMarkings);
           }
           break;
       }
@@ -508,21 +509,22 @@ export class RoadTile extends Container {
    * Get color based on road type hierarchy
    */
   private getColorForRoadType(): number {
+    const colors = UI_CONFIG.COLORS.roadTypeColors;
     switch (this.roadType) {
       case RoadType.House:
-        return 0xe74c3c; // Red
+        return colors.house;
       case RoadType.LocalRoad:
-        return 0x95a5a6; // Gray
+        return colors.localRoad;
       case RoadType.ArterialRoad:
-        return 0xf39c12; // Orange
+        return colors.arterialRoad;
       case RoadType.Highway:
-        return 0xe67e22; // Dark orange
+        return colors.highway;
       case RoadType.Turnpike:
-        return 0x9b59b6; // Purple
+        return colors.turnpike;
       case RoadType.Landmark:
-        return 0x2ecc71; // Green
+        return colors.landmark;
       default:
-        return 0x95a5a6;
+        return colors.localRoad;
     }
   }
 

@@ -1,4 +1,5 @@
 import { Direction, RoadType, LandmarkType } from "../entities/RoadTile";
+import { UI_CONFIG } from "../config/ui-config";
 
 /**
  * LevelGenerator
@@ -603,7 +604,7 @@ export class LevelGenerator {
           config: {
             rows: level.gridSize.rows,
             cols: level.gridSize.cols,
-            backgroundColor: "0x1a1a2e",
+            backgroundColor: `0x${UI_CONFIG.COLORS.gridBackground.toString(16)}`,
           },
         },
       ],
