@@ -8,8 +8,8 @@
     "📰 Mayor Announces Phase 2 of Infrastructure Revival Plan"
   ],
   "gridDimensions": {
-    "rows": 6,
-    "cols": 6
+    "rows": 5,
+    "cols": 5
   },
   "turnpike": {
     "row": 2,
@@ -32,8 +32,8 @@
   ],
   "tiles": [
     {
-      "row": 2,
-      "col": 1,
+      "row": 1,
+      "col": 0,
       "tileType": "turnpike",
       "roadType": "turnpike",
       "solutionRotation": 90,
@@ -42,8 +42,8 @@
       "comment": "Turnpike (fixed)"
     },
     {
-      "row": 2,
-      "col": 2,
+      "row": 1,
+      "col": 1,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 90,
@@ -52,8 +52,8 @@
       "comment": "Horizontal road"
     },
     {
-      "row": 2,
-      "col": 3,
+      "row": 1,
+      "col": 2,
       "tileType": "t_junction",
       "roadType": "local_road",
       "solutionRotation": 180,
@@ -62,8 +62,8 @@
       "comment": "Corner up"
     },
     {
-      "row": 1,
-      "col": 3,
+      "row": 0,
+      "col": 2,
       "tileType": "landmark",
       "roadType": "landmark",
       "solutionRotation": 180,
@@ -73,8 +73,8 @@
       "comment": "Home landmark (fixed)"
     },
     {
-      "row": 2,
-      "col": 4,
+      "row": 1,
+      "col": 3,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 90,
@@ -83,8 +83,8 @@
       "comment": "Horizontal road"
     },
     {
-      "row": 2,
-      "col": 5,
+      "row": 1,
+      "col": 4,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 270,
@@ -93,8 +93,8 @@
       "comment": "Corner down"
     },
     {
-      "row": 3,
-      "col": 5,
+      "row": 2,
+      "col": 4,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -102,9 +102,20 @@
       "rotatable": true,
       "comment": "Vertical road"
     },
+
     {
-      "row": 4,
-      "col": 5,
+      "row": 3,
+      "col": 4,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Corner left"
+    },
+    {
+      "row": 3,
+      "col": 3,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -114,7 +125,17 @@
     },
     {
       "row": 4,
-      "col": 4,
+      "col": 3,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Corner left"
+    },
+    {
+      "row": 4,
+      "col": 2,
       "tileType": "landmark",
       "roadType": "landmark",
       "solutionRotation": 90,

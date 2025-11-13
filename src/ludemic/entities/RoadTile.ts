@@ -149,16 +149,24 @@ export class RoadTile extends Container {
     this.graphics = new Graphics();
     this.addChild(this.graphics);
 
-    // Add debug label
-    this.labelText = new Text({
-      text: this.tileType[0].toUpperCase(),
-      style: {
-        fontSize: 12,
-        fill: UI_CONFIG.COLORS.textWhite,
-      },
-    });
-    this.labelText.anchor.set(0.5);
-    this.addChild(this.labelText);
+    // Create debug label only for special tiles (house, landmark, turnpike)
+    // Not for regular road tiles (corner, straight, t_junction, crossroads)
+    const isSpecialTile =
+      this.roadType === RoadType.House ||
+      this.roadType === RoadType.Landmark ||
+      this.roadType === RoadType.Turnpike;
+
+    if (isSpecialTile) {
+      this.labelText = new Text({
+        text: this.tileType[0].toUpperCase(),
+        style: {
+          fontSize: 12,
+          fill: UI_CONFIG.COLORS.textWhite,
+        },
+      });
+      this.labelText.anchor.set(0.5);
+      this.addChild(this.labelText);
+    }
 
     this.draw();
   }
@@ -446,13 +454,13 @@ export class RoadTile extends Container {
       this.graphics.fill(color);
     });
 
-    // Draw center junction if multiple openings
-    if (openings.length > 1) {
-      this.graphics
-        .circle(0, 0, roadWidth / 2)
-        .fill(color)
-        .stroke({ width: 2, color: UI_CONFIG.COLORS.textWhite });
-    }
+    // Center junction circles removed for cleaner look
+    // if (openings.length > 1) {
+    //   this.graphics
+    //     .circle(0, 0, roadWidth / 2)
+    //     .fill(color)
+    //     .stroke({ width: 2, color: UI_CONFIG.COLORS.textWhite });
+    // }
 
     // Add road markings for highways
     if (
