@@ -159,18 +159,6 @@ export class GameContainer extends Container {
   }
 
   /**
-   * Remove an entity
-   */
-  removeEntity(entity: Container): void {
-    const index = this.entities.indexOf(entity);
-    if (index > -1) {
-      this.entities.splice(index, 1);
-      this.removeChild(entity);
-      entity.destroy();
-    }
-  }
-
-  /**
    * Emit game event for primitives to listen to
    */
   emitGame(event: string, ...args: any[]): void {
@@ -478,49 +466,16 @@ export class GameContainer extends Container {
   }
 
   /**
-   * Regenerate level (respawn blocks)
+   * Regenerate level
+   * Note: City Lines doesn't use block regeneration like Breakout
+   * This method is a placeholder for level progression
    */
   private regenerateLevel(): void {
     if (!this.gameConfig) return;
 
-    console.log(`[GameContainer] Regenerating level ${this.currentLevel}`);
-
-    // Remove all blocks
-    const blocks = this.getEntitiesByType("Block");
-    blocks.forEach((block) => {
-      this.removeEntity(block);
-    });
-
-    // Regenerate blocks from layouts
-    if (this.gameConfig.layouts) {
-      this.gameConfig.layouts.forEach((layoutConfig) => {
-        const entities = GameBuilder["createLayout"](layoutConfig);
-        entities.forEach((entityConfig) => {
-          const entity = GameBuilder["createEntity"](entityConfig, false);
-          this.addEntity(entity, entityConfig.id, entityConfig.type);
-
-          // Attach primitives
-          if (entityConfig.primitives) {
-            GameBuilder["attachPrimitives"](entity, entityConfig.primitives);
-          }
-        });
-      });
-    }
-
-    // Reset ball position
-    const ball = this.getEntityById("ball");
-    if (ball) {
-      ball.position.set(400, 500);
-      // Reset ball velocity through LinearMovement primitive
-      const movement = (
-        ball as Container & {
-          getPrimitive?: (type: string) => any;
-        }
-      ).getPrimitive?.("LinearMovement");
-      if (movement && movement.setVelocity) {
-        movement.setVelocity(200, -200);
-      }
-    }
+    console.log(
+      `[GameContainer] Level ${this.currentLevel} - progression not implemented`,
+    );
 
     // Resume playing
     this.gameState = "playing";

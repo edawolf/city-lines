@@ -43,6 +43,12 @@ export class PrimitiveTestScreen extends Container {
    * Called when screen is shown
    */
   async show(): Promise<void> {
+    // Reset to level 1 when screen is shown
+    this.currentLevelIndex = 0;
+    console.log(
+      `[PrimitiveTestScreen] show() called - Reset to level ${this.currentLevelIndex + 1}`,
+    );
+
     // Create full-screen dark background
     this.background = new Graphics();
     this.addChild(this.background);
@@ -258,15 +264,24 @@ export class PrimitiveTestScreen extends Container {
       // Update level info display
       this.levelInfoText.text = `Level ${levelIndex + 1}/${CityLinesLevelLoader.getLevelCount()} - ${(levelConfig as any).name}`;
 
-      // Listen for path complete event to advance to next level (use once to avoid duplicates)
+      // Listen for path complete event to show headline
       console.log(
         `[PrimitiveTestScreen] Attaching path_complete listener for level ${levelIndex + 1}`,
       );
       this.game.once("path_complete", () => {
         console.log(
-          "[PrimitiveTestScreen] ✅ Path complete detected, advancing to next level",
+          "[PrimitiveTestScreen] ✅ Path complete detected, headline will show",
         );
-        setTimeout(() => {
+        // Headline will be shown by HeadlineReveal primitive
+        // We wait for user to click "Continue" button
+      });
+
+      // Listen for continue button click on headline display to advance
+      if (headlineDisplay) {
+        headlineDisplay.once("continue_clicked", () => {
+          console.log(
+            "[PrimitiveTestScreen] Continue button clicked, advancing to next level",
+          );
           const maxLevel = CityLinesLevelLoader.getLevelCount() - 1;
           if (this.currentLevelIndex < maxLevel) {
             console.log(
@@ -276,8 +291,8 @@ export class PrimitiveTestScreen extends Container {
           } else {
             console.log("🎉 All levels complete!");
           }
-        }, 3000); // Wait 3 seconds after level complete screen
-      });
+        });
+      }
 
       console.log(`✅ Loaded: ${(levelConfig as any).name}`);
     } catch (error) {

@@ -167,6 +167,9 @@ export class HeadlineDisplay extends Container {
    * Handle "Continue" button click
    */
   private handleContinueClick(): void {
+    console.log("[HeadlineDisplay] Continue button clicked");
+    // Emit event so PrimitiveTestScreen can advance to next level
+    this.emit("continue_clicked");
     // Hide the modal immediately when button is clicked
     this.hide();
   }

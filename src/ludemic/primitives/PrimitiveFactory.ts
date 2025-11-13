@@ -2,7 +2,6 @@ import type { Primitive } from "./Primitive";
 import { InputMovement } from "./movement/InputMovement";
 import { LinearMovement } from "./movement/LinearMovement";
 import { BounceCollision } from "./collision/BounceCollision";
-import { DestroyCollision } from "./collision/DestroyCollision";
 import { PointsOnDestroy } from "./scoring/PointsOnDestroy";
 import { ParticleEmitter } from "./juice/ParticleEmitter";
 import { ScreenShake } from "./juice/ScreenShake";
@@ -85,7 +84,6 @@ PrimitiveFactory.register("LinearMovement", LinearMovement);
 
 // Collision primitives
 PrimitiveFactory.register("BounceCollision", BounceCollision);
-PrimitiveFactory.register("DestroyCollision", DestroyCollision);
 
 // Scoring primitives
 PrimitiveFactory.register("PointsOnDestroy", PointsOnDestroy);
