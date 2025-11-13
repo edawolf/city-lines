@@ -22,6 +22,7 @@ import { UI_CONFIG } from "../../ludemic/config/ui-config";
  * Instructions displayed on screen for user testing.
  */
 export class PrimitiveTestScreen extends Container {
+  public static assetBundles = ["main"];
   private game!: GameContainer;
   private background!: Graphics;
   private instructions!: Text;

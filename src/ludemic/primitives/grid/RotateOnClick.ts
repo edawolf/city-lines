@@ -2,6 +2,8 @@ import type { Container, FederatedPointerEvent } from "pixi.js";
 
 import { Primitive, type PrimitiveConfig } from "../Primitive";
 import type { RoadTile } from "../../entities/RoadTile";
+import { audioManager } from "../../AudioManager";
+import { ParticleManager } from "../../effects/ParticleManager";
 
 /**
  * RotateOnClick Primitive
@@ -82,6 +84,24 @@ export class RotateOnClick extends Primitive {
     // Perform rotation
     this.roadTile.rotate();
 
+    // Play rotation sound
+    audioManager.playRotateSound();
+
+    // Create particle burst effect
+    try {
+      const particleManager = ParticleManager.getInstance();
+      // Use local position within the grid (not global world position)
+      const localPos = this.entity.position;
+      particleManager.createBurst(localPos.x, localPos.y, 50, {
+        color: 0x2d5016, // Dark green
+        size: 2,
+        speed: 8,
+        lifetime: 0.5,
+      });
+    } catch (error) {
+      console.warn('[RotateOnClick] ParticleManager not available:', error);
+    }
+
     console.log(
       `[RotateOnClick] 🔄 Tile rotated to ${this.roadTile.rotation}° at (${this.roadTile.gridPos.row}, ${this.roadTile.gridPos.col})`,
     );
@@ -98,7 +118,7 @@ export class RotateOnClick extends Primitive {
       this.entity.emit("tile_rotated", eventData);
 
       // Also emit on parent (game/grid) for compatibility
-      if (this.game?.emit) {
+      if (this.game?.emitGame) {
         this.game.emitGame("tile_rotated", eventData);
       }
     }

@@ -12,6 +12,8 @@ import {
   applySafeArea,
 } from "../config/UIConfig";
 import { UI_CONFIG } from "../config/ui-config";
+import { ParticleManager } from "../effects/ParticleManager";
+import { audioManager } from "../AudioManager";
 
 /**
  * CityGrid Configuration
@@ -55,6 +57,7 @@ export class CityGrid extends Container {
   private landmarks: RoadTile[] = [];
   private turnpikes: RoadTile[] = []; // Track turnpikes separately
   private backgroundGraphics: Graphics;
+  private particleContainer: Container; // Particle layer between background and tiles
   private connectionGraph?: Map<RoadTile, RoadTile[]>;
   private titleText?: Text;
   private viewportWidth = 0; // Will be set by resize() - no hardcoded default
@@ -77,9 +80,16 @@ export class CityGrid extends Container {
     // Initialize calculated tile size (will be updated in resize())
     this.calculatedTileSize = this.config.tileSize ?? 80;
 
-    // Create background
+    // Create background (bottom layer)
     this.backgroundGraphics = new Graphics();
     this.addChild(this.backgroundGraphics);
+
+    // Create particle container (middle layer - between background and tiles)
+    this.particleContainer = new Container();
+    this.addChild(this.particleContainer);
+
+    // Initialize ParticleManager with this container (force reinit for new levels)
+    ParticleManager.initialize(this.particleContainer, true);
 
     // Initialize empty grid
     for (let row = 0; row < this.config.rows; row++) {
@@ -138,6 +148,10 @@ export class CityGrid extends Container {
     // Add to grid
     this.grid[row][col] = tile;
     this.addChild(tile);
+
+    // Keep particle container between background and tiles
+    // Index 0 = background, Index 1 = particles, Index 2+ = tiles
+    this.setChildIndex(this.particleContainer, 1);
 
     // Track landmarks (service destinations: diner, gas station, market)
     if (tile.roadType === RoadType.Landmark) {
@@ -267,6 +281,9 @@ export class CityGrid extends Container {
     console.log("✅ [CityGrid] All landmarks connected to turnpikes!");
     console.log("✅ [CityGrid] All road tiles are part of valid paths!");
     console.log("🎉 LEVEL COMPLETE!");
+
+    // Play level complete sound
+    audioManager.playLevelCompleteSound();
 
     // Emit on both self and game container for compatibility
     this.emit("path_complete", {
@@ -435,10 +452,16 @@ export class CityGrid extends Container {
   }
 
   /**
-   * Update - no per-frame logic needed yet
+   * Update - particle system and visual effects
    */
-  update(_deltaTime: number): void {
-    // Future: animate connections, update visual effects
+  update(deltaTime: number): void {
+    // Update particle system
+    try {
+      const particleManager = ParticleManager.getInstance();
+      particleManager.update(deltaTime);
+    } catch (error) {
+      // ParticleManager not initialized yet
+    }
   }
 
   /**

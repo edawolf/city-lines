@@ -13,6 +13,7 @@ import { LevelCompleteScreen } from "./ui/LevelCompleteScreen";
 import { HeadlineDisplay } from "./ui/HeadlineDisplay";
 import { Particle } from "./primitives/juice/Particle";
 import type { TuningSystem } from "./tuning/TuningSystem";
+import { ParticleManager } from "./effects/ParticleManager";
 
 /**
  * GameContainer
@@ -37,6 +38,7 @@ export class GameContainer extends Container {
 
   // Juice systems
   private particles: Particle[] = [];
+  private particleManager?: ParticleManager; // ParticleManager (initialized by CityGrid)
   private shakeOffset = { x: 0, y: 0 };
   private shakeIntensity = 0;
   private shakeDuration = 0;
@@ -111,7 +113,7 @@ export class GameContainer extends Container {
       }
     });
 
-    // Update particles
+    // Update particles (old system)
     this.particles = this.particles.filter((particle) => {
       const alive = particle.update(deltaTime);
       if (!alive) {
@@ -120,6 +122,11 @@ export class GameContainer extends Container {
       }
       return alive;
     });
+
+    // Update ParticleManager (new system)
+    if (this.particleManager) {
+      this.particleManager.update(deltaTime);
+    }
 
     // Update screen shake
     this.updateShake(deltaTime);
