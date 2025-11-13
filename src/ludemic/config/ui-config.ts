@@ -142,16 +142,16 @@ export const UI_CONFIG = {
    */
   COLORS: {
     // Background colors
-    screenBackground: 0x5a7a5a, // Main screen background (muted green)
-    gridBackground: 0x6b8e6b, // CityGrid background (lighter muted green)
-    gridStroke: 0x4a6b4a, // CityGrid border color (darker green)
+    screenBackground: 0x6fae6f, // Main screen background (brighter green)
+    gridBackground: 0x81c681, // CityGrid background (bright green)
+    gridStroke: 0x5a9a5a, // CityGrid border color (medium green)
 
     // Tile colors
-    tileBackground: 0x7d9d7d, // Tile background (medium green)
-    tileRotationIndicator: 0xa5c4a5, // Rotation indicator dot (light green)
-    tileGridLine: 0x5a7a5a, // Tile grid border (medium-dark green)
-    roadColor: 0x3a4a3a, // Road surface color (darker gray-green)
-    roadMarkings: 0xd4e4d4, // Road markings/dashes (light cream-green)
+    tileBackground: 0x95d395, // Tile background (bright medium green)
+    tileRotationIndicator: 0xb8e6b8, // Rotation indicator dot (very light green)
+    tileGridLine: 0x6fae6f, // Tile grid border (bright medium green)
+    roadColor: 0x4a5a4a, // Road surface color (darker gray-green)
+    roadMarkings: 0xe4f4e4, // Road markings/dashes (very light cream-green)
 
     // Road type colors (different road hierarchy levels)
     roadTypeColors: {

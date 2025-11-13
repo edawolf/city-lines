@@ -1,4 +1,4 @@
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, Graphics, Text, Sprite, Assets } from "pixi.js";
 
 import type { Primitive } from "../primitives/Primitive";
 import type { EntityConfig } from "../config/types";
@@ -121,6 +121,9 @@ export class RoadTile extends Container {
   private primitives: Map<string, Primitive> = new Map();
   private graphics: Graphics;
   private labelText?: Text;
+  private houseSprite?: Sprite; // House image sprite
+  private turnpikeSprite?: Sprite; // Turnpike image sprite
+  private landmarkSprite?: Sprite; // Generic landmark image sprite (gas, diner, market)
 
   public readonly tileType: string;
   public readonly roadType: RoadType;
@@ -217,17 +220,65 @@ export class RoadTile extends Container {
   }
 
   /**
-   * Draw house icon (🏠)
+   * Draw house icon (🏠 or house.png image)
    */
   private drawHouseIcon(): void {
+    console.log("[RoadTile] 🏠 drawHouseIcon() called");
     const halfSize = this.tileSize / 2;
     const roadWidth = this.tileSize * 0.3;
 
-    // Draw emoji icon
-    if (this.labelText) {
-      this.labelText.text = "🏠";
-      this.labelText.style.fontSize = this.tileSize * 0.6;
-      this.labelText.position.set(0, -this.tileSize * 0.1);
+    // Try to load and use house.png image
+    let houseTexture = null;
+    try {
+      // Try different asset names
+      houseTexture =
+        Assets.cache.get("house.png") ||
+        Assets.cache.get("main/images/house.png");
+
+      console.log("[RoadTile] House texture lookup:", {
+        "house.png": Assets.cache.has("house.png"),
+        "main/images/house.png": Assets.cache.has("main/images/house.png"),
+        found: !!houseTexture,
+      });
+    } catch (error) {
+      console.warn("[RoadTile] Failed to get house texture:", error);
+    }
+
+    if (houseTexture) {
+      // Remove old house sprite if exists
+      if (this.houseSprite) {
+        this.removeChild(this.houseSprite);
+      }
+
+      // Create new house sprite
+      this.houseSprite = new Sprite(houseTexture);
+      this.houseSprite.anchor.set(0.5);
+
+      // Size the sprite to fit nicely in the tile
+      const iconSize = this.tileSize * 0.7;
+      this.houseSprite.width = iconSize;
+      this.houseSprite.height = iconSize;
+
+      // Position slightly above center
+      this.houseSprite.position.set(0, -this.tileSize * 0.05);
+
+      this.addChild(this.houseSprite);
+
+      // Hide text label if we have the image
+      if (this.labelText) {
+        this.labelText.visible = false;
+      }
+
+      console.log("[RoadTile] ✅ House sprite created successfully");
+    } else {
+      // Fallback to emoji icon if image not loaded
+      if (this.labelText) {
+        this.labelText.visible = true;
+        this.labelText.text = "🏠";
+        this.labelText.style.fontSize = this.tileSize * 0.6;
+        this.labelText.position.set(0, -this.tileSize * 0.1);
+      }
+      console.log("[RoadTile] ⚠️ Using emoji fallback - house texture not found");
     }
 
     // Draw connection road in the direction of opening (after rotation)
@@ -282,15 +333,180 @@ export class RoadTile extends Container {
    * Draw landmark icon (service destinations: diner, gas station, market)
    */
   private drawLandmarkIcon(): void {
+    console.log("[RoadTile] 🏛️ drawLandmarkIcon() called, type:", this.landmarkType);
     const halfSize = this.tileSize / 2;
     const roadWidth = this.tileSize * 0.3;
 
-    // Get appropriate icon for landmark type
-    const icon = this.getLandmarkIcon();
-    if (this.labelText) {
-      this.labelText.text = icon;
-      this.labelText.style.fontSize = this.tileSize * 0.6;
-      this.labelText.position.set(0, -this.tileSize * 0.1);
+    // If this is a home landmark, try to use house.png image
+    if (this.landmarkType === LandmarkType.Home) {
+      let houseTexture = null;
+      try {
+        houseTexture =
+          Assets.cache.get("house.png") ||
+          Assets.cache.get("main/images/house.png");
+
+        console.log("[RoadTile] Home landmark texture lookup:", {
+          "house.png": Assets.cache.has("house.png"),
+          "main/images/house.png": Assets.cache.has("main/images/house.png"),
+          found: !!houseTexture,
+        });
+      } catch (error) {
+        console.warn("[RoadTile] Failed to get house texture:", error);
+      }
+
+      if (houseTexture) {
+        // Remove old house sprite if exists
+        if (this.houseSprite) {
+          this.removeChild(this.houseSprite);
+        }
+
+        // Create new house sprite
+        this.houseSprite = new Sprite(houseTexture);
+        this.houseSprite.anchor.set(0.5);
+
+        // Size the sprite to fit nicely in the tile (90% of tile size)
+        const iconSize = this.tileSize * 0.90;
+        this.houseSprite.width = iconSize;
+        this.houseSprite.height = iconSize;
+
+        // Position slightly above center
+        this.houseSprite.position.set(0, -this.tileSize * 0.05);
+
+        this.addChild(this.houseSprite);
+
+        // Hide text label if we have the image
+        if (this.labelText) {
+          this.labelText.visible = false;
+        }
+
+        console.log("[RoadTile] ✅ Home landmark sprite created successfully");
+      } else {
+        // Fallback to emoji
+        const icon = this.getLandmarkIcon();
+        if (this.labelText) {
+          this.labelText.visible = true;
+          this.labelText.text = icon;
+          this.labelText.style.fontSize = this.tileSize * 0.6;
+          this.labelText.position.set(0, -this.tileSize * 0.1);
+        }
+        console.log("[RoadTile] ⚠️ Using emoji fallback for home");
+      }
+    } else if (this.landmarkType === LandmarkType.GasStation) {
+      // Gas station - try to use gas.png image
+      let gasTexture = null;
+      try {
+        gasTexture =
+          Assets.cache.get("gas.png") ||
+          Assets.cache.get("main/images/gas.png");
+
+        console.log("[RoadTile] Gas station texture lookup:", {
+          "gas.png": Assets.cache.has("gas.png"),
+          "main/images/gas.png": Assets.cache.has("main/images/gas.png"),
+          found: !!gasTexture,
+        });
+      } catch (error) {
+        console.warn("[RoadTile] Failed to get gas texture:", error);
+      }
+
+      if (gasTexture) {
+        // Remove old landmark sprite if exists
+        if (this.landmarkSprite) {
+          this.removeChild(this.landmarkSprite);
+        }
+
+        // Create new gas station sprite
+        this.landmarkSprite = new Sprite(gasTexture);
+        this.landmarkSprite.anchor.set(0.5);
+
+        // Size the sprite to fit nicely in the tile (90% of tile size)
+        const iconSize = this.tileSize * 0.90;
+        this.landmarkSprite.width = iconSize;
+        this.landmarkSprite.height = iconSize;
+
+        // Position slightly above center
+        this.landmarkSprite.position.set(0, -this.tileSize * 0.05);
+
+        this.addChild(this.landmarkSprite);
+
+        // Hide text label if we have the image
+        if (this.labelText) {
+          this.labelText.visible = false;
+        }
+
+        console.log("[RoadTile] ✅ Gas station sprite created successfully");
+      } else {
+        // Fallback to emoji
+        const icon = this.getLandmarkIcon();
+        if (this.labelText) {
+          this.labelText.visible = true;
+          this.labelText.text = icon;
+          this.labelText.style.fontSize = this.tileSize * 0.6;
+          this.labelText.position.set(0, -this.tileSize * 0.1);
+        }
+        console.log("[RoadTile] ⚠️ Using emoji fallback for gas station");
+      }
+    } else if (this.landmarkType === LandmarkType.Diner) {
+      // Diner - try to use diner.png image
+      let dinerTexture = null;
+      try {
+        dinerTexture =
+          Assets.cache.get("diner.png") ||
+          Assets.cache.get("main/images/diner.png");
+
+        console.log("[RoadTile] Diner texture lookup:", {
+          "diner.png": Assets.cache.has("diner.png"),
+          "main/images/diner.png": Assets.cache.has("main/images/diner.png"),
+          found: !!dinerTexture,
+        });
+      } catch (error) {
+        console.warn("[RoadTile] Failed to get diner texture:", error);
+      }
+
+      if (dinerTexture) {
+        // Remove old landmark sprite if exists
+        if (this.landmarkSprite) {
+          this.removeChild(this.landmarkSprite);
+        }
+
+        // Create new diner sprite
+        this.landmarkSprite = new Sprite(dinerTexture);
+        this.landmarkSprite.anchor.set(0.5);
+
+        // Size the sprite to fit nicely in the tile (90% of tile size)
+        const iconSize = this.tileSize * 0.90;
+        this.landmarkSprite.width = iconSize;
+        this.landmarkSprite.height = iconSize;
+
+        // Position slightly above center
+        this.landmarkSprite.position.set(0, -this.tileSize * 0.05);
+
+        this.addChild(this.landmarkSprite);
+
+        // Hide text label if we have the image
+        if (this.labelText) {
+          this.labelText.visible = false;
+        }
+
+        console.log("[RoadTile] ✅ Diner sprite created successfully");
+      } else {
+        // Fallback to emoji
+        const icon = this.getLandmarkIcon();
+        if (this.labelText) {
+          this.labelText.visible = true;
+          this.labelText.text = icon;
+          this.labelText.style.fontSize = this.tileSize * 0.6;
+          this.labelText.position.set(0, -this.tileSize * 0.1);
+        }
+        console.log("[RoadTile] ⚠️ Using emoji fallback for diner");
+      }
+    } else {
+      // Other landmark types (market) - use emoji
+      const icon = this.getLandmarkIcon();
+      if (this.labelText) {
+        this.labelText.text = icon;
+        this.labelText.style.fontSize = this.tileSize * 0.6;
+        this.labelText.position.set(0, -this.tileSize * 0.1);
+      }
     }
 
     // Draw connection road in the direction of opening (after rotation)
@@ -369,6 +585,7 @@ export class RoadTile extends Container {
    * Draw turnpike/highway gate icon (🚧)
    */
   private drawTurnpikeIcon(color: number, roadWidth: number): void {
+    console.log("[RoadTile] 🚧 drawTurnpikeIcon() called");
     const halfSize = this.tileSize / 2;
 
     // Draw road going through
@@ -398,11 +615,57 @@ export class RoadTile extends Container {
       }
     });
 
-    // Draw emoji icon for toll gate
-    if (this.labelText) {
-      this.labelText.text = "🚧"; // or 🛂 (passport control) for toll booth feel
-      this.labelText.style.fontSize = this.tileSize * 0.5;
-      this.labelText.position.set(0, 0);
+    // Try to load and use turnpike.png image
+    let turnpikeTexture = null;
+    try {
+      turnpikeTexture =
+        Assets.cache.get("turnpike.png") ||
+        Assets.cache.get("main/images/turnpike.png");
+
+      console.log("[RoadTile] Turnpike texture lookup:", {
+        "turnpike.png": Assets.cache.has("turnpike.png"),
+        "main/images/turnpike.png": Assets.cache.has("main/images/turnpike.png"),
+        found: !!turnpikeTexture,
+      });
+    } catch (error) {
+      console.warn("[RoadTile] Failed to get turnpike texture:", error);
+    }
+
+    if (turnpikeTexture) {
+      // Remove old turnpike sprite if exists
+      if (this.turnpikeSprite) {
+        this.removeChild(this.turnpikeSprite);
+      }
+
+      // Create new turnpike sprite
+      this.turnpikeSprite = new Sprite(turnpikeTexture);
+      this.turnpikeSprite.anchor.set(0.5);
+
+      // Size the sprite to fit nicely in the tile (90% of tile size)
+      const iconSize = this.tileSize * 0.90;
+      this.turnpikeSprite.width = iconSize;
+      this.turnpikeSprite.height = iconSize;
+
+      // Position at center
+      this.turnpikeSprite.position.set(0, 0);
+
+      this.addChild(this.turnpikeSprite);
+
+      // Hide text label if we have the image
+      if (this.labelText) {
+        this.labelText.visible = false;
+      }
+
+      console.log("[RoadTile] ✅ Turnpike sprite created successfully");
+    } else {
+      // Fallback to emoji icon for toll gate
+      if (this.labelText) {
+        this.labelText.visible = true;
+        this.labelText.text = "🚧"; // or 🛂 (passport control) for toll booth feel
+        this.labelText.style.fontSize = this.tileSize * 0.5;
+        this.labelText.position.set(0, 0);
+      }
+      console.log("[RoadTile] ⚠️ Using emoji fallback for turnpike");
     }
   }
 
