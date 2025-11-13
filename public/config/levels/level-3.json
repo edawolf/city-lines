@@ -9,8 +9,8 @@
     "🎉 City Marks Milestone: 50% of Grid Network Operational"
   ],
   "gridDimensions": {
-    "rows": 7,
-    "cols": 7
+    "rows": 6,
+    "cols": 6
   },
   "turnpike": {
     "row": 3,
@@ -45,8 +45,8 @@
   ],
   "tiles": [
     {
-      "row": 3,
-      "col": 1,
+      "row": 2,
+      "col": 0,
       "tileType": "turnpike",
       "roadType": "turnpike",
       "solutionRotation": 90,
@@ -55,8 +55,8 @@
       "comment": "Turnpike (fixed)"
     },
     {
-      "row": 3,
-      "col": 2,
+      "row": 2,
+      "col": 1,
       "tileType": "t_junction",
       "roadType": "local_road",
       "solutionRotation": 270,
@@ -65,8 +65,8 @@
       "comment": "T-junction branching up and down"
     },
     {
-      "row": 2,
-      "col": 2,
+      "row": 1,
+      "col": 1,
       "tileType": "t_junction",
       "roadType": "local_road",
       "solutionRotation": 180,
@@ -75,8 +75,8 @@
       "comment": "Corner up"
     },
     {
-      "row": 1,
-      "col": 2,
+      "row": 0,
+      "col": 1,
       "tileType": "landmark",
       "roadType": "landmark",
       "solutionRotation": 180,
@@ -86,8 +86,8 @@
       "comment": "Home landmark (fixed)"
     },
     {
-      "row": 2,
-      "col": 3,
+      "row": 1,
+      "col": 2,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 90,
@@ -96,8 +96,8 @@
       "comment": "Horizontal road"
     },
     {
-      "row": 2,
-      "col": 4,
+      "row": 1,
+      "col": 3,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 270,
@@ -106,8 +106,8 @@
       "comment": "Corner down"
     },
     {
-      "row": 1,
-      "col": 4,
+      "row": 0,
+      "col": 3,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 90,
@@ -116,8 +116,8 @@
       "comment": "Horizontal road"
     },
     {
-      "row": 1,
-      "col": 5,
+      "row": 0,
+      "col": 4,
       "tileType": "landmark",
       "roadType": "landmark",
       "solutionRotation": 270,
@@ -127,8 +127,8 @@
       "comment": "Gas station landmark (fixed)"
     },
     {
-      "row": 4,
-      "col": 2,
+      "row": 3,
+      "col": 1,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 90,
@@ -137,8 +137,8 @@
       "comment": "Corner right"
     },
     {
-      "row": 4,
-      "col": 3,
+      "row": 3,
+      "col": 2,
       "tileType": "t_junction",
       "roadType": "local_road",
       "solutionRotation": 180,
@@ -147,8 +147,8 @@
       "comment": "T-junction branching down and sides"
     },
     {
-      "row": 5,
-      "col": 3,
+      "row": 4,
+      "col": 2,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 270,
@@ -157,8 +157,8 @@
       "comment": "T-junction branching left and down"
     },
     {
-      "row": 5,
-      "col": 2,
+      "row": 4,
+      "col": 1,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -167,8 +167,8 @@
       "comment": "Corner left"
     },
     {
-      "row": 5,
-      "col": 1,
+      "row": 4,
+      "col": 0,
       "tileType": "landmark",
       "roadType": "landmark",
       "solutionRotation": 90,
@@ -178,9 +178,29 @@
       "comment": "Diner landmark (fixed)"
     },
     {
+      "row": 3,
+      "col": 3,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 270,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Corner down"
+    },   
+    {
+      "row": 3,
+      "col": 4,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 270,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Corner down"
+    }, 
+    {
       "row": 4,
       "col": 4,
-      "tileType": "straight",
+      "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 270,
       "initialRotation": 0,
