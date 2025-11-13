@@ -188,7 +188,10 @@ export class PrimitiveTestScreen extends Container {
 
     // Redraw full-screen background
     if (this.background) {
-      this.background.clear().rect(0, 0, width, height).fill(UI_CONFIG.COLORS.screenBackground);
+      this.background
+        .clear()
+        .rect(0, 0, width, height)
+        .fill(UI_CONFIG.COLORS.screenBackground);
     }
 
     // Position level info at top center
