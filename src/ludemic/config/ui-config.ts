@@ -22,6 +22,8 @@ export const UI_CONFIG = {
 
     // Inline background box sizing (appears below "Level: X" text)
     widthPercent: 0.35, // 35% of screen width
+    heightPercent: 0.8, // 80% of screen height (maximum)
+    textWrapPercent: 0.9, // 90% of modal width for text wrapping
     paddingPercent: 0.02, // 2% padding inside background box
     backgroundAlpha: 0.7, // Semi-transparent dark background
 

@@ -174,7 +174,7 @@ export class CreationResizePlugin {
       minWidth: 768,
       minHeight: 1024,
       letterbox: true,
-      ...options.resizeOptions,
+      ...(options as any).resizeOptions,
     };
     app.resizeTo =
       options.resizeTo || (null as unknown as Window | HTMLElement);

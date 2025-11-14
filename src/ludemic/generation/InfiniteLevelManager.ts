@@ -58,13 +58,17 @@ export class InfiniteLevelManager {
       `[InfiniteLevelManager] Level ${levelNumber}: seed=${seed}, params=`,
       params,
     );
-    const generator = new LevelGenerator({ ...params, seed });
 
     let attempts = 0;
     while (attempts < this.MAX_GENERATION_ATTEMPTS) {
       attempts++;
 
       try {
+        // Create a new generator instance for each attempt with fresh seed
+        const generator = new LevelGenerator({
+          ...params,
+          seed: seed + attempts - 1,
+        });
         const level = generator.generate();
 
         // TODO: Add validation here (Step 3)
@@ -80,13 +84,7 @@ export class InfiniteLevelManager {
           `[InfiniteLevelManager] Attempt ${attempts} failed:`,
           error,
         );
-        // Try again with slightly different seed
-        const retryGenerator = new LevelGenerator({
-          ...params,
-          seed: seed + attempts,
-        });
-        const level = retryGenerator.generate();
-        return this.convertToGameConfig(level, levelNumber);
+        // Continue to next attempt with different seed (seed + attempts)
       }
     }
 

@@ -18,7 +18,7 @@ setEngine(engine);
   await engine.init({
     background: "#1E1E1E",
     resizeOptions: { minWidth: 800, minHeight: 600, letterbox: true },
-  });
+  } as any);
 
   // Initialize the user settings
   userSettings.init();

@@ -20,6 +20,7 @@ export interface LevelGeneratorConfig {
   landmarkCount: number;
   difficulty: "easy" | "medium" | "hard";
   seed?: number; // For reproducible levels
+  minPathLength?: number; // Minimum path length from landmark to turnpike
 }
 
 export interface GeneratedTile {
