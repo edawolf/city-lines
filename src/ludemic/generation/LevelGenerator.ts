@@ -464,7 +464,10 @@ export class LevelGenerator {
         // Check not already occupied by landmark or turnpike (except target)
         const existingTile = this.grid[newRow][newCol];
         if (existingTile && existingTile !== to) {
-          if (existingTile.tileType === "landmark" || existingTile.tileType === "turnpike") {
+          if (
+            existingTile.tileType === "landmark" ||
+            existingTile.tileType === "turnpike"
+          ) {
             continue;
           }
         }
@@ -487,12 +490,17 @@ export class LevelGenerator {
 
       // If no valid moves, path generation failed
       if (moves.length === 0) {
-        throw new Error(`Path generation stuck at (${current.row},${current.col})`);
+        throw new Error(
+          `Path generation stuck at (${current.row},${current.col})`,
+        );
       }
 
       // Sort moves by score and pick the best (or occasionally a random one)
       moves.sort((a, b) => a.score - b.score);
-      const chosenMove = this.random() < 0.8 ? moves[0] : moves[Math.floor(this.random() * moves.length)];
+      const chosenMove =
+        this.random() < 0.8
+          ? moves[0]
+          : moves[Math.floor(this.random() * moves.length)];
 
       // Make the move
       current.row = chosenMove.row;
@@ -827,11 +835,7 @@ export class LevelGenerator {
   ): void {
     // Check each landmark can reach turnpike
     for (const landmark of landmarks) {
-      const canReach = this.canReachTarget(
-        landmark,
-        turnpike,
-        new Set(),
-      );
+      const canReach = this.canReachTarget(landmark, turnpike, new Set());
       if (!canReach) {
         throw new Error(
           `Landmark at (${landmark.row},${landmark.col}) cannot reach turnpike at (${turnpike.row},${turnpike.col})`,
