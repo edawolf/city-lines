@@ -176,14 +176,11 @@ export class AudioManager {
       console.log("[AudioManager] 🎵 Starting BG layer: bg-06.wav");
       engine().audio.sfx.play("main/sounds/bg-06.wav", {
         volume,
-        loop: true
+        loop: true,
       });
       console.log("[AudioManager] ✅ BG layer playing (looped)");
     } catch (error) {
-      console.error(
-        "[AudioManager] ❌ Failed to play BG layer:",
-        error,
-      );
+      console.error("[AudioManager] ❌ Failed to play BG layer:", error);
     }
   }
 }
