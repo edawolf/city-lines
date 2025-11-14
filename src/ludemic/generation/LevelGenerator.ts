@@ -280,103 +280,102 @@ export class LevelGenerator {
           tileType: "landmark",
           roadType: RoadType.Landmark,
           rotation: 180, // Face down (South)
-        scrambledRotation: 180,
-        rotatable: false,
-        landmarkType: landmarkTypes[i % landmarkTypes.length],
-        comment: `Landmark ${i + 1}`,
-      };
+          scrambledRotation: 180,
+          rotatable: false,
+          landmarkType: landmarkTypes[i % landmarkTypes.length],
+          comment: `Landmark ${i + 1}`,
+        };
 
-      this.grid[row][col] = landmark;
-      landmarks.push(landmark);
-      placed = true;
-      break;
-    }
+        this.grid[row][col] = landmark;
+        landmarks.push(landmark);
+        placed = true;
+        break;
+      }
 
-    if (!placed) {
-      throw new Error(
-        `Failed to place landmark ${i + 1}. No valid positions found.`,
-      );
-    }
-  }
-
-  return landmarks;
-}
-
-/**
- * Find turnpike in grid
- */
-private findTurnpike(): GeneratedTile | null {
-  for (const row of this.grid) {
-    for (const tile of row) {
-      if (tile && tile.tileType === "turnpike") {
-        return tile;
+      if (!placed) {
+        throw new Error(
+          `Failed to place landmark ${i + 1}. No valid positions found.`,
+        );
       }
     }
+
+    return landmarks;
   }
-  return null;
-}
 
-/**
- * Check if position is valid for landmark placement
- * Following all placement rules from instructions
- */
-private isValidLandmarkPosition(
-  row: number,
-  col: number,
-  existingLandmarks: GeneratedTile[],
-  turnpike: GeneratedTile,
-): boolean {
-  // Rule 1: Manhattan distance from turnpike >= 3
-  const distFromTurnpike =
-    Math.abs(row - turnpike.row) + Math.abs(col - turnpike.col);
-  if (distFromTurnpike < 3) return false;
+  /**
+   * Find turnpike in grid
+   */
+  private findTurnpike(): GeneratedTile | null {
+    for (const row of this.grid) {
+      for (const tile of row) {
+        if (tile && tile.tileType === "turnpike") {
+          return tile;
+        }
+      }
+    }
+    return null;
+  }
 
-  // Check against all existing landmarks
-  for (const landmark of existingLandmarks) {
-    // Rule 2: Landmark-to-landmark distance >= 2
-    const distFromLandmark =
-      Math.abs(row - landmark.row) + Math.abs(col - landmark.col);
-    if (distFromLandmark < 2) return false;
+  /**
+   * Check if position is valid for landmark placement
+   * Following all placement rules from instructions
+   */
+  private isValidLandmarkPosition(
+    row: number,
+    col: number,
+    existingLandmarks: GeneratedTile[],
+    turnpike: GeneratedTile,
+  ): boolean {
+    // Rule 1: Manhattan distance from turnpike >= 3
+    const distFromTurnpike =
+      Math.abs(row - turnpike.row) + Math.abs(col - turnpike.col);
+    if (distFromTurnpike < 3) return false;
 
-    // Rule 3: No tight stacking in rows or columns (>= 3 apart)
-    if (
-      (row === landmark.row && Math.abs(col - landmark.col) < 3) ||
-      (col === landmark.col && Math.abs(row - landmark.row) < 3)
-    ) {
+    // Check against all existing landmarks
+    for (const landmark of existingLandmarks) {
+      // Rule 2: Landmark-to-landmark distance >= 2
+      const distFromLandmark =
+        Math.abs(row - landmark.row) + Math.abs(col - landmark.col);
+      if (distFromLandmark < 2) return false;
+
+      // Rule 3: No tight stacking in rows or columns (>= 3 apart)
+      if (
+        (row === landmark.row && Math.abs(col - landmark.col) < 3) ||
+        (col === landmark.col && Math.abs(row - landmark.row) < 3)
+      ) {
+        return false;
+      }
+
+      // Rule 5: 2x2 overlap rule - no landmark in 2x2 region around this position
+      if (
+        Math.abs(row - landmark.row) <= 1 &&
+        Math.abs(col - landmark.col) <= 1
+      ) {
+        return false;
+      }
+    }
+
+    // Rule 4: Quadrant distribution (simplified - check if quadrant is not overfilled)
+    // This is a basic check - could be enhanced
+    const { rows, cols } = this.config.gridSize;
+    const midRow = Math.floor(rows / 2);
+    const midCol = Math.floor(cols / 2);
+    const quadrant = (row < midRow ? 0 : 2) + (col < midCol ? 0 : 1);
+
+    const quadrantCounts = [0, 0, 0, 0];
+    for (const landmark of existingLandmarks) {
+      const lq =
+        (landmark.row < midRow ? 0 : 2) + (landmark.col < midCol ? 0 : 1);
+      quadrantCounts[lq]++;
+    }
+
+    const maxPerQuadrant = Math.ceil(this.config.landmarkCount / 2);
+    if (quadrantCounts[quadrant] >= maxPerQuadrant) {
       return false;
     }
 
-    // Rule 5: 2x2 overlap rule - no landmark in 2x2 region around this position
-    if (
-      Math.abs(row - landmark.row) <= 1 &&
-      Math.abs(col - landmark.col) <= 1
-    ) {
-      return false;
-    }
+    return true;
   }
-
-  // Rule 4: Quadrant distribution (simplified - check if quadrant is not overfilled)
-  // This is a basic check - could be enhanced
-  const { rows, cols } = this.config.gridSize;
-  const midRow = Math.floor(rows / 2);
-  const midCol = Math.floor(cols / 2);
-  const quadrant =
-    (row < midRow ? 0 : 2) + (col < midCol ? 0 : 1);
-
-  const quadrantCounts = [0, 0, 0, 0];
-  for (const landmark of existingLandmarks) {
-    const lq =
-      (landmark.row < midRow ? 0 : 2) + (landmark.col < midCol ? 0 : 1);
-    quadrantCounts[lq]++;
-  }
-
-  const maxPerQuadrant = Math.ceil(this.config.landmarkCount / 2);
-  if (quadrantCounts[quadrant] >= maxPerQuadrant) {
-    return false;
-  }
-
-  return true;
-}
 
   /**
    * Generate a valid path from landmark to turnpike

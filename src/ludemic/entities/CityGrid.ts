@@ -400,7 +400,7 @@ export class CityGrid extends Container {
     try {
       const particleManager = ParticleManager.getInstance();
       particleManager.createConfetti(this.viewportWidth, this.viewportHeight);
-    } catch (error) {
+    } catch (_error) {
       console.warn(
         "[CityGrid] Could not create confetti - ParticleManager not available",
       );
@@ -625,7 +625,7 @@ export class CityGrid extends Container {
     try {
       const particleManager = ParticleManager.getInstance();
       particleManager.update(deltaTime);
-    } catch (error) {
+    } catch (_error) {
       // ParticleManager not initialized yet
     }
   }

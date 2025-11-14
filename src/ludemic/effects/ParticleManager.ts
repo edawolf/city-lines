@@ -166,7 +166,7 @@ export class ParticleManager {
    * @param viewportWidth - Width of the viewport
    * @param viewportHeight - Height of the viewport
    */
-  public createConfetti(viewportWidth: number, viewportHeight: number): void {
+  public createConfetti(viewportWidth: number, _viewportHeight: number): void {
     console.log("[ParticleManager] 🎉 Creating FAST confetti celebration!");
 
     const confettiColors = [
