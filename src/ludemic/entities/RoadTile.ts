@@ -20,8 +20,6 @@ export enum Direction {
 export enum RoadType {
   House = "house",
   LocalRoad = "local_road",
-  ArterialRoad = "arterial_road",
-  Highway = "highway",
   Turnpike = "turnpike",
   Landmark = "landmark", // Service destinations: diner, gas station, market
 }
@@ -51,8 +49,8 @@ const BASE_OPENINGS: Record<string, Direction[]> = {
     Direction.West,
   ],
   house: [Direction.South], // Houses connect downward
-  landmark: [Direction.North], // Landmarks connect upward
-  turnpike: [Direction.North, Direction.South], // Turnpikes are like straight roads
+  landmark: [Direction.North, Direction.East, Direction.South, Direction.West], // Landmarks connect from all sides
+  turnpike: [Direction.North, Direction.East, Direction.South, Direction.West], // Turnpikes connect from all sides
 };
 
 /**
@@ -63,22 +61,10 @@ export const CONNECTION_RULES: Record<RoadType, RoadType[]> = {
   [RoadType.LocalRoad]: [
     RoadType.LocalRoad,
     RoadType.House,
-    RoadType.ArterialRoad,
     RoadType.Landmark,
     RoadType.Turnpike,
   ],
-  [RoadType.ArterialRoad]: [
-    RoadType.LocalRoad,
-    RoadType.ArterialRoad,
-    RoadType.Highway,
-  ],
-  [RoadType.Highway]: [
-    RoadType.ArterialRoad,
-    RoadType.Highway,
-    RoadType.Turnpike,
-  ],
   [RoadType.Turnpike]: [
-    RoadType.Highway,
     RoadType.Landmark,
     RoadType.LocalRoad,
   ],
@@ -113,7 +99,7 @@ export interface RoadTileConfig {
  *
  * Key Features:
  * - Direction-based connections (N, E, S, W)
- * - Road type hierarchy (house → local → arterial → highway → turnpike → landmark)
+ * - Road type hierarchy (house → local → turnpike → landmark)
  * - Rotation in 90° increments
  * - Visual representation of road type and openings
  */
@@ -279,7 +265,9 @@ export class RoadTile extends Container {
         this.labelText.style.fontSize = this.tileSize * 0.6;
         this.labelText.position.set(0, -this.tileSize * 0.1);
       }
-      console.log("[RoadTile] ⚠️ Using emoji fallback - house texture not found");
+      console.log(
+        "[RoadTile] ⚠️ Using emoji fallback - house texture not found",
+      );
     }
 
     // Draw connection road in the direction of opening (after rotation)
@@ -334,7 +322,10 @@ export class RoadTile extends Container {
    * Draw landmark icon (service destinations: diner, gas station, market)
    */
   private drawLandmarkIcon(): void {
-    console.log("[RoadTile] 🏛️ drawLandmarkIcon() called, type:", this.landmarkType);
+    console.log(
+      "[RoadTile] 🏛️ drawLandmarkIcon() called, type:",
+      this.landmarkType,
+    );
     const halfSize = this.tileSize / 2;
     const roadWidth = this.tileSize * 0.3;
 
@@ -586,7 +577,7 @@ export class RoadTile extends Container {
   }
 
   /**
-   * Draw turnpike/highway gate icon (🚧)
+   * Draw turnpike gate icon (🚧)
    */
   private drawTurnpikeIcon(color: number, roadWidth: number): void {
     console.log("[RoadTile] 🚧 drawTurnpikeIcon() called");
@@ -628,7 +619,9 @@ export class RoadTile extends Container {
 
       console.log("[RoadTile] Turnpike texture lookup:", {
         "turnpike.png": Assets.cache.has("turnpike.png"),
-        "main/images/turnpike.png": Assets.cache.has("main/images/turnpike.png"),
+        "main/images/turnpike.png": Assets.cache.has(
+          "main/images/turnpike.png",
+        ),
         found: !!turnpikeTexture,
       });
     } catch (error) {
@@ -730,17 +723,11 @@ export class RoadTile extends Container {
     //     .stroke({ width: 2, color: UI_CONFIG.COLORS.textWhite });
     // }
 
-    // Add road markings for highways
-    if (
-      this.roadType === RoadType.Highway ||
-      this.roadType === RoadType.ArterialRoad
-    ) {
-      this.drawRoadMarkings(roadWidth, openings);
-    }
+    // Road markings removed (no highway type)
   }
 
   /**
-   * Draw road markings (dashed lines for highways)
+   * Draw road markings (dashed lines) - currently unused
    */
   private drawRoadMarkings(roadWidth: number, openings: Direction[]): void {
     const dashLength = this.tileSize * 0.1;
@@ -798,10 +785,6 @@ export class RoadTile extends Container {
         return colors.house;
       case RoadType.LocalRoad:
         return colors.localRoad;
-      case RoadType.ArterialRoad:
-        return colors.arterialRoad;
-      case RoadType.Highway:
-        return colors.highway;
       case RoadType.Turnpike:
         return colors.turnpike;
       case RoadType.Landmark:

@@ -140,7 +140,7 @@ export class MainScreen extends Container {
   public prepare() {}
 
   /** Update the screen */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   public update(_time: Ticker) {
     if (this.paused) return;
     this.bouncer.update();

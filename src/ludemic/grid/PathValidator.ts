@@ -312,8 +312,13 @@ export class PathValidator {
         for (const turnpike of turnpikes) {
           const result = this.findPath(landmark, turnpike, graph);
           if (result.exists && result.path) {
-            // Check if current tile is in this path
-            if (result.path.includes(tile)) {
+            // Check if current tile is in this path (by grid position, not object reference)
+            const tileInPath = result.path.some(
+              (pathTile) =>
+                pathTile.gridPos.row === tile.gridPos.row &&
+                pathTile.gridPos.col === tile.gridPos.col,
+            );
+            if (tileInPath) {
               isOnValidPath = true;
               break;
             }

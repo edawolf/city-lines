@@ -49,12 +49,20 @@ export class LevelGenerator {
     this.config = config;
     this.grid = [];
 
-    // Simple seeded random (for reproducible levels)
+    // XORshift seeded random (for reproducible levels with better distribution)
     if (config.seed !== undefined) {
       let seed = config.seed;
+      // Ensure seed is non-zero and within valid range
+      if (seed === 0) seed = 1;
+
       this.random = () => {
-        seed = (seed * 9301 + 49297) % 233280;
-        return seed / 233280;
+        // XORshift32 algorithm
+        seed ^= seed << 13;
+        seed ^= seed >>> 17; // Use unsigned right shift
+        seed ^= seed << 5;
+        // Keep seed positive and in range
+        seed = seed >>> 0; // Convert to unsigned 32-bit
+        return seed / 4294967296; // Divide by 2^32
       };
     } else {
       this.random = Math.random;
@@ -89,12 +97,20 @@ export class LevelGenerator {
     const solutionPaths: { landmark: string; path: GeneratedTile[] }[] = [];
     for (const landmark of landmarks) {
       const path = this.generatePath(landmark, turnpike);
+
+      // Validate path meets minimum length requirement
+      if (path.length - 2 < this.config.minPathLength) {
+        throw new Error(
+          `Path from ${landmark.landmarkType} to turnpike is too short: ${path.length - 2} tiles (min: ${this.config.minPathLength})`,
+        );
+      }
+
       solutionPaths.push({
         landmark: landmark.landmarkType || "unknown",
         path,
       });
       console.log(
-        `[LevelGenerator] 🛣️ Generated path: ${landmark.landmarkType} → turnpike (${path.length} tiles)`,
+        `[LevelGenerator] 🛣️ Generated path: ${landmark.landmarkType} → turnpike (${path.length} tiles, ${path.length - 2} road tiles)`,
       );
     }
 
@@ -107,7 +123,10 @@ export class LevelGenerator {
     // Step 5: Validate no dangling openings
     this.validateNoEmptyOpenings();
 
-    // Step 6: Scramble rotations
+    // Step 6: Validate solution is solvable before scrambling
+    this.validateSolution(landmarks, turnpike);
+
+    // Step 7: Scramble rotations
     this.scrambleRotations();
 
     // Step 6: Collect all tiles
@@ -130,14 +149,62 @@ export class LevelGenerator {
   }
 
   /**
-   * Place turnpike (highway exit) - usually at bottom or edge
+   * Place turnpike - position based on difficulty
+   * Easy: center or near-center
+   * Medium: any edge (not corner)
+   * Hard: corner or near-corner
    */
   private placeTurnpike(): GeneratedTile {
     const { rows, cols } = this.config.gridSize;
+    const difficulty = this.config.difficulty;
 
-    // Place at bottom-middle for easy access
-    const col = Math.floor(cols / 2);
-    const row = rows - 1;
+    let row: number, col: number;
+
+    if (difficulty === "easy") {
+      // Easy: center region
+      const centerRow = Math.floor(rows / 2);
+      const centerCol = Math.floor(cols / 2);
+      const offset = Math.floor(this.random() * 2) - 1; // -1, 0, or 1
+      row = Math.max(1, Math.min(rows - 2, centerRow + offset));
+      col = Math.max(1, Math.min(cols - 2, centerCol + offset));
+    } else if (difficulty === "medium") {
+      // Medium: random edge (not corner)
+      const edge = Math.floor(this.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+      if (edge === 0) {
+        // Top edge
+        row = 0;
+        col = 1 + Math.floor(this.random() * (cols - 2));
+      } else if (edge === 1) {
+        // Right edge
+        row = 1 + Math.floor(this.random() * (rows - 2));
+        col = cols - 1;
+      } else if (edge === 2) {
+        // Bottom edge
+        row = rows - 1;
+        col = 1 + Math.floor(this.random() * (cols - 2));
+      } else {
+        // Left edge
+        row = 1 + Math.floor(this.random() * (rows - 2));
+        col = 0;
+      }
+    } else {
+      // Hard: corner or near-corner
+      const corner = Math.floor(this.random() * 4); // 0=TL, 1=TR, 2=BR, 3=BL
+      const nearCorner = this.random() < 0.5;
+      if (corner === 0) {
+        row = nearCorner ? 1 : 0;
+        col = nearCorner ? 1 : 0;
+      } else if (corner === 1) {
+        row = nearCorner ? 1 : 0;
+        col = nearCorner ? cols - 2 : cols - 1;
+      } else if (corner === 2) {
+        row = nearCorner ? rows - 2 : rows - 1;
+        col = nearCorner ? cols - 2 : cols - 1;
+      } else {
+        row = nearCorner ? rows - 2 : rows - 1;
+        col = nearCorner ? 1 : 0;
+      }
+    }
 
     const turnpike: GeneratedTile = {
       row,
@@ -155,10 +222,10 @@ export class LevelGenerator {
   }
 
   /**
-   * Place landmarks around the grid edges
+   * Place landmarks with random positions following placement rules
    */
   private placeLandmarks(): GeneratedTile[] {
-    const { cols } = this.config.gridSize;
+    const { rows, cols } = this.config.gridSize;
     const landmarks: GeneratedTile[] = [];
     const landmarkTypes = [
       LandmarkType.Diner,
@@ -166,19 +233,53 @@ export class LevelGenerator {
       LandmarkType.Market,
     ];
 
-    // Place landmarks in top row for now (simple approach)
-    const spacing = Math.floor(cols / (this.config.landmarkCount + 1));
+    // Get turnpike position
+    const turnpike = this.findTurnpike();
+    if (!turnpike) {
+      throw new Error("Turnpike must be placed before landmarks");
+    }
 
+    // Generate all possible positions
+    const candidates: Array<{ row: number; col: number }> = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        // Skip occupied cells
+        if (this.grid[row][col]) continue;
+
+        // Check Manhattan distance from turnpike (must be >= 3)
+        const distFromTurnpike =
+          Math.abs(row - turnpike.row) + Math.abs(col - turnpike.col);
+        if (distFromTurnpike < 3) continue;
+
+        candidates.push({ row, col });
+      }
+    }
+
+    // Shuffle candidates using seeded random
+    for (let i = candidates.length - 1; i > 0; i--) {
+      const j = Math.floor(this.random() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+
+    // Try to place each landmark
     for (let i = 0; i < this.config.landmarkCount; i++) {
-      const col = spacing * (i + 1);
-      const row = 0; // Top row
+      let placed = false;
 
-      const landmark: GeneratedTile = {
-        row,
-        col,
-        tileType: "landmark",
-        roadType: RoadType.Landmark,
-        rotation: 180, // Face down (South)
+      for (const candidate of candidates) {
+        const { row, col } = candidate;
+
+        // Check if position is valid for this landmark
+        if (!this.isValidLandmarkPosition(row, col, landmarks, turnpike)) {
+          continue;
+        }
+
+        // Place landmark
+        const landmark: GeneratedTile = {
+          row,
+          col,
+          tileType: "landmark",
+          roadType: RoadType.Landmark,
+          rotation: 180, // Face down (South)
         scrambledRotation: 180,
         rotatable: false,
         landmarkType: landmarkTypes[i % landmarkTypes.length],
@@ -187,14 +288,99 @@ export class LevelGenerator {
 
       this.grid[row][col] = landmark;
       landmarks.push(landmark);
+      placed = true;
+      break;
     }
 
-    return landmarks;
+    if (!placed) {
+      throw new Error(
+        `Failed to place landmark ${i + 1}. No valid positions found.`,
+      );
+    }
   }
+
+  return landmarks;
+}
+
+/**
+ * Find turnpike in grid
+ */
+private findTurnpike(): GeneratedTile | null {
+  for (const row of this.grid) {
+    for (const tile of row) {
+      if (tile && tile.tileType === "turnpike") {
+        return tile;
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if position is valid for landmark placement
+ * Following all placement rules from instructions
+ */
+private isValidLandmarkPosition(
+  row: number,
+  col: number,
+  existingLandmarks: GeneratedTile[],
+  turnpike: GeneratedTile,
+): boolean {
+  // Rule 1: Manhattan distance from turnpike >= 3
+  const distFromTurnpike =
+    Math.abs(row - turnpike.row) + Math.abs(col - turnpike.col);
+  if (distFromTurnpike < 3) return false;
+
+  // Check against all existing landmarks
+  for (const landmark of existingLandmarks) {
+    // Rule 2: Landmark-to-landmark distance >= 2
+    const distFromLandmark =
+      Math.abs(row - landmark.row) + Math.abs(col - landmark.col);
+    if (distFromLandmark < 2) return false;
+
+    // Rule 3: No tight stacking in rows or columns (>= 3 apart)
+    if (
+      (row === landmark.row && Math.abs(col - landmark.col) < 3) ||
+      (col === landmark.col && Math.abs(row - landmark.row) < 3)
+    ) {
+      return false;
+    }
+
+    // Rule 5: 2x2 overlap rule - no landmark in 2x2 region around this position
+    if (
+      Math.abs(row - landmark.row) <= 1 &&
+      Math.abs(col - landmark.col) <= 1
+    ) {
+      return false;
+    }
+  }
+
+  // Rule 4: Quadrant distribution (simplified - check if quadrant is not overfilled)
+  // This is a basic check - could be enhanced
+  const { rows, cols } = this.config.gridSize;
+  const midRow = Math.floor(rows / 2);
+  const midCol = Math.floor(cols / 2);
+  const quadrant =
+    (row < midRow ? 0 : 2) + (col < midCol ? 0 : 1);
+
+  const quadrantCounts = [0, 0, 0, 0];
+  for (const landmark of existingLandmarks) {
+    const lq =
+      (landmark.row < midRow ? 0 : 2) + (landmark.col < midCol ? 0 : 1);
+    quadrantCounts[lq]++;
+  }
+
+  const maxPerQuadrant = Math.ceil(this.config.landmarkCount / 2);
+  if (quadrantCounts[quadrant] >= maxPerQuadrant) {
+    return false;
+  }
+
+  return true;
+}
 
   /**
    * Generate a valid path from landmark to turnpike
-   * Following road hierarchy: Landmark → Local → Arterial → Highway → Turnpike
+   * Following road hierarchy: Landmark → Local → Turnpike
    */
   private generatePath(
     from: GeneratedTile,
@@ -257,16 +443,13 @@ export class LevelGenerator {
   }
 
   /**
-   * Select appropriate road type based on grid position
-   * Follow hierarchy: Local (near landmarks) → Arterial (middle) → Highway (near turnpike)
+   * Select road type for generated tiles
+   * Use LocalRoad for all generated roads (simplest, connects to everything)
    */
-  private selectRoadType(row: number): RoadType {
-    const { rows } = this.config.gridSize;
-    const progress = row / rows;
-
-    if (progress < 0.3) return RoadType.LocalRoad;
-    if (progress < 0.6) return RoadType.ArterialRoad;
-    return RoadType.Highway;
+  private selectRoadType(_row: number): RoadType {
+    // All generated roads are LocalRoad type
+    // LocalRoad can connect to: LocalRoad, House, Landmark, Turnpike
+    return RoadType.LocalRoad;
   }
 
   /**
@@ -473,6 +656,110 @@ export class LevelGenerator {
         "[LevelGenerator] ✅ No dangling openings - all tile connections valid",
       );
     }
+  }
+
+  /**
+   * Validate the solution is solvable using PathValidator
+   * This ensures all landmarks can reach the turnpike in the solved state
+   */
+  private validateSolution(
+    landmarks: GeneratedTile[],
+    turnpike: GeneratedTile,
+  ): void {
+    // Import PathValidator (would need to be at top of file normally)
+    // For now, do a simple connectivity check
+
+    // Build a simple adjacency check to ensure paths exist
+    const allTiles = this.getAllTiles();
+
+    // Check each landmark can theoretically reach turnpike
+    for (const landmark of landmarks) {
+      const canReach = this.canReachTarget(
+        landmark,
+        turnpike,
+        allTiles,
+        new Set(),
+      );
+      if (!canReach) {
+        throw new Error(
+          `Landmark at (${landmark.row},${landmark.col}) cannot reach turnpike at (${turnpike.row},${turnpike.col})`,
+        );
+      }
+    }
+
+    console.log(
+      "[LevelGenerator] ✅ Solution validated - all landmarks can reach turnpike",
+    );
+  }
+
+  /**
+   * Simple BFS to check if landmark can reach turnpike
+   */
+  private canReachTarget(
+    from: GeneratedTile,
+    to: GeneratedTile,
+    allTiles: GeneratedTile[],
+    visited: Set<string>,
+  ): boolean {
+    if (from.row === to.row && from.col === to.col) {
+      return true;
+    }
+
+    const key = `${from.row},${from.col}`;
+    if (visited.has(key)) return false;
+    visited.add(key);
+
+    // Get tile openings
+    const openings = this.getTileOpenings(from);
+
+    // Check each opening direction
+    for (const direction of openings) {
+      const adjacent = this.getAdjacentPosition(from.row, from.col, direction);
+      const adjacentTile = this.grid[adjacent.row]?.[adjacent.col];
+
+      if (!adjacentTile) continue;
+
+      // Check if adjacent tile connects back to us
+      const adjacentOpenings = this.getTileOpenings(adjacentTile);
+      const oppositeDir = this.getOppositeDirection(direction);
+
+      if (adjacentOpenings.includes(oppositeDir)) {
+        if (this.canReachTarget(adjacentTile, to, allTiles, visited)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Get opposite direction
+   */
+  private getOppositeDirection(dir: Direction): Direction {
+    switch (dir) {
+      case Direction.North:
+        return Direction.South;
+      case Direction.South:
+        return Direction.North;
+      case Direction.East:
+        return Direction.West;
+      case Direction.West:
+        return Direction.East;
+    }
+  }
+
+  /**
+   * Get all tiles from grid
+   */
+  private getAllTiles(): GeneratedTile[] {
+    const tiles: GeneratedTile[] = [];
+    this.grid.forEach((row) => {
+      row.forEach((tile) => {
+        if (tile) tiles.push(tile);
+      });
+    });
+    return tiles;
   }
 
   /**

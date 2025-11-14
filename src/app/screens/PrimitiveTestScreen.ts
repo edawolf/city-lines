@@ -5,8 +5,9 @@ import { GameBuilder, type GameContainer } from "../../ludemic/GameBuilder";
 import { LayoutIntentCompiler } from "../layout/LayoutIntent";
 import { TuningSystem } from "../../ludemic/tuning/TuningSystem";
 import { TuningControls } from "../../ludemic/tuning/TuningControls";
-import { CityLinesLevelLoader } from "../../ludemic/levels/CityLinesLevelLoader";
+import { InfiniteLevelManager } from "../../ludemic/generation/InfiniteLevelManager";
 import { UI_CONFIG } from "../../ludemic/config/ui-config";
+import { audioManager } from "../../ludemic/AudioManager";
 
 /**
  * PrimitiveTestScreen
@@ -34,6 +35,7 @@ export class PrimitiveTestScreen extends Container {
   private tuningControls!: TuningControls;
   private currentLevelIndex = 0; // Track current level (0-based)
   private levelInfoText!: Text; // Display current level info
+  private readonly MAX_LEVEL = 999; // Infinite levels (show 999+ for display)
 
   constructor() {
     super();
@@ -50,6 +52,9 @@ export class PrimitiveTestScreen extends Container {
     console.log(
       `[PrimitiveTestScreen] show() called - Reset to level ${this.currentLevelIndex + 1}`,
     );
+
+    // Start background music (loop)
+    audioManager.playBGMusic(0.1);
 
     // Create full-screen dark background
     this.background = new Graphics();
@@ -109,7 +114,7 @@ export class PrimitiveTestScreen extends Container {
       console.log("🔄 Click tiles to rotate them!");
       console.log("🗺️ Watch console for path validation");
       console.log(
-        `⬅️➡️ Press LEFT/RIGHT arrows to change levels (Level ${this.currentLevelIndex + 1}/${CityLinesLevelLoader.getLevelCount()})`,
+        `⬅️➡️ Press LEFT/RIGHT arrows to change levels (Level ${this.currentLevelIndex + 1})`,
       );
     } catch (error) {
       console.error("❌ Failed to load game config:", error);
@@ -239,8 +244,8 @@ export class PrimitiveTestScreen extends Container {
     }
 
     try {
-      // Load level config
-      const levelConfig = await CityLinesLevelLoader.loadLevel(levelIndex);
+      // Load level config (uses InfiniteLevelManager for levels 1-3 + generated 4+)
+      const levelConfig = await InfiniteLevelManager.loadLevel(levelIndex + 1);
 
       // Create game from config
       this.game = await GameBuilder.fromConfig(levelConfig, this.tuningSystem);
@@ -279,37 +284,35 @@ export class PrimitiveTestScreen extends Container {
       }
 
       // Update level info display
-      this.levelInfoText.text = `Level ${levelIndex + 1}/${CityLinesLevelLoader.getLevelCount()} - ${(levelConfig as any).name}`;
+      this.levelInfoText.text = `Level ${levelIndex + 1} - ${(levelConfig as any).name || "Procedurally Generated"}`;
 
-      // Listen for path complete event to show headline
+      // Listen for path complete event to auto-advance after 6 seconds
       console.log(
         `[PrimitiveTestScreen] Attaching path_complete listener for level ${levelIndex + 1}`,
       );
-      this.game.once("path_complete", () => {
-        console.log(
-          "[PrimitiveTestScreen] ✅ Path complete detected, headline will show",
-        );
-        // Headline will be shown by HeadlineReveal primitive
-        // We wait for user to click "Continue" button
-      });
 
-      // Listen for continue button click on headline display to advance
-      if (headlineDisplay) {
-        headlineDisplay.once("continue_clicked", () => {
-          console.log(
-            "[PrimitiveTestScreen] Continue button clicked, advancing to next level",
-          );
-          const maxLevel = CityLinesLevelLoader.getLevelCount() - 1;
+      // Create one-time handler for path_complete
+      const pathCompleteHandler = () => {
+        console.log(
+          "[PrimitiveTestScreen] ✅ Path complete detected, advancing to next level in 6 seconds...",
+        );
+
+        // Wait 6 seconds, then advance to next level
+        setTimeout(() => {
+          const maxLevel = this.MAX_LEVEL - 1;
           if (this.currentLevelIndex < maxLevel) {
             console.log(
-              `[PrimitiveTestScreen] Calling nextLevel() from ${this.currentLevelIndex + 1} to ${this.currentLevelIndex + 2}`,
+              `[PrimitiveTestScreen] 6 seconds elapsed, calling nextLevel() from ${this.currentLevelIndex + 1} to ${this.currentLevelIndex + 2}`,
             );
             this.nextLevel();
           } else {
             console.log("🎉 All levels complete!");
           }
-        });
-      }
+        }, 6000); // 6 seconds
+      };
+
+      // Use onGame() to listen to GameContainer's internal event emitter
+      this.game.onGame("path_complete", pathCompleteHandler);
 
       console.log(`✅ Loaded: ${(levelConfig as any).name}`);
     } catch (error) {
@@ -322,7 +325,7 @@ export class PrimitiveTestScreen extends Container {
    * Load next level
    */
   private nextLevel(): void {
-    const maxLevel = CityLinesLevelLoader.getLevelCount() - 1;
+    const maxLevel = this.MAX_LEVEL - 1;
     if (this.currentLevelIndex < maxLevel) {
       this.currentLevelIndex++;
       this.loadLevel(this.currentLevelIndex);
@@ -357,7 +360,7 @@ export class PrimitiveTestScreen extends Container {
    * Jump to specific level (0-indexed)
    */
   private jumpToLevel(levelIndex: number): void {
-    const maxLevel = CityLinesLevelLoader.getLevelCount() - 1;
+    const maxLevel = this.MAX_LEVEL - 1;
     if (levelIndex >= 0 && levelIndex <= maxLevel) {
       this.currentLevelIndex = levelIndex;
       this.loadLevel(this.currentLevelIndex);
@@ -371,6 +374,10 @@ export class PrimitiveTestScreen extends Container {
    * Clean up when screen is hidden
    */
   async hide(): Promise<void> {
+    // Stop background music
+    audioManager.stopBGM();
+    console.log("🎵 Background music stopped");
+
     // Remove keyboard listener
     if (this.keydownListener) {
       window.removeEventListener("keydown", this.keydownListener);

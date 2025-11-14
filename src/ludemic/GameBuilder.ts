@@ -128,6 +128,11 @@ export class GameContainer extends Container {
       this.particleManager.update(deltaTime);
     }
 
+    // Update HeadlineDisplay (for auto-advance timer)
+    if (this.headlineDisplay && "update" in this.headlineDisplay) {
+      (this.headlineDisplay as any).update(deltaTime);
+    }
+
     // Update screen shake
     this.updateShake(deltaTime);
   }

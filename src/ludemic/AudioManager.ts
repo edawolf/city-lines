@@ -139,6 +139,23 @@ export class AudioManager {
     console.log("[AudioManager] 🎉 Attempting to play honk.wav");
     this.playSFX("main/sounds/honk.wav", volume);
   }
+
+  /**
+   * Play background music - loops the music sample automatically
+   * @param volume - Volume (0.0 to 1.0), default 0.5
+   */
+  public async playBGMusic(volume = 0.5): Promise<void> {
+    try {
+      console.log("[AudioManager] 🎵 Starting background music: ukulele.mp3");
+      await engine().audio.bgm.play("main/sounds/ukulele.mp3", { volume });
+      console.log("[AudioManager] ✅ Background music playing (looped)");
+    } catch (error) {
+      console.error(
+        "[AudioManager] ❌ Failed to play background music:",
+        error,
+      );
+    }
+  }
 }
 
 // Export singleton instance for convenience

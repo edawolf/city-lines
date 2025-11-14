@@ -351,7 +351,8 @@ export class HeadlineDisplay extends Container {
     }
 
     // Get padding from config (convert percentage to pixels)
-    const padding = this.viewportWidth * UI_CONFIG.HEADLINE_MODAL.paddingPercent;
+    const padding =
+      this.viewportWidth * UI_CONFIG.HEADLINE_MODAL.paddingPercent;
 
     // Background width from config
     const bgWidth = this.viewportWidth * UI_CONFIG.HEADLINE_MODAL.widthPercent;
@@ -525,7 +526,8 @@ export class HeadlineDisplay extends Container {
     this.viewportWidth = width;
     this.viewportHeight = height;
 
-    const isMobile = width < 768;
+    // Detect mobile for potential future responsive adjustments
+    const _isMobile = width < 768;
 
     // Calculate headline font size from UI_CONFIG (slightly smaller than level text)
     const headlineFontSize = responsiveFontSize(
@@ -545,7 +547,8 @@ export class HeadlineDisplay extends Container {
     );
     this.levelText.style.fontSize = levelFontSize;
     this.levelText.anchor.set(0.5, 0); // Center horizontally, top anchor vertically
-    const levelPaddingTop = height * UI_CONFIG.HEADLINE_MODAL.levelPaddingTopPercent;
+    const levelPaddingTop =
+      height * UI_CONFIG.HEADLINE_MODAL.levelPaddingTopPercent;
 
     // Position the levelContainer (which contains levelText)
     this.levelContainer.position.set(width / 2, levelPaddingTop);
@@ -553,7 +556,8 @@ export class HeadlineDisplay extends Container {
     this.levelText.position.set(0, 0);
 
     // Position headline container (from config)
-    const headlinePaddingTop = height * UI_CONFIG.HEADLINE_MODAL.headlinePaddingTopPercent;
+    const headlinePaddingTop =
+      height * UI_CONFIG.HEADLINE_MODAL.headlinePaddingTopPercent;
     this.headlineContainer.position.set(width / 2, headlinePaddingTop);
 
     // Calculate word wrap width for headline text (from config)

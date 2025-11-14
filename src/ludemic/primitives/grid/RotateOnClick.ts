@@ -99,7 +99,7 @@ export class RotateOnClick extends Primitive {
         lifetime: 0.5,
       });
     } catch (error) {
-      console.warn('[RotateOnClick] ParticleManager not available:', error);
+      console.warn("[RotateOnClick] ParticleManager not available:", error);
     }
 
     console.log(

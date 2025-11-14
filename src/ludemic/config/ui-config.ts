@@ -26,7 +26,7 @@ export const UI_CONFIG = {
     backgroundAlpha: 0.7, // Semi-transparent dark background
 
     // Headline text styling
-    fontSizePercent: 0.020, // 2% of viewport width
+    fontSizePercent: 0.02, // 2% of viewport width
     minFontSize: 12, // Minimum font size in pixels
     maxFontSize: 36, // Maximum font size in pixels
 
@@ -132,7 +132,7 @@ export const UI_CONFIG = {
    */
   GRID: {
     // Tile size as percentage of original image (160px)
-    tileSizePercent: 0.20, // 20% of 160px = 32px
+    tileSizePercent: 0.2, // 20% of 160px = 32px
     padding: 10, // Padding around grid
 
     // Individual landmark/tile image scales (relative to tile size)
@@ -180,8 +180,6 @@ export const UI_CONFIG = {
     roadTypeColors: {
       house: 0xe74c3c, // Red (starting point)
       localRoad: 0x5a6a6a, // Dark gray (local streets)
-      arterialRoad: 0xf39c12, // Orange (main roads)
-      highway: 0xe67e22, // Dark orange (highways)
       turnpike: 0x9b59b6, // Purple (toll roads)
       landmark: 0x2ecc71, // Green (destinations)
     },

@@ -5,7 +5,7 @@
  * Particles are simple visual effects that fade out over time.
  */
 
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics } from "pixi.js";
 
 export interface ParticleConfig {
   x: number;
@@ -82,7 +82,10 @@ export class ParticleManager {
    * @param particleContainer - Container to add particles to (should be behind game objects)
    * @param forceReinit - Force re-initialization even if instance exists (for level transitions)
    */
-  public static initialize(particleContainer: Container, forceReinit = false): ParticleManager {
+  public static initialize(
+    particleContainer: Container,
+    forceReinit = false,
+  ): ParticleManager {
     if (!ParticleManager.instance || forceReinit) {
       // Clear old particles if reinitializing
       if (ParticleManager.instance) {
@@ -98,7 +101,9 @@ export class ParticleManager {
    */
   public static getInstance(): ParticleManager {
     if (!ParticleManager.instance) {
-      throw new Error('ParticleManager not initialized. Call initialize() first.');
+      throw new Error(
+        "ParticleManager not initialized. Call initialize() first.",
+      );
     }
     return ParticleManager.instance;
   }
@@ -119,7 +124,7 @@ export class ParticleManager {
       size?: number;
       speed?: number;
       lifetime?: number;
-    } = {}
+    } = {},
   ): void {
     const {
       color = 0x2d5016, // Dark green
@@ -150,7 +155,9 @@ export class ParticleManager {
       this.particleContainer.addChild(particle);
     }
 
-    console.log(`[ParticleManager] 💥 Created burst of ${count} particles at (${x}, ${y})`);
+    console.log(
+      `[ParticleManager] 💥 Created burst of ${count} particles at (${x}, ${y})`,
+    );
   }
 
   /**
@@ -160,7 +167,7 @@ export class ParticleManager {
    * @param viewportHeight - Height of the viewport
    */
   public createConfetti(viewportWidth: number, viewportHeight: number): void {
-    console.log('[ParticleManager] 🎉 Creating FAST confetti celebration!');
+    console.log("[ParticleManager] 🎉 Creating FAST confetti celebration!");
 
     const confettiColors = [
       0xff6b6b, // Red
@@ -183,7 +190,8 @@ export class ParticleManager {
       const y = -50; // Start higher above screen
 
       // Random color from palette
-      const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+      const color =
+        confettiColors[Math.floor(Math.random() * confettiColors.length)];
 
       // FASTER confetti - falls down with MORE horizontal drift
       const velocityX = (Math.random() - 0.5) * 8; // Stronger horizontal drift (was 3)
