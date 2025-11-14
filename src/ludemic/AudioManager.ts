@@ -123,12 +123,22 @@ export class AudioManager {
   }
 
   /**
-   * Play tile rotation sound effect
-   * @param volume - Volume (0.0 to 1.0), default 0.7
+   * Array of tile tap sound effects for variety
    */
-  public playRotateSound(volume = 0.7): void {
-    console.log("[AudioManager] 🔊 Attempting to play whoosh.wav");
-    this.playSFX("main/sounds/whoosh.wav", volume);
+  private tileTapSounds = [
+    "main/sounds/Confirm_04.wav",
+    "main/sounds/Confirm_05.wav",
+    "main/sounds/Confirm_06.wav",
+    "main/sounds/Confirm_07.wav",
+  ];
+
+  /**
+   * Play tile rotation sound effect (randomly selected from tileTapSounds)
+   * @param volume - Volume (0.0 to 1.0), default 0.25
+   */
+  public playRotateSound(volume = 0.25): void {
+    console.log("[AudioManager] 🔊 Playing random tile tap sound");
+    this.playRandomSFX(this.tileTapSounds, volume);
   }
 
   /**
@@ -146,8 +156,8 @@ export class AudioManager {
    */
   public async playBGMusic(volume = 0.5): Promise<void> {
     try {
-      console.log("[AudioManager] 🎵 Starting background music: ukulele.mp3");
-      await engine().audio.bgm.play("main/sounds/ukulele.mp3", { volume });
+      console.log("[AudioManager] 🎵 Starting background music: traffic.mp3");
+      await engine().audio.bgm.play("main/sounds/traffic.mp3", { volume });
       console.log("[AudioManager] ✅ Background music playing (looped)");
     } catch (error) {
       console.error(

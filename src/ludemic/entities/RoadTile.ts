@@ -186,7 +186,7 @@ export class RoadTile extends Container {
         this.drawLandmarkIcon();
         break;
       case RoadType.Turnpike:
-        this.drawTurnpikeIcon(color, roadWidth);
+        this.drawTurnpikeIcon();
         break;
       default:
         this.drawRoadSegments(color, roadWidth);
@@ -576,36 +576,10 @@ export class RoadTile extends Container {
   /**
    * Draw turnpike gate icon (🚧)
    */
-  private drawTurnpikeIcon(color: number, roadWidth: number): void {
+  private drawTurnpikeIcon(): void {
     console.log("[RoadTile] 🚧 drawTurnpikeIcon() called");
-    const halfSize = this.tileSize / 2;
 
-    // Draw road going through
-    const openings = this.getOpenings();
-    openings.forEach((direction) => {
-      switch (direction) {
-        case Direction.North:
-          this.graphics
-            .rect(
-              -roadWidth / 2,
-              -halfSize,
-              roadWidth,
-              halfSize + roadWidth / 2,
-            )
-            .fill(color);
-          break;
-        case Direction.South:
-          this.graphics
-            .rect(
-              -roadWidth / 2,
-              -roadWidth / 2,
-              roadWidth,
-              halfSize + roadWidth / 2,
-            )
-            .fill(color);
-          break;
-      }
-    });
+    // No road graphics - just show the turnpike icon on empty tile
 
     // Try to load and use turnpike.png image
     let turnpikeTexture = null;
