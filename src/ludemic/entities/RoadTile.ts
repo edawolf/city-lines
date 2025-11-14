@@ -783,8 +783,15 @@ export class RoadTile extends Container {
 
   /**
    * Get color based on road type hierarchy
+   * Returns highlighted color if connected to turnpike
    */
   private getColorForRoadType(): number {
+    // If highlighted (connected to turnpike), return green color
+    if (this.isHighlighted) {
+      return 0x4caf50; // Green color for connected roads
+    }
+
+    // Otherwise return default color based on road type
     const colors = UI_CONFIG.COLORS.roadTypeColors;
     switch (this.roadType) {
       case RoadType.House:
@@ -903,6 +910,38 @@ export class RoadTile extends Container {
    */
   getPrimitive(type: string): Primitive | null {
     return this.primitives.get(type) ?? null;
+  }
+
+  /**
+   * Get the landmark image sprite for animation
+   * Returns the sprite (home, diner, gas station, etc.) if it exists
+   */
+  public getLandmarkImageSprite(): Sprite | undefined {
+    if (this.houseSprite) return this.houseSprite;
+    if (this.landmarkSprite) return this.landmarkSprite;
+    return undefined;
+  }
+
+  /**
+   * Highlight state for connected roads
+   */
+  private isHighlighted = false;
+
+  /**
+   * Set highlight state (changes road color when connected to turnpike)
+   */
+  public setHighlighted(highlighted: boolean): void {
+    if (this.isHighlighted !== highlighted) {
+      this.isHighlighted = highlighted;
+      this.draw(); // Redraw with new color
+    }
+  }
+
+  /**
+   * Get if this tile is highlighted
+   */
+  public getIsHighlighted(): boolean {
+    return this.isHighlighted;
   }
 
   /**

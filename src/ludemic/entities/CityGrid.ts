@@ -198,6 +198,9 @@ export class CityGrid extends Container {
     // Rebuild connection graph
     this.rebuildConnectionGraph();
 
+    // Highlight connected roads in real-time (as soon as they connect)
+    this.highlightConnectedRoads();
+
     // Validate all landmark connections
     this.validateLandmarkConnections();
   }
@@ -286,6 +289,15 @@ export class CityGrid extends Container {
     // Play level complete sound
     audioManager.playLevelCompleteSound();
 
+    // Highlight all connected roads
+    this.highlightConnectedRoads();
+
+    // Create confetti celebration effect
+    this.createConfettiCelebration();
+
+    // Celebrate with landmark animation
+    this.celebratePuzzleSolved();
+
     // Emit on both self and game container for compatibility
     this.emit("path_complete", {
       landmarks: this.landmarks,
@@ -314,6 +326,7 @@ export class CityGrid extends Container {
   public performInitialValidation(): void {
     console.log("[CityGrid] 🔍 Performing initial validation...");
     this.rebuildConnectionGraph();
+    this.highlightConnectedRoads(); // Highlight any initially connected roads
     this.validateLandmarkConnections();
   }
 
@@ -335,6 +348,156 @@ export class CityGrid extends Container {
    */
   public getLandmarks(): RoadTile[] {
     return [...this.landmarks];
+  }
+
+  /**
+   * Highlight all roads connected to turnpikes (updates in real-time)
+   * Changes road color to show successful connections as player rotates tiles
+   */
+  private highlightConnectedRoads(): void {
+    if (!this.connectionGraph) {
+      console.warn("[CityGrid] Cannot highlight - no connection graph");
+      return;
+    }
+
+    // Find all tiles reachable from turnpikes using the connection graph
+    const connectedTiles = new Set<RoadTile>();
+
+    // Start from turnpikes and traverse the graph
+    const visited = new Set<RoadTile>();
+    const queue: RoadTile[] = [...this.turnpikes];
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      if (visited.has(current)) continue;
+
+      visited.add(current);
+      connectedTiles.add(current);
+
+      // Get neighbors from connection graph
+      const neighbors = this.connectionGraph.get(current) || [];
+      neighbors.forEach((neighbor) => {
+        if (!visited.has(neighbor)) {
+          queue.push(neighbor);
+        }
+      });
+    }
+
+    // Get all tiles in the grid
+    const allTiles = this.getAllTiles();
+
+    // Update highlight state for all tiles
+    allTiles.forEach((tile) => {
+      const shouldBeHighlighted = connectedTiles.has(tile);
+      tile.setHighlighted(shouldBeHighlighted);
+    });
+  }
+
+  /**
+   * Create confetti particle effect for level completion
+   */
+  private createConfettiCelebration(): void {
+    try {
+      const particleManager = ParticleManager.getInstance();
+      particleManager.createConfetti(this.viewportWidth, this.viewportHeight);
+    } catch (error) {
+      console.warn("[CityGrid] Could not create confetti - ParticleManager not available");
+    }
+  }
+
+  /**
+   * Celebrate puzzle completion with landmark animation
+   * Each landmark (except turnpike) scales up sequentially with 0.3s delay
+   */
+  public celebratePuzzleSolved(): void {
+    console.log("[CityGrid] 🎉 Starting landmark celebration animation");
+
+    // Filter out turnpikes - only animate landmarks
+    const landmarksToAnimate = this.landmarks.filter((landmark) => {
+      return landmark.roadType === RoadType.Landmark;
+    });
+
+    console.log(
+      `[CityGrid] Animating ${landmarksToAnimate.length} landmarks (excluding turnpikes)`,
+    );
+
+    // Animate each landmark with 0.3s delay between them
+    landmarksToAnimate.forEach((landmark, index) => {
+      const delay = index * 300; // 300ms = 0.3s delay between landmarks
+
+      setTimeout(() => {
+        this.animateLandmarkCelebration(landmark);
+      }, delay);
+    });
+  }
+
+  /**
+   * Animate a single landmark: scale up then back to original
+   */
+  private animateLandmarkCelebration(landmark: RoadTile): void {
+    // Get the landmark sprite (home, diner, gas station, etc.)
+    const sprite = landmark.getLandmarkImageSprite();
+
+    if (!sprite) {
+      console.warn(
+        `[CityGrid] No sprite found for landmark at (${landmark.gridPos.row},${landmark.gridPos.col})`,
+      );
+      return;
+    }
+
+    // Get original scale of the sprite
+    const originalScale = sprite.scale.x;
+    const scaleUpAmount = 0.25; // Scale up by 0.25 (e.g., 1.0 -> 1.25) - more exaggerated!
+    const targetScale = originalScale + scaleUpAmount;
+
+    console.log(
+      `[CityGrid] Animating landmark sprite at (${landmark.gridPos.row},${landmark.gridPos.col}): ${originalScale} -> ${targetScale} -> ${originalScale}`,
+    );
+
+    // Scale up duration: 200ms
+    const scaleUpDuration = 200;
+    // Scale down duration: 200ms
+    const scaleDownDuration = 200;
+
+    const startTime = Date.now();
+    let phase: "up" | "down" = "up";
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+
+      if (phase === "up") {
+        // Scale up phase
+        const progress = Math.min(1, elapsed / scaleUpDuration);
+        const currentScale =
+          originalScale + (targetScale - originalScale) * progress;
+        sprite.scale.set(currentScale);
+
+        if (progress >= 1) {
+          // Switch to scale down phase
+          phase = "down";
+        }
+        requestAnimationFrame(animate);
+      } else {
+        // Scale down phase
+        const downElapsed = elapsed - scaleUpDuration;
+        const progress = Math.min(1, downElapsed / scaleDownDuration);
+        const currentScale =
+          targetScale - (targetScale - originalScale) * progress;
+        sprite.scale.set(currentScale);
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          // Ensure we end at exactly the original scale
+          sprite.scale.set(originalScale);
+          console.log(
+            `[CityGrid] ✅ Landmark sprite animation complete at (${landmark.gridPos.row},${landmark.gridPos.col})`,
+          );
+        }
+      }
+    };
+
+    animate();
   }
 
   /**

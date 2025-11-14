@@ -154,6 +154,63 @@ export class ParticleManager {
   }
 
   /**
+   * Create fast confetti effect across the screen (for level complete celebration)
+   * More energetic and faster than the burst effect
+   * @param viewportWidth - Width of the viewport
+   * @param viewportHeight - Height of the viewport
+   */
+  public createConfetti(viewportWidth: number, viewportHeight: number): void {
+    console.log('[ParticleManager] 🎉 Creating FAST confetti celebration!');
+
+    const confettiColors = [
+      0xff6b6b, // Red
+      0x4ecdc4, // Cyan
+      0xffe66d, // Yellow
+      0x95e1d3, // Light green
+      0xf38181, // Pink
+      0xaa96da, // Purple
+      0xfcbad3, // Light pink
+      0xa8e6cf, // Mint
+      0xff9f43, // Orange
+      0x5f27cd, // Deep purple
+    ];
+
+    const particleCount = 150; // More particles for fuller effect
+
+    for (let i = 0; i < particleCount; i++) {
+      // Spawn from top of screen, spread across width
+      const x = Math.random() * viewportWidth;
+      const y = -50; // Start higher above screen
+
+      // Random color from palette
+      const color = confettiColors[Math.floor(Math.random() * confettiColors.length)];
+
+      // FASTER confetti - falls down with MORE horizontal drift
+      const velocityX = (Math.random() - 0.5) * 8; // Stronger horizontal drift (was 3)
+      const velocityY = Math.random() * 8 + 5; // FASTER fall speed: 5-13 (was 2-6)
+
+      // Larger particles for better visibility at high speed
+      const size = Math.random() * 6 + 4; // 4-10 pixels (was 3-7)
+
+      // Shorter lifetime - moves fast so doesn't need to last as long
+      const lifetime = Math.random() * 1.5 + 1; // 1-2.5 seconds (was 2-4)
+
+      const particle = new Particle({
+        x,
+        y,
+        color,
+        size,
+        velocityX,
+        velocityY,
+        lifetime,
+      });
+
+      this.particles.push(particle);
+      this.particleContainer.addChild(particle);
+    }
+  }
+
+  /**
    * Update all particles
    * @param deltaTime - Time since last frame (in seconds)
    */
