@@ -139,6 +139,7 @@ export class CityLinesLevelLoader {
             {
               type: "HeadlineReveal",
               config: {
+                enabled: true, // Re-enabled - headlines now show inline below level text
                 triggerOn: "path_complete",
                 headlines: levelData.headlines || [
                   `🏗️ LEVEL ${levelNumber} COMPLETE: ${levelData.name}`,

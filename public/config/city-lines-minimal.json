@@ -41,6 +41,7 @@
         {
           "type": "HeadlineReveal",
           "config": {
+            "enabled": false,
             "triggerOn": "path_complete",
             "headlines": [
               "🏗️ BREAKING: New Road Connection Restores East Side Access",

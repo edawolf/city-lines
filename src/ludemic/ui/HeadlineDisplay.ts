@@ -24,16 +24,17 @@ export interface HeadlineDisplayConfig {
 
 export class HeadlineDisplay extends Container {
   private config: HeadlineDisplayConfig;
-  private headlineText: Text;
+  private headlineText: Text; // Headline text that appears below level text
   private backgroundPanel: Graphics;
-  private modalOverlay: Graphics; // Semi-transparent fullscreen overlay
-  private modalContainer: Graphics; // White modal box
-  private buttonBackground: Graphics; // "READ HERE" button background
-  private buttonText: Text; // "READ HERE" button text
-  private continueButtonBackground: Graphics; // "Continue" button background
-  private continueButtonText: Text; // "Continue" button text
-  private levelText: Text; // "Level: X" display at top of modal
+  private modalOverlay: Graphics; // Semi-transparent fullscreen overlay (DEPRECATED - not used)
+  private modalContainer: Graphics; // White modal box (DEPRECATED - not used)
+  private buttonBackground: Graphics; // "READ HERE" button background (DEPRECATED - not used)
+  private buttonText: Text; // "READ HERE" button text (DEPRECATED - not used)
+  private continueButtonBackground: Graphics; // "Continue" button background (DEPRECATED - not used)
+  private continueButtonText: Text; // "Continue" button text (DEPRECATED - not used)
+  private levelText: Text; // "Level: X" display at top center (always visible)
   private levelContainer: Container; // Persistent container for level text (always visible)
+  private headlineContainer: Container; // Container for inline headline text (below level text)
   private viewportWidth = 0; // Will be set by resize() - no hardcoded default
   private viewportHeight = 0; // Will be set by resize() - no hardcoded default
   private currentLevel = 1; // Track current level number
@@ -50,38 +51,46 @@ export class HeadlineDisplay extends Container {
     super();
     this.config = config;
 
-    // Create persistent level container (always visible, independent of modal)
+    // Create persistent level container (always visible at top center)
     this.levelContainer = new Container();
     this.levelContainer.visible = true; // Always visible
     this.addChild(this.levelContainer);
 
-    // Create fullscreen modal overlay (semi-transparent background)
+    // Create headline container (below level text, no modal)
+    this.headlineContainer = new Container();
+    this.headlineContainer.visible = false; // Hidden until headline shown
+    this.addChild(this.headlineContainer);
+
+    // DEPRECATED: Modal overlay (kept for compatibility but not used)
     this.modalOverlay = new Graphics();
+    this.modalOverlay.visible = false;
     this.addChild(this.modalOverlay);
 
-    // Create white modal container
+    // DEPRECATED: Modal container (kept for compatibility but not used)
     this.modalContainer = new Graphics();
+    this.modalContainer.visible = false;
     this.addChild(this.modalContainer);
 
-    // Create background panel (deprecated, kept for compatibility)
+    // Create background panel for headline text (rounded rectangle)
     this.backgroundPanel = new Graphics();
-    this.modalContainer.addChild(this.backgroundPanel);
+    this.headlineContainer.addChild(this.backgroundPanel);
 
-    // Create headline text
+    // Create headline text (appears below level text with typewriter animation)
     this.headlineText = new Text({
       text: "",
       style: {
-        fontSize: 24, // Will be updated in resize()
-        fill: 0x000000, // Black text for white modal
+        fontSize: 20, // Will be updated in resize()
+        fill: 0xffffff, // White text (same as level text)
         fontFamily: "Arial, sans-serif",
         fontWeight: "bold",
         align: "center",
         wordWrap: true,
         wordWrapWidth: 700, // Will be updated in resize()
+        breakWords: false,
       },
     });
-    this.headlineText.anchor.set(0.5, 0.5); // Center anchor
-    this.modalContainer.addChild(this.headlineText);
+    this.headlineText.anchor.set(0.5, 0); // Center horizontally, top anchor vertically
+    this.headlineContainer.addChild(this.headlineText);
 
     // Create "READ HERE" button background
     this.buttonBackground = new Graphics();
@@ -179,7 +188,7 @@ export class HeadlineDisplay extends Container {
   }
 
   /**
-   * Show a new headline with typewriter animation
+   * Show a new headline with typewriter animation (inline below level text, no modal)
    */
   public show(headline: string): void {
     console.log(
@@ -196,16 +205,16 @@ export class HeadlineDisplay extends Container {
     this.state = "typing";
     this.hasEmittedContinue = false; // Reset flag for new headline
 
-    // Show modal elements
-    this.modalOverlay.visible = true;
-    this.modalContainer.visible = true;
+    // Show headline container (inline, no modal)
+    this.headlineContainer.visible = true;
+    this.headlineContainer.alpha = 1; // Fully visible immediately
 
-    // Fade in modal only (level text stays at full opacity)
-    this.modalOverlay.alpha = 0;
-    this.modalContainer.alpha = 0;
+    // Modal elements stay hidden
+    this.modalOverlay.visible = false;
+    this.modalContainer.visible = false;
 
     console.log(
-      `[HeadlineDisplay] Modal elements shown, overlay alpha: ${this.modalOverlay.alpha}, container alpha: ${this.modalContainer.alpha}`,
+      `[HeadlineDisplay] Headline container shown (inline mode, no modal)`,
     );
 
     // If viewport dimensions haven't been set yet (still 0x0), try to get them from the parent
@@ -260,23 +269,12 @@ export class HeadlineDisplay extends Container {
   }
 
   /**
-   * Typewriter animation
+   * Typewriter animation (inline mode - no modal fade-in)
    */
   private updateTypewriter(deltaTime: number): void {
-    const fadeInDuration = UI_CONFIG.HEADLINE_MODAL.fadeInDuration;
     const typewriterSpeed = UI_CONFIG.HEADLINE_MODAL.typewriterSpeed;
 
-    // Fade in modal elements only (not level text)
-    if (this.modalOverlay.alpha < 1) {
-      const newAlpha = Math.min(
-        1,
-        this.modalOverlay.alpha + deltaTime / fadeInDuration,
-      );
-      this.modalOverlay.alpha = newAlpha;
-      this.modalContainer.alpha = newAlpha;
-    }
-
-    // Type characters
+    // Type characters (no modal fade-in needed)
     this.typewriterTimer += deltaTime;
     const charsToShow = Math.floor(this.typewriterTimer * typewriterSpeed);
 
@@ -287,8 +285,8 @@ export class HeadlineDisplay extends Container {
         this.displayedChars,
       );
 
-      // Redraw background to match text size
-      this.drawBackground();
+      // Redraw background panel to match text size
+      this.drawHeadlineBackground();
     }
 
     // Transition to displaying state when done typing
@@ -312,31 +310,29 @@ export class HeadlineDisplay extends Container {
   }
 
   /**
-   * Fade out animation
+   * Fade out animation (fade out inline headline text)
    */
   private updateFadeOut(deltaTime: number): void {
     const fadeOutDuration = UI_CONFIG.HEADLINE_MODAL.fadeOutDuration;
 
-    // Fade out modal elements only (level text stays visible)
+    // Fade out headline container (not modal - level text stays visible)
     const newAlpha = Math.max(
       0,
-      this.modalOverlay.alpha - deltaTime / fadeOutDuration,
+      this.headlineContainer.alpha - deltaTime / fadeOutDuration,
     );
-    this.modalOverlay.alpha = newAlpha;
-    this.modalContainer.alpha = newAlpha;
+    this.headlineContainer.alpha = newAlpha;
 
     if (newAlpha <= 0) {
-      this.modalOverlay.visible = false;
-      this.modalContainer.visible = false;
+      this.headlineContainer.visible = false;
       this.state = "hidden";
       this.headlineText.text = "";
 
-      // Emit continue event when modal finishes fading out
+      // Emit continue event when headline finishes fading out
       // This allows the game to proceed to next level automatically
       // Only emit if user didn't already click Continue button
       if (!this.hasEmittedContinue) {
         console.log(
-          "[HeadlineDisplay] Modal fade out complete, emitting continue_clicked",
+          "[HeadlineDisplay] Headline fade out complete, emitting continue_clicked",
         );
         this.hasEmittedContinue = true;
         this.emit("continue_clicked");
@@ -345,7 +341,38 @@ export class HeadlineDisplay extends Container {
   }
 
   /**
-   * Draw modal layout (overlay + white container + buttons)
+   * Draw background panel for inline headline text
+   */
+  private drawHeadlineBackground(): void {
+    this.backgroundPanel.clear();
+
+    if (this.headlineText.text.length === 0) {
+      return;
+    }
+
+    // Get padding from config (convert percentage to pixels)
+    const padding = this.viewportWidth * UI_CONFIG.HEADLINE_MODAL.paddingPercent;
+
+    // Background width from config
+    const bgWidth = this.viewportWidth * UI_CONFIG.HEADLINE_MODAL.widthPercent;
+
+    // Get text bounds for height (local bounds to avoid global position issues)
+    const textBounds = this.headlineText.getLocalBounds();
+    const bgHeight = textBounds.height + padding * 2;
+
+    // Draw rounded rectangle background (semi-transparent dark)
+    // Position from top-left since text anchor is (0.5, 0)
+    this.backgroundPanel
+      .roundRect(-bgWidth / 2, -padding, bgWidth, bgHeight, 10)
+      .fill({ color: 0x000000, alpha: 0.7 })
+      .stroke({ width: 2, color: 0xffffff, alpha: 0.5 });
+
+    // Position text at top, centered horizontally
+    this.headlineText.position.set(0, 0);
+  }
+
+  /**
+   * Draw modal layout (overlay + white container + buttons) - DEPRECATED
    */
   private drawBackground(): void {
     console.log(
@@ -489,7 +516,7 @@ export class HeadlineDisplay extends Container {
 
   /**
    * Resize for responsive layout
-   * Modal is centered in viewport
+   * Level text at top center, headline text below it
    */
   public resize(width: number, height: number): void {
     console.log(
@@ -500,58 +527,58 @@ export class HeadlineDisplay extends Container {
 
     const isMobile = width < 768;
 
-    // Calculate font size from UI_CONFIG
-    const fontSize = responsiveFontSize(
+    // Calculate headline font size from UI_CONFIG (slightly smaller than level text)
+    const headlineFontSize = responsiveFontSize(
       UI_CONFIG.HEADLINE_MODAL.fontSizePercent * 100,
       width,
       UI_CONFIG.HEADLINE_MODAL.minFontSize,
       UI_CONFIG.HEADLINE_MODAL.maxFontSize,
     );
-    this.headlineText.style.fontSize = fontSize;
+    this.headlineText.style.fontSize = headlineFontSize;
 
-    // Update button text font sizes
-    this.buttonText.style.fontSize = isMobile ? 20 : 24;
-    this.continueButtonText.style.fontSize = isMobile ? 20 : 24;
-
-    // Update level text font size and position at top-center
-    this.levelText.style.fontSize = isMobile ? 20 : 24;
+    // Update level text font size and position at top-center (from config)
+    const levelFontSize = responsiveFontSize(
+      UI_CONFIG.HEADLINE_MODAL.levelFontSizePercent * 100,
+      width,
+      UI_CONFIG.HEADLINE_MODAL.levelMinFontSize,
+      UI_CONFIG.HEADLINE_MODAL.levelMaxFontSize,
+    );
+    this.levelText.style.fontSize = levelFontSize;
     this.levelText.anchor.set(0.5, 0); // Center horizontally, top anchor vertically
-    const levelPaddingTop = isMobile ? 20 : 40;
-    this.levelText.position.set(width / 2, levelPaddingTop); // Center horizontally
+    const levelPaddingTop = height * UI_CONFIG.HEADLINE_MODAL.levelPaddingTopPercent;
 
-    // Calculate word wrap width for modal (from UI_CONFIG)
-    const modalWidth = width * UI_CONFIG.HEADLINE_MODAL.widthPercent;
-    const maxTextWidth = modalWidth * UI_CONFIG.HEADLINE_MODAL.textWrapPercent;
-    this.headlineText.style.wordWrapWidth = maxTextWidth;
+    // Position the levelContainer (which contains levelText)
+    this.levelContainer.position.set(width / 2, levelPaddingTop);
+    // levelText is at (0,0) within its container
+    this.levelText.position.set(0, 0);
 
-    // Force text measurement by setting temporary text if needed
-    const hasText = this.headlineText.text.length > 0;
-    const originalText = this.headlineText.text;
+    // Position headline container (from config)
+    const headlinePaddingTop = height * UI_CONFIG.HEADLINE_MODAL.headlinePaddingTopPercent;
+    this.headlineContainer.position.set(width / 2, headlinePaddingTop);
 
-    if (!hasText && this.currentHeadline.length > 0) {
-      // Use the actual headline for measurement if available
-      this.headlineText.text = this.currentHeadline;
-    } else if (!hasText) {
-      // Set sample text to measure bounds
-      this.headlineText.text =
-        "Breaking: Sample headline text for layout measurement";
+    // Calculate word wrap width for headline text (from config)
+    const padding = width * UI_CONFIG.HEADLINE_MODAL.paddingPercent;
+    const maxBgWidth = width * UI_CONFIG.HEADLINE_MODAL.widthPercent;
+    const maxTextWidth = maxBgWidth - padding * 2; // Account for padding inside background
+
+    // Store current text and clear it to force recalculation
+    const currentText = this.headlineText.text;
+    if (currentText.length > 0) {
+      this.headlineText.text = "";
     }
 
-    // Restore original text
-    this.headlineText.text = originalText;
+    // Update word wrap width
+    this.headlineText.style.wordWrapWidth = maxTextWidth;
 
-    // Position modal container in CENTER of viewport
-    // Modal overlay is at (0,0) and covers full viewport
-    // Modal container is centered within the overlay
-    this.modalOverlay.position.set(0, 0);
-    this.modalContainer.position.set(width / 2, height / 2);
+    // Restore text (this forces PixiJS to recalculate with new wrap width)
+    if (currentText.length > 0) {
+      this.headlineText.text = currentText;
+    }
 
-    // Redraw modal layout
-    this.drawBackground();
-
-    console.log(
-      `[HeadlineDisplay] 📐 Modal resized: viewport ${width}x${height}, font ${fontSize}px, wrap ${Math.round(maxTextWidth)}px, centered at (${Math.round(width / 2)}, ${Math.round(height / 2)})`,
-    );
+    // Redraw background if text is visible
+    if (this.headlineText.text.length > 0) {
+      this.drawHeadlineBackground();
+    }
   }
 
   /**

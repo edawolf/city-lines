@@ -69,16 +69,17 @@ export class CityGrid extends Container {
     super();
 
     // Extract grid config
+    const defaultTileSize = Math.round(160 * UI_CONFIG.GRID.tileSizePercent);
     this.config = (config.config as CityGridConfig) ?? {
       rows: 4,
       cols: 4,
-      tileSize: 80,
-      padding: 10,
+      tileSize: defaultTileSize,
+      padding: UI_CONFIG.GRID.padding,
       backgroundColor: UI_CONFIG.COLORS.gridBackground,
     };
 
     // Initialize calculated tile size (will be updated in resize())
-    this.calculatedTileSize = this.config.tileSize ?? 80;
+    this.calculatedTileSize = this.config.tileSize ?? defaultTileSize;
 
     // Create background (bottom layer)
     this.backgroundGraphics = new Graphics();

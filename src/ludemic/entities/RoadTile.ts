@@ -254,8 +254,9 @@ export class RoadTile extends Container {
       this.houseSprite = new Sprite(houseTexture);
       this.houseSprite.anchor.set(0.5);
 
-      // Size the sprite to fit nicely in the tile
-      const iconSize = this.tileSize * 0.7;
+      // Size the sprite to fit nicely in the tile (from ui-config)
+      const scale = UI_CONFIG.GRID.imageScales.home;
+      const iconSize = this.tileSize * scale;
       this.houseSprite.width = iconSize;
       this.houseSprite.height = iconSize;
 
@@ -364,8 +365,9 @@ export class RoadTile extends Container {
         this.houseSprite = new Sprite(houseTexture);
         this.houseSprite.anchor.set(0.5);
 
-        // Size the sprite to fit nicely in the tile (90% of tile size)
-        const iconSize = this.tileSize * 0.90;
+        // Size the sprite to fit nicely in the tile (from ui-config)
+        const scale = UI_CONFIG.GRID.imageScales.home;
+        const iconSize = this.tileSize * scale;
         this.houseSprite.width = iconSize;
         this.houseSprite.height = iconSize;
 
@@ -418,8 +420,9 @@ export class RoadTile extends Container {
         this.landmarkSprite = new Sprite(gasTexture);
         this.landmarkSprite.anchor.set(0.5);
 
-        // Size the sprite to fit nicely in the tile (90% of tile size)
-        const iconSize = this.tileSize * 0.90;
+        // Size the sprite to fit nicely in the tile (from ui-config)
+        const scale = UI_CONFIG.GRID.imageScales.gas_station;
+        const iconSize = this.tileSize * scale;
         this.landmarkSprite.width = iconSize;
         this.landmarkSprite.height = iconSize;
 
@@ -472,8 +475,9 @@ export class RoadTile extends Container {
         this.landmarkSprite = new Sprite(dinerTexture);
         this.landmarkSprite.anchor.set(0.5);
 
-        // Size the sprite to fit nicely in the tile (90% of tile size)
-        const iconSize = this.tileSize * 0.90;
+        // Size the sprite to fit nicely in the tile (from ui-config)
+        const scale = UI_CONFIG.GRID.imageScales.diner;
+        const iconSize = this.tileSize * scale;
         this.landmarkSprite.width = iconSize;
         this.landmarkSprite.height = iconSize;
 
@@ -641,8 +645,9 @@ export class RoadTile extends Container {
       this.turnpikeSprite = new Sprite(turnpikeTexture);
       this.turnpikeSprite.anchor.set(0.5);
 
-      // Size the sprite to fit nicely in the tile (90% of tile size)
-      const iconSize = this.tileSize * 0.90;
+      // Size the sprite to fit nicely in the tile (from ui-config)
+      const scale = UI_CONFIG.GRID.imageScales.turnpike;
+      const iconSize = this.tileSize * scale;
       this.turnpikeSprite.width = iconSize;
       this.turnpikeSprite.height = iconSize;
 

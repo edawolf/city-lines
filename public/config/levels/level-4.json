@@ -3,8 +3,8 @@
   "description": "Complex maze with tight passages",
   "difficulty": "hard",
   "gridDimensions": {
-    "rows": 8,
-    "cols": 8
+    "rows": 5,
+    "cols": 5
   },
   "turnpike": {
     "row": 6,
@@ -27,8 +27,8 @@
   ],
   "tiles": [
     {
-      "row": 6,
-      "col": 5,
+      "row": 0,
+      "col": 2,
       "tileType": "turnpike",
       "roadType": "turnpike",
       "solutionRotation": 0,
@@ -37,48 +37,8 @@
       "comment": "Turnpike (fixed)"
     },
     {
-      "row": 5,
-      "col": 5,
-      "tileType": "straight",
-      "roadType": "local_road",
-      "solutionRotation": 0,
-      "initialRotation": 90,
-      "rotatable": true,
-      "comment": "Vertical road"
-    },
-    {
-      "row": 4,
-      "col": 5,
-      "tileType": "corner",
-      "roadType": "local_road",
-      "solutionRotation": 90,
-      "initialRotation": 270,
-      "rotatable": true,
-      "comment": "Corner right and down"
-    },
-    {
-      "row": 4,
-      "col": 6,
-      "tileType": "straight",
-      "roadType": "local_road",
-      "solutionRotation": 90,
-      "initialRotation": 180,
-      "rotatable": true,
-      "comment": "Horizontal road"
-    },
-    {
-      "row": 4,
-      "col": 7,
-      "tileType": "corner",
-      "roadType": "local_road",
-      "solutionRotation": 180,
-      "initialRotation": 0,
-      "rotatable": true,
-      "comment": "Corner up and left"
-    },
-    {
       "row": 3,
-      "col": 7,
+      "col": 3,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -88,7 +48,47 @@
     },
     {
       "row": 2,
-      "col": 7,
+      "col": 3,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 270,
+      "rotatable": true,
+      "comment": "Corner right and down"
+    },
+    {
+      "row": 2,
+      "col": 4,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 90,
+      "initialRotation": 180,
+      "rotatable": true,
+      "comment": "Horizontal road"
+    },
+    {
+      "row": 3,
+      "col": 5,
+      "tileType": "corner",
+      "roadType": "local_road",
+      "solutionRotation": 180,
+      "initialRotation": 0,
+      "rotatable": true,
+      "comment": "Corner up and left"
+    },
+    {
+      "row": 1,
+      "col": 5,
+      "tileType": "straight",
+      "roadType": "local_road",
+      "solutionRotation": 0,
+      "initialRotation": 90,
+      "rotatable": true,
+      "comment": "Vertical road"
+    },
+    {
+      "row": 0,
+      "col": 5,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -108,7 +108,7 @@
     },
     {
       "row": 2,
-      "col": 5,
+      "col": 4,
       "tileType": "landmark",
       "roadType": "landmark",
       "solutionRotation": 90,
@@ -119,7 +119,7 @@
     },
     {
       "row": 3,
-      "col": 6,
+      "col": 5,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -129,7 +129,7 @@
     },
     {
       "row": 4,
-      "col": 6,
+      "col": 5,
       "tileType": "t_junction",
       "roadType": "local_road",
       "solutionRotation": 90,
@@ -138,8 +138,8 @@
       "comment": "T-junction branching"
     },
     {
-      "row": 4,
-      "col": 4,
+      "row": 3,
+      "col": 3,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -148,7 +148,7 @@
       "comment": "Corner"
     },
     {
-      "row": 4,
+      "row": 2,
       "col": 3,
       "tileType": "straight",
       "roadType": "local_road",
@@ -158,8 +158,8 @@
       "comment": "Horizontal road"
     },
     {
-      "row": 4,
-      "col": 2,
+      "row": 1,
+      "col": 1,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 180,
@@ -168,8 +168,8 @@
       "comment": "Corner"
     },
     {
-      "row": 5,
-      "col": 2,
+      "row": 2,
+      "col": 1,
       "tileType": "straight",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -178,8 +178,8 @@
       "comment": "Vertical road"
     },
     {
-      "row": 6,
-      "col": 2,
+      "row": 0,
+      "col": 1,
       "tileType": "corner",
       "roadType": "local_road",
       "solutionRotation": 0,
@@ -188,8 +188,8 @@
       "comment": "Corner"
     },
     {
-      "row": 6,
-      "col": 1,
+      "row": 1,
+      "col": 0,
       "tileType": "landmark",
       "roadType": "landmark",
       "solutionRotation": 90,

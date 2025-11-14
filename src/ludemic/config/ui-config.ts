@@ -11,24 +11,28 @@ export const UI_CONFIG = {
    * HeadlineDisplay Modal (News headline reveals)
    */
   HEADLINE_MODAL: {
-    // Modal sizing
-    widthPercent: 0.4, // 70% of screen width
-    heightPercent: 0.8, // Maximum 80% of screen height
-    paddingPercent: 0.02, // 2% padding as percentage of viewport
-    backgroundAlpha: 0.9, // Semi-transparent background
+    // Level text styling (always visible at top)
+    levelFontSizePercent: 0.025, // 2.5% of viewport width
+    levelMinFontSize: 18, // Minimum font size in pixels
+    levelMaxFontSize: 32, // Maximum font size in pixels
+    levelPaddingTopPercent: 0.15, // 15% padding from top of screen
 
-    // Text styling
-    fontSizePercent: 0.025, // 2.5% of viewport width
-    minFontSize: 16, // Minimum font size in pixels
+    // Headline positioning (from top of screen)
+    headlinePaddingTopPercent: 0.001, // 20% padding from top of screen
+
+    // Inline background box sizing (appears below "Level: X" text)
+    widthPercent: 0.35, // 35% of screen width
+    paddingPercent: 0.02, // 2% padding inside background box
+    backgroundAlpha: 0.7, // Semi-transparent dark background
+
+    // Headline text styling
+    fontSizePercent: 0.020, // 2% of viewport width
+    minFontSize: 12, // Minimum font size in pixels
     maxFontSize: 36, // Maximum font size in pixels
-
-    // Text wrapping (percentage of modal width)
-    textWrapPercent: 0.75, // 75% of modal width for text
 
     // Animation timing
     typewriterSpeed: 30, // Characters per second
     displayDuration: 5, // Seconds to show headline
-    fadeInDuration: 0.5, // Fade in time in seconds
     fadeOutDuration: 0.5, // Fade out time in seconds
   },
 
@@ -50,9 +54,9 @@ export const UI_CONFIG = {
     // Level number text
     levelText: {
       fontSizePercent: 0.04, // 4% of viewport width
-      minFontSize: 18,
+      minFontSize: 14,
       maxFontSize: 32,
-      offsetFromCenterPercent: 0.02, // 2% above center
+      offsetFromCenterPercent: 0.51, // 2% above center
     },
 
     // Score display
@@ -120,6 +124,25 @@ export const UI_CONFIG = {
       minFontSize: 12,
       maxFontSize: 20,
       offsetFromCenterPercent: -0.2, // 20% below center
+    },
+  },
+
+  /**
+   * Grid and Tile Settings
+   */
+  GRID: {
+    // Tile size as percentage of original image (160px)
+    tileSizePercent: 0.20, // 20% of 160px = 32px
+    padding: 10, // Padding around grid
+
+    // Individual landmark/tile image scales (relative to tile size)
+    imageScales: {
+      home: 1.05, // 100% of tile size
+      gas_station: 1.1, // 100% of tile size
+      diner: 1.0, // 100% of tile size
+      turnpike: 0.65, // 100% of tile size
+      landmark: 1.0, // Default for all landmarks
+      tile: 1.0, // Default for regular tiles (roads)
     },
   },
 

@@ -53,6 +53,11 @@ export interface HeadlineRevealConfig extends PrimitiveConfig {
    * Optional: Play sound on reveal
    */
   soundId?: string;
+
+  /**
+   * Optional: Enable/disable headline reveals (default: true)
+   */
+  enabled?: boolean;
 }
 
 export class HeadlineReveal implements Primitive {
@@ -80,6 +85,12 @@ export class HeadlineReveal implements Primitive {
    * Handle puzzle completion - reveal next headline
    */
   private handleCompletion = (data?: any) => {
+    // Check if headline reveals are disabled
+    if (this.config.enabled === false) {
+      console.log(`[HeadlineReveal] 📰 Headlines disabled, skipping reveal`);
+      return;
+    }
+
     console.log(`[HeadlineReveal] 🎉 Puzzle completed! Revealing headline...`);
 
     // Validate landmark requirements if specified
