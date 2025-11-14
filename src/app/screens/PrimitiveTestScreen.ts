@@ -55,6 +55,8 @@ export class PrimitiveTestScreen extends Container {
 
     // Start background music (loop)
     audioManager.playBGMusic(0.15);
+    // Start secondary background layer on top
+    audioManager.playBGLayer(0.3);
 
     // Create full-screen dark background
     this.background = new Graphics();

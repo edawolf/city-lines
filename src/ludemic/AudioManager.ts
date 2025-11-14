@@ -166,6 +166,26 @@ export class AudioManager {
       );
     }
   }
+
+  /**
+   * Play secondary background music layer (plays on top of main BGM)
+   * @param volume - Volume (0.0 to 1.0), default 0.3
+   */
+  public playBGLayer(volume = 0.3): void {
+    try {
+      console.log("[AudioManager] 🎵 Starting BG layer: bg-06.wav");
+      engine().audio.sfx.play("main/sounds/bg-06.wav", {
+        volume,
+        loop: true
+      });
+      console.log("[AudioManager] ✅ BG layer playing (looped)");
+    } catch (error) {
+      console.error(
+        "[AudioManager] ❌ Failed to play BG layer:",
+        error,
+      );
+    }
+  }
 }
 
 // Export singleton instance for convenience
