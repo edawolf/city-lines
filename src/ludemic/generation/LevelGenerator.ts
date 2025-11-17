@@ -127,6 +127,12 @@ export class LevelGenerator {
       `[LevelGenerator] 🔄 Calculated tile rotations based on connections`,
     );
 
+    // Step 4.5: Orient landmarks to face their adjacent road tiles
+    this.orientLandmarks(solutionPaths);
+    console.log(
+      `[LevelGenerator] 🏛️ Oriented landmarks to face adjacent road tiles`,
+    );
+
     // Step 5: Prune orphan roads via traversal from turnpike
     this.pruneOrphanRoads(landmarks, turnpike);
     console.log(
@@ -415,6 +421,7 @@ export class LevelGenerator {
     visited.add(`${from.row},${from.col}`);
 
     const current = { row: from.row, col: from.col };
+    const minPathLength = this.config.minPathLength || 3;
 
     // Choose path strategy based on difficulty
     const difficulty = this.config.difficulty;
@@ -433,7 +440,10 @@ export class LevelGenerator {
       const colDist = Math.abs(current.col - to.col);
       const manhattanDist = rowDist + colDist;
 
-      if (manhattanDist === 1) {
+      // Only connect to turnpike if path is long enough
+      // path.length - 2 excludes landmark and turnpike, counting only road tiles
+      const currentRoadTileCount = path.length - 1; // Exclude starting landmark
+      if (manhattanDist === 1 && currentRoadTileCount >= minPathLength) {
         // Final connection to turnpike
         path.push(to);
         break;
@@ -472,19 +482,37 @@ export class LevelGenerator {
           }
         }
 
+        // CRITICAL: Prevent crossroads (4-neighbor tiles)
+        // Count how many neighbors this position would have if we place a road here
+        const neighborCount = this.countNeighbors(newRow, newCol);
+        if (neighborCount >= 4) {
+          // Skip this move - would create illegal crossroads
+          continue;
+        }
+
         // Calculate move score (lower is better towards target)
         const newDist = Math.abs(newRow - to.row) + Math.abs(newCol - to.col);
 
+        // If we're too close to turnpike and haven't met minimum path length, avoid getting closer
+        const roadTilesSoFar = path.length - 1; // Exclude landmark
+        const needsMoreLength = roadTilesSoFar < minPathLength && newDist <= 2;
+
         // Occasionally take a detour move if allowed
         const isDetour = newDist > manhattanDist;
-        if (isDetour && (!allowDetours || this.random() > detourChance)) {
+        if (
+          isDetour &&
+          !needsMoreLength &&
+          (!allowDetours || this.random() > detourChance)
+        ) {
           continue; // Skip detour moves most of the time
         }
 
+        // Score: prefer moves away from target if we need more length
+        const distanceScore = needsMoreLength ? -newDist : newDist;
         moves.push({
           row: newRow,
           col: newCol,
-          score: newDist + (isDetour ? 100 : 0), // Penalize detours
+          score: distanceScore + (isDetour && !needsMoreLength ? 100 : 0),
         });
       }
 
@@ -565,6 +593,76 @@ export class LevelGenerator {
     });
 
     return count;
+  }
+
+  /**
+   * Orient landmarks to face their adjacent road tiles
+   * Uses the solution paths to determine the CORRECT adjacent tile (the first step in the path)
+   * Must be called AFTER calculateTileRotations() so road tiles have correct types
+   */
+  private orientLandmarks(
+    solutionPaths: { landmark: string; path: GeneratedTile[] }[],
+  ): void {
+    for (const pathInfo of solutionPaths) {
+      const { path } = pathInfo;
+
+      // path[0] = landmark
+      // path[1] = first road tile (or turnpike if directly adjacent)
+      // path[last] = turnpike
+
+      if (path.length < 2) {
+        throw new Error(
+          `Path too short for landmark at (${path[0].row},${path[0].col})`,
+        );
+      }
+
+      const landmark = path[0];
+      const nextTile = path[1]; // This is the tile the landmark should face
+
+      // Calculate direction from landmark to next tile
+      const rowDiff = nextTile.row - landmark.row;
+      const colDiff = nextTile.col - landmark.col;
+
+      let adjacentDirection: Direction;
+
+      if (rowDiff === -1 && colDiff === 0) {
+        adjacentDirection = Direction.North;
+      } else if (rowDiff === 1 && colDiff === 0) {
+        adjacentDirection = Direction.South;
+      } else if (rowDiff === 0 && colDiff === -1) {
+        adjacentDirection = Direction.West;
+      } else if (rowDiff === 0 && colDiff === 1) {
+        adjacentDirection = Direction.East;
+      } else {
+        throw new Error(
+          `Landmark at (${landmark.row},${landmark.col}) has non-adjacent next tile at (${nextTile.row},${nextTile.col})`,
+        );
+      }
+
+      // Landmarks have a base opening of South (Direction.South)
+      // We need to rotate the landmark so its opening faces the adjacent road
+      // Calculate rotation needed: how many 90° CW rotations to go from South to adjacentDirection
+      let rotation = 0;
+
+      // Map direction to rotation
+      // Base (South) = 0°, need to rotate to match adjacentDirection
+      if (adjacentDirection === Direction.South) {
+        rotation = 0; // Already facing South
+      } else if (adjacentDirection === Direction.West) {
+        rotation = 90; // Rotate 90° CW: South → West
+      } else if (adjacentDirection === Direction.North) {
+        rotation = 180; // Rotate 180°: South → North
+      } else if (adjacentDirection === Direction.East) {
+        rotation = 270; // Rotate 270° CW: South → East
+      }
+
+      landmark.rotation = rotation;
+      landmark.scrambledRotation = rotation; // Landmarks are not scrambled
+
+      console.log(
+        `[LevelGenerator] 🏛️ Oriented landmark at (${landmark.row},${landmark.col}) to face ${Direction[adjacentDirection]} toward (${nextTile.row},${nextTile.col}) (rotation: ${rotation}°)`,
+      );
+    }
   }
 
   /**
@@ -763,26 +861,73 @@ export class LevelGenerator {
         if (!tile) return;
         if (!tile.rotatable) return;
 
-        const neighbors = this.countNeighbors(rowIndex, colIndex);
-        if (neighbors === 0) {
+        const neighborCount = this.countNeighbors(rowIndex, colIndex);
+        if (neighborCount < 2) {
           throw new Error(
-            `Isolated tile at (${rowIndex},${colIndex}) after pruning`,
+            `Road tile at (${rowIndex},${colIndex}) has degree ${neighborCount} after pruning - should have been removed`,
           );
-        }
-        if (neighbors === 1) {
-          // Only landmarks and turnpike should have degree 1
-          if (tile.tileType !== "landmark" && tile.tileType !== "turnpike") {
-            throw new Error(
-              `Dead-end road tile at (${rowIndex},${colIndex}) with only 1 connection`,
-            );
-          }
         }
       });
     });
   }
 
   /**
+   * Find path from one tile to another using BFS
+   * Returns all tiles on the shortest path
+   */
+  private findPathFromTo(
+    from: GeneratedTile,
+    to: GeneratedTile,
+  ): GeneratedTile[] {
+    const queue: Array<{ tile: GeneratedTile; path: GeneratedTile[] }> = [
+      { tile: from, path: [from] },
+    ];
+    const visited = new Set<string>();
+    visited.add(`${from.row},${from.col}`);
+
+    while (queue.length > 0) {
+      const { tile: current, path } = queue.shift()!;
+
+      if (current.row === to.row && current.col === to.col) {
+        return path; // Found path to turnpike
+      }
+
+      const openings = this.getTileOpenings(current);
+
+      for (const direction of openings) {
+        const adjacent = this.getAdjacentPosition(
+          current.row,
+          current.col,
+          direction,
+        );
+
+        if (!this.isValidPos(adjacent.row, adjacent.col)) continue;
+
+        const adjacentTile = this.grid[adjacent.row][adjacent.col];
+        if (!adjacentTile) continue;
+
+        const key = `${adjacent.row},${adjacent.col}`;
+        if (visited.has(key)) continue;
+
+        // Check if adjacent tile connects back to us
+        const adjacentOpenings = this.getTileOpenings(adjacentTile);
+        const oppositeDir = this.getOppositeDirection(direction);
+
+        if (adjacentOpenings.includes(oppositeDir)) {
+          visited.add(key);
+          queue.push({ tile: adjacentTile, path: [...path, adjacentTile] });
+        }
+      }
+    }
+
+    throw new Error(
+      `No path found from (${from.row},${from.col}) to (${to.row},${to.col})`,
+    );
+  }
+
+  /**
    * Validate no tile has openings pointing to empty space
+   * Endpoints (landmarks and turnpike) are excluded from this check
    */
   private validateNoEmptyOpenings(): void {
     const danglingOpenings: { tile: GeneratedTile; direction: Direction }[] =
@@ -791,6 +936,13 @@ export class LevelGenerator {
     this.grid.forEach((row, rowIndex) => {
       row.forEach((tile, colIndex) => {
         if (!tile) return;
+
+        // CRITICAL: Skip endpoint tiles (landmarks and turnpike)
+        // They are allowed to have openings that don't connect to anything
+        // because they logically connect "to the world" beyond the grid
+        if (tile.tileType === "landmark" || tile.tileType === "turnpike") {
+          return;
+        }
 
         // Get tile openings based on type and rotation
         const openings = this.getTileOpenings(tile);
@@ -816,12 +968,12 @@ export class LevelGenerator {
 
     if (danglingOpenings.length > 0) {
       throw new Error(
-        `Found ${danglingOpenings.length} dangling opening(s) - level generation failed`,
+        `Found ${danglingOpenings.length} dangling opening(s) on road tiles - level generation failed`,
       );
     }
 
     console.log(
-      "[LevelGenerator] ✅ No dangling openings - all tile connections valid",
+      "[LevelGenerator] ✅ No dangling openings on road tiles - all connections valid",
     );
   }
 
@@ -843,8 +995,48 @@ export class LevelGenerator {
       }
     }
 
+    // CRITICAL: Validate no road tiles have degree 1 (dead-ends)
+    // Only landmarks and turnpike are allowed to be degree 1
+    this.validateNoDeadEndRoads();
+
     console.log(
       "[LevelGenerator] ✅ Solution validated - all landmarks can reach turnpike",
+    );
+  }
+
+  /**
+   * Validate that no LocalRoad tiles have degree 1 (dead-ends)
+   * Only landmarks and turnpike are allowed to have exactly one connection
+   */
+  private validateNoDeadEndRoads(): void {
+    const deadEnds: GeneratedTile[] = [];
+
+    this.grid.forEach((row, rowIndex) => {
+      row.forEach((tile, colIndex) => {
+        if (!tile) return;
+
+        // Only check rotatable road tiles (LocalRoad)
+        if (!tile.rotatable || tile.roadType !== RoadType.LocalRoad) return;
+
+        // Count neighbors
+        const neighborCount = this.countNeighbors(rowIndex, colIndex);
+
+        // Road tiles must have at least 2 neighbors
+        if (neighborCount === 1) {
+          deadEnds.push(tile);
+        }
+      });
+    });
+
+    if (deadEnds.length > 0) {
+      const positions = deadEnds.map((t) => `(${t.row},${t.col})`).join(", ");
+      throw new Error(
+        `Found ${deadEnds.length} dead-end road tile(s) at: ${positions}. Only landmarks and turnpike may be degree 1.`,
+      );
+    }
+
+    console.log(
+      "[LevelGenerator] ✅ No dead-end roads - all LocalRoad tiles have >= 2 neighbors",
     );
   }
 
@@ -934,7 +1126,14 @@ export class LevelGenerator {
       case "t_junction":
         return [Direction.North, Direction.East, Direction.West];
       case "turnpike":
-        return [Direction.North, Direction.South];
+        // CRITICAL: Treat turnpike as connectable from all sides for BFS/validation
+        // This ensures paths can approach from any direction
+        return [
+          Direction.North,
+          Direction.East,
+          Direction.South,
+          Direction.West,
+        ];
       case "landmark":
         return [Direction.South]; // Landmarks face down by default
       default:
