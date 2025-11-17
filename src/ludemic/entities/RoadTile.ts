@@ -1,8 +1,16 @@
-import { Container, Graphics, Text, Sprite, Assets } from "pixi.js";
+import {
+  Container,
+  Graphics,
+  Text,
+  Sprite,
+  Assets,
+  type FederatedPointerEvent,
+} from "pixi.js";
 
-import type { Primitive } from "../primitives/Primitive";
 import type { EntityConfig } from "../config/types";
 import { UI_CONFIG } from "../config/ui-config";
+import { audioManager } from "../AudioManager";
+import { ParticleManager } from "../effects/ParticleManager";
 
 /**
  * Direction enum for road connections
@@ -49,7 +57,7 @@ const BASE_OPENINGS: Record<string, Direction[]> = {
     Direction.West,
   ],
   house: [Direction.South], // Houses connect downward
-  landmark: [Direction.North, Direction.East, Direction.South, Direction.West], // Landmarks connect from all sides
+  landmark: [Direction.North, Direction.East, Direction.South, Direction.West], // Landmarks connect from all sides like turnpikes for proper connection graph building
   turnpike: [Direction.North, Direction.East, Direction.South, Direction.West], // Turnpikes connect from all sides
 };
 
@@ -89,19 +97,15 @@ export interface RoadTileConfig {
  * Represents a single tile in the city grid.
  * Can be a road segment, house, landmark, or turnpike.
  *
- * LISA Mapping:
- * - ROT (rotation state)
- * - DISPLAY (visual representation)
- * - COLLIDE (connection detection via openings)
- *
  * Key Features:
+ * - Click/tap to rotate tiles 90° (if rotatable)
  * - Direction-based connections (N, E, S, W)
  * - Road type hierarchy (house → local → turnpike → landmark)
  * - Rotation in 90° increments
  * - Visual representation of road type and openings
+ * - Hover effects for interactive feedback
  */
 export class RoadTile extends Container {
-  private primitives: Map<string, Primitive> = new Map();
   private graphics: Graphics;
   private labelText?: Text;
   private houseSprite?: Sprite; // House image sprite
@@ -134,6 +138,9 @@ export class RoadTile extends Container {
     // Create visual representation
     this.graphics = new Graphics();
     this.addChild(this.graphics);
+
+    // Setup click interaction directly (no primitive needed)
+    this.setupClickInteraction();
 
     // Create debug label only for special tiles (house, landmark, turnpike)
     // Not for regular road tiles (corner, straight, t_junction, crossroads)
@@ -852,19 +859,93 @@ export class RoadTile extends Container {
   }
 
   /**
-   * Attach a primitive to this entity
+   * Setup click/tap interaction for rotating tiles
    */
-  addPrimitive(type: string, primitive: Primitive, config: any): void {
-    primitive.init(this, config);
-    this.primitives.set(type, primitive);
+  private setupClickInteraction(): void {
+    // Make entity interactive
+    this.eventMode = "static";
+    this.cursor = this.rotatable ? "pointer" : "default";
+
+    // Listen for click/tap events
+    this.on("pointerdown", this.handlePointerDown);
+
+    // Add hover effect for feedback
+    this.on("pointerover", this.handlePointerOver);
+    this.on("pointerout", this.handlePointerOut);
   }
 
   /**
-   * Get a primitive by type name
+   * Handle pointer down (click/tap)
    */
-  getPrimitive(type: string): Primitive | null {
-    return this.primitives.get(type) ?? null;
-  }
+  private handlePointerDown = (event: FederatedPointerEvent) => {
+    // Prevent event propagation
+    event.stopPropagation();
+
+    // Only rotate if tile is rotatable
+    if (!this.rotatable) {
+      console.log(
+        `[RoadTile] ⚠️ Tile at (${this.gridPos.row}, ${this.gridPos.col}) is not rotatable`,
+      );
+      return;
+    }
+
+    // Perform rotation
+    this.rotate();
+
+    // Play rotation sound
+    audioManager.playRotateSound();
+
+    // Create particle burst effect
+    try {
+      const particleManager = ParticleManager.getInstance();
+      const localPos = this.position;
+      particleManager.createBurst(localPos.x, localPos.y, 50, {
+        color: 0x2d5016, // Dark green
+        size: 2,
+        speed: 8,
+        lifetime: 0.5,
+      });
+    } catch (error) {
+      console.warn("[RoadTile] ParticleManager not available:", error);
+    }
+
+    console.log(
+      `[RoadTile] 🔄 Tile rotated to ${this.rotation}° at (${this.gridPos.row}, ${this.gridPos.col})`,
+    );
+
+    // Emit event for path validation
+    const eventData = {
+      tile: this,
+      rotation: this.rotation,
+      gridPos: this.gridPos,
+    };
+
+    this.emit("tile_rotated", eventData);
+
+    // Visual feedback: brief scale animation
+    this.scale.set(0.95, 0.95);
+    setTimeout(() => {
+      this.scale.set(1, 1);
+    }, 100);
+  };
+
+  /**
+   * Handle pointer over (hover)
+   */
+  private handlePointerOver = () => {
+    if (this.rotatable) {
+      // Slight scale up on hover
+      this.scale.set(1.05, 1.05);
+    }
+  };
+
+  /**
+   * Handle pointer out (unhover)
+   */
+  private handlePointerOut = () => {
+    // Reset scale
+    this.scale.set(1, 1);
+  };
 
   /**
    * Get the landmark image sprite for animation
@@ -899,18 +980,21 @@ export class RoadTile extends Container {
   }
 
   /**
-   * Update all attached primitives
+   * Update method (no longer needed for primitives, but kept for compatibility)
    */
-  update(deltaTime: number): void {
-    this.primitives.forEach((primitive) => primitive.update(deltaTime));
+  update(_deltaTime: number): void {
+    // No per-frame updates needed
   }
 
   /**
-   * Clean up all primitives
+   * Clean up event listeners
    */
   override destroy(): void {
-    this.primitives.forEach((primitive) => primitive.destroy());
-    this.primitives.clear();
+    this.off("pointerdown", this.handlePointerDown);
+    this.off("pointerover", this.handlePointerOver);
+    this.off("pointerout", this.handlePointerOut);
+    this.eventMode = "auto";
+    this.cursor = "default";
     super.destroy();
   }
 }

@@ -644,9 +644,7 @@ export class GameBuilder {
             type: "RoadTile",
             position: { x: 0, y: 0 }, // Will be positioned by grid
             config: tileConfig,
-            primitives: tileConfig.rotatable
-              ? [{ type: "RotateOnClick", config: {} }]
-              : undefined,
+            // No primitives needed - RoadTile handles click interaction directly
           };
           const tile = this.createEntity(tileEntityConfig, false);
           cityGrid.addTile(tile, tileConfig.row, tileConfig.col);
@@ -679,25 +677,11 @@ export class GameBuilder {
       }
     });
 
-    // Attach primitives to grid tiles
+    // Perform initial validation for City Lines grid
     if ((config as any).gridTiles) {
       const cityGrid = game.getEntityById("city_grid") as any;
-      if (cityGrid && cityGrid.getAllTiles) {
-        const tiles = cityGrid.getAllTiles();
-        tiles.forEach((tile: any) => {
-          // Find matching config by grid position, not by array index!
-          const tileConfig = (config as any).gridTiles.find(
-            (tc: any) =>
-              tc.row === tile.gridPos.row && tc.col === tile.gridPos.col,
-          );
-          if (tileConfig && tileConfig.rotatable) {
-            this.attachPrimitives(tile, [
-              { type: "RotateOnClick", config: {} },
-            ]);
-          }
-        });
-
-        // Perform initial validation after all tiles are added
+      if (cityGrid && cityGrid.performInitialValidation) {
+        // RoadTiles now handle click interaction directly (no primitives needed)
         cityGrid.performInitialValidation();
       }
     }

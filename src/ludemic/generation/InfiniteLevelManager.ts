@@ -52,6 +52,7 @@ export class InfiniteLevelManager {
    * Generate a procedural level with deterministic seed
    */
   private static generateLevel(levelNumber: number): GameConfig {
+    console.log(`🚨🚨🚨 [InfiniteLevelManager] generateLevel() CALLED for level ${levelNumber} 🚨🚨🚨`);
     const seed = levelNumber * 12345; // Deterministic seed
     const params = this.getDifficultyParams(levelNumber);
     console.log(
@@ -125,28 +126,39 @@ export class InfiniteLevelManager {
     const cycleIndex = (level - 4) % pattern.length;
     const difficultyType = pattern[cycleIndex] as "easy" | "medium" | "hard";
 
-    // Map difficulty to parameters (strictly following instructions)
+    // Use level seed for deterministic randomness
+    const seed = level * 12345;
+    let rngState = seed;
+    const rng = () => {
+      rngState ^= rngState << 13;
+      rngState ^= rngState >>> 17;
+      rngState ^= rngState << 5;
+      rngState = rngState >>> 0;
+      return rngState / 4294967296;
+    };
+
+    // Map difficulty to parameters with random path lengths
     switch (difficultyType) {
       case "easy":
         return {
           gridSize: { rows: 4, cols: 4 },
           landmarkCount: 2, // 4x4 → up to 2 landmarks
           difficulty: "easy",
-          minPathLength: 3,
+          minPathLength: 3 + Math.floor(rng() * 3), // 3-5
         };
       case "medium":
         return {
           gridSize: { rows: 5, cols: 5 },
           landmarkCount: 3, // 5x5 → up to 3 landmarks
           difficulty: "medium",
-          minPathLength: 4,
+          minPathLength: 4 + Math.floor(rng() * 4), // 4-7
         };
       case "hard":
         return {
           gridSize: { rows: 6, cols: 6 },
           landmarkCount: 4, // 6x6 → up to 6 landmarks (using 4 for variety)
           difficulty: "hard",
-          minPathLength: 5,
+          minPathLength: 5 + Math.floor(rng() * 5), // 5-9
         };
     }
   }
@@ -175,6 +187,8 @@ export class InfiniteLevelManager {
 
     // Create full game config
     const gameConfig: GameConfig = {
+      name: `Generated Level ${levelNumber}`,
+      description: `Procedurally generated City Lines level`,
       viewport: {
         width: 800,
         height: 600,
