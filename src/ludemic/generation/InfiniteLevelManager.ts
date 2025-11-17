@@ -1,194 +1,123 @@
-import type { GameConfig } from "../config/types";
 import { CityLinesLevelLoader } from "../levels/CityLinesLevelLoader";
-import { LevelGenerator, type GeneratedLevel } from "./LevelGenerator";
+import type { GameConfig } from "../config/types";
+import { LevelGenerator, type DifficultyParams, type GeneratedLevel } from "./LevelGenerator";
 import { UI_CONFIG } from "../config/ui-config";
 
 /**
- * InfiniteLevelManager
- *
- * Manages level loading for the game:
- * - Levels 1-3: Hand-crafted (loaded from JSON files)
- * - Levels 4+: Procedurally generated (runtime generation)
- *
- * Uses deterministic seeds for consistent level generation.
+ * InfiniteLevelManager - Loads levels 1-3 from JSON, generates 4+ procedurally
  */
 export class InfiniteLevelManager {
-  private static readonly HAND_CRAFTED_LEVELS = 3;
-  private static readonly MAX_GENERATION_ATTEMPTS = 50;
-
   /**
-   * Load a level by number (1-based)
-   * - Levels 1-3: Load from JSON
-   * - Levels 4+: Generate procedurally
+   * Load level configuration
+   * @param levelNumber 1-based level number
    */
   static async loadLevel(levelNumber: number): Promise<GameConfig> {
-    console.log(`[InfiniteLevelManager] Loading level ${levelNumber}...`);
-
-    // Levels 1-3: Hand-crafted
-    if (levelNumber <= this.HAND_CRAFTED_LEVELS) {
-      console.log(
-        `[InfiniteLevelManager] Loading hand-crafted level ${levelNumber}`,
-      );
-      return CityLinesLevelLoader.loadLevel(levelNumber - 1); // 0-based index
+    // Levels 1-3: Load from hand-crafted JSON files
+    if (levelNumber >= 1 && levelNumber <= 3) {
+      return CityLinesLevelLoader.loadLevel(levelNumber - 1); // Convert to 0-based index
     }
 
-    // Levels 4+: Generated
-    console.log(
-      `[InfiniteLevelManager] Generating procedural level ${levelNumber}`,
-    );
-    try {
-      return this.generateLevel(levelNumber);
-    } catch (error) {
-      console.error(
-        `[InfiniteLevelManager] Generation failed for level ${levelNumber}:`,
-        error,
-      );
-      // Fallback: Use a safe template level
-      return this.getFallbackLevel(levelNumber);
-    }
+    // Levels 4+: Generate procedurally
+    return this.generateLevel(levelNumber);
   }
 
   /**
-   * Generate a procedural level with deterministic seed
+   * Generate a procedural level using LevelGenerator
    */
   private static generateLevel(levelNumber: number): GameConfig {
-    console.log(`🚨🚨🚨 [InfiniteLevelManager] generateLevel() CALLED for level ${levelNumber} 🚨🚨🚨`);
-    const seed = levelNumber * 12345; // Deterministic seed
+    // Determine difficulty based on level number
     const params = this.getDifficultyParams(levelNumber);
-    console.log(
-      `[InfiniteLevelManager] Level ${levelNumber}: seed=${seed}, params=`,
-      params,
-    );
 
-    let attempts = 0;
-    while (attempts < this.MAX_GENERATION_ATTEMPTS) {
-      attempts++;
+    // Use level number as seed for determinism
+    const seed = levelNumber * 12345;
 
-      try {
-        // Create a new generator instance for each attempt with fresh seed
-        const generator = new LevelGenerator({
-          ...params,
-          seed: seed + attempts - 1,
-        });
-        const level = generator.generate();
+    // Generate level
+    const generated = LevelGenerator.generate(params, seed);
 
-        // TODO: Add validation here (Step 3)
-        // const validator = new LevelValidator();
-        // if (!validator.validate(level)) continue;
-
-        console.log(
-          `[InfiniteLevelManager] ✅ Generated level ${levelNumber} (attempt ${attempts})`,
-        );
-        return this.convertToGameConfig(level, levelNumber);
-      } catch (error) {
-        console.warn(
-          `[InfiniteLevelManager] Attempt ${attempts} failed:`,
-          error,
-        );
-        // Continue to next attempt with different seed (seed + attempts)
-      }
-    }
-
-    throw new Error(
-      `Failed to generate valid level after ${this.MAX_GENERATION_ATTEMPTS} attempts`,
-    );
+    // Convert to GameConfig format
+    return this.convertToGameConfig(generated, levelNumber);
   }
 
   /**
    * Get difficulty parameters based on level number
-   * Uses a wave pattern for dynamic difficulty: easy-medium-medium-hard-medium-easy...
-   *
-   * Board sizes: [4x4, 5x5, 5x6, 6x5, 6x6]
-   * Landmark limits:
-   * - 4x4 → up to 2 landmarks
-   * - 5x5 → up to 3 landmarks
-   * - 5x6/6x5/6x6 → up to 6 landmarks
    */
-  private static getDifficultyParams(level: number): {
-    gridSize: { rows: number; cols: number };
-    landmarkCount: number;
-    difficulty: "easy" | "medium" | "hard";
-    minPathLength: number;
-  } {
-    // Create a wave pattern using modulo
-    const pattern = [
-      "easy",
-      "easy",
-      "medium",
-      "medium",
-      "hard",
-      "medium",
-      "easy",
-      "medium",
-      "hard",
-      "hard",
-    ];
-    const cycleIndex = (level - 4) % pattern.length;
-    const difficultyType = pattern[cycleIndex] as "easy" | "medium" | "hard";
-
-    // Use level seed for deterministic randomness
-    const seed = level * 12345;
-    let rngState = seed;
-    const rng = () => {
-      rngState ^= rngState << 13;
-      rngState ^= rngState >>> 17;
-      rngState ^= rngState << 5;
-      rngState = rngState >>> 0;
-      return rngState / 4294967296;
-    };
-
-    // Map difficulty to parameters with random path lengths
-    switch (difficultyType) {
-      case "easy":
-        return {
-          gridSize: { rows: 4, cols: 4 },
-          landmarkCount: 2, // 4x4 → up to 2 landmarks
-          difficulty: "easy",
-          minPathLength: 3 + Math.floor(rng() * 3), // 3-5
-        };
-      case "medium":
-        return {
-          gridSize: { rows: 5, cols: 5 },
-          landmarkCount: 3, // 5x5 → up to 3 landmarks
-          difficulty: "medium",
-          minPathLength: 4 + Math.floor(rng() * 4), // 4-7
-        };
-      case "hard":
-        return {
-          gridSize: { rows: 6, cols: 6 },
-          landmarkCount: 4, // 6x6 → up to 6 landmarks (using 4 for variety)
-          difficulty: "hard",
-          minPathLength: 5 + Math.floor(rng() * 5), // 5-9
-        };
+  private static getDifficultyParams(levelNumber: number): DifficultyParams {
+    if (levelNumber <= 5) {
+      // Easy levels (4-5)
+      return {
+        gridSize: 4,
+        landmarkCount: 2,
+        difficulty: "easy",
+        minPathLength: 3,
+        detourProbability: 0.1,
+      };
+    } else if (levelNumber <= 8) {
+      // Medium levels (6-8)
+      return {
+        gridSize: 5,
+        landmarkCount: 3,
+        difficulty: "medium",
+        minPathLength: 4,
+        detourProbability: 0.3,
+      };
+    } else {
+      // Hard levels (9+)
+      return {
+        gridSize: 6,
+        landmarkCount: 3,
+        difficulty: "hard",
+        minPathLength: 5,
+        detourProbability: 0.5,
+      };
     }
   }
 
   /**
-   * Convert generated level to GameConfig format
+   * Convert GeneratedLevel to GameConfig format
    */
   private static convertToGameConfig(
-    level: GeneratedLevel,
-    levelNumber: number,
+    generated: GeneratedLevel,
+    levelNumber: number
   ): GameConfig {
-    const { gridSize, tiles } = level;
+    const { gridSize, turnpike, landmarks, roadTiles } = generated;
 
-    // Build gridTiles array
-    const gridTiles = tiles.map((tile) => ({
-      row: tile.row,
-      col: tile.col,
-      tileType: tile.tileType,
-      roadType: tile.roadType,
-      rotation: tile.scrambledRotation, // Start with scrambled
-      rotatable: tile.rotatable,
-      solutionRotation: tile.rotation, // Solution rotation
-      landmarkType: tile.landmarkType,
-      comment: tile.comment,
-    }));
+    // Combine all tiles (turnpike, landmarks, roads) into gridTiles array
+    const gridTiles = [
+      // Turnpike tile
+      {
+        row: turnpike.row,
+        col: turnpike.col,
+        tileType: turnpike.tileType,
+        roadType: turnpike.roadType,
+        rotation: turnpike.rotation,
+        rotatable: turnpike.rotatable,
+        solutionRotation: turnpike.solutionRotation,
+      },
+      // Landmark tiles
+      ...landmarks.map((l) => ({
+        row: l.row,
+        col: l.col,
+        tileType: l.tileType,
+        roadType: l.roadType,
+        rotation: l.rotation,
+        rotatable: l.rotatable,
+        solutionRotation: l.solutionRotation,
+        landmarkType: l.landmarkType,
+      })),
+      // Road tiles
+      ...roadTiles.map((r) => ({
+        row: r.row,
+        col: r.col,
+        tileType: r.tileType,
+        roadType: r.roadType,
+        rotation: r.rotation,
+        rotatable: r.rotatable,
+        solutionRotation: r.solutionRotation,
+      })),
+    ];
 
-    // Create full game config
+    // Create GameConfig (same structure as CityLinesLevelLoader)
     const gameConfig: GameConfig = {
-      name: `Generated Level ${levelNumber}`,
-      description: `Procedurally generated City Lines level`,
       viewport: {
         width: 800,
         height: 600,
@@ -225,9 +154,9 @@ export class InfiniteLevelManager {
                 enabled: true,
                 triggerOn: "path_complete",
                 headlines: [
-                  `🏗️ LEVEL ${levelNumber} COMPLETE!`,
-                  "🚦 City Roads Successfully Connected!",
-                  "🏘️ All Landmarks Now Accessible",
+                  `🎉 LEVEL ${levelNumber} COMPLETE!`,
+                  "🏗️ Procedurally Generated Road Network Restored",
+                  "🚦 All Landmarks Successfully Connected",
                 ],
               },
             },
@@ -247,91 +176,8 @@ export class InfiniteLevelManager {
     (gameConfig as any).gridTiles = gridTiles;
 
     console.log(
-      `[InfiniteLevelManager] Converted level ${levelNumber}: ${gridSize.rows}x${gridSize.cols} grid, ${gridTiles.length} tiles`,
+      `[InfiniteLevelManager] Generated level ${levelNumber}: ${gridSize.rows}x${gridSize.cols} grid, ${gridTiles.length} tiles`
     );
-
-    return gameConfig;
-  }
-
-  /**
-   * Fallback level if generation fails
-   * Returns a simple 4x4 level
-   */
-  private static getFallbackLevel(levelNumber: number): GameConfig {
-    console.warn(
-      `[InfiniteLevelManager] Using fallback level for ${levelNumber}`,
-    );
-
-    // Simple safe level: straight path from top to bottom
-    const gameConfig: GameConfig = {
-      viewport: { width: 800, height: 600 },
-      entities: [
-        {
-          id: "city_grid",
-          type: "CityGrid",
-          position: { x: 0, y: 0 },
-          config: {
-            rows: 4,
-            cols: 4,
-            backgroundColor: `0x${UI_CONFIG.COLORS.gridBackground.toString(16)}`,
-            uiConfig: {
-              position: { x: 50, y: 50 },
-              size: { width: 60, height: 60 },
-              tileCount: { rows: 4, cols: 4 },
-              padding: { all: 2 },
-            },
-          },
-        },
-      ],
-      ui: [
-        {
-          type: "HeadlineDisplay",
-          position: { x: 0, y: 0 },
-          config: {},
-        },
-      ],
-    } as any;
-
-    // Simple straight path fallback
-    (gameConfig as any).gridTiles = [
-      {
-        row: 0,
-        col: 1,
-        tileType: "landmark",
-        roadType: "landmark",
-        rotation: 180,
-        rotatable: false,
-        solutionRotation: 180,
-        landmarkType: "diner",
-      },
-      {
-        row: 1,
-        col: 1,
-        tileType: "straight",
-        roadType: "local_road",
-        rotation: 90,
-        rotatable: true,
-        solutionRotation: 0,
-      },
-      {
-        row: 2,
-        col: 1,
-        tileType: "straight",
-        roadType: "local_road",
-        rotation: 180,
-        rotatable: true,
-        solutionRotation: 0,
-      },
-      {
-        row: 3,
-        col: 1,
-        tileType: "turnpike",
-        roadType: "turnpike",
-        rotation: 0,
-        rotatable: false,
-        solutionRotation: 0,
-      },
-    ];
 
     return gameConfig;
   }
