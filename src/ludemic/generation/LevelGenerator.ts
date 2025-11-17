@@ -338,21 +338,30 @@ export class LevelGenerator {
    * Select road tiles by generating paths from landmarks to turnpike
    */
   private selectRoadTiles(): void {
-    const selectedTiles = new Set<string>();
-
     // Generate path from each landmark to turnpike
+    // existingRoads tracks tiles that can be reused by later paths
+    const existingRoads = new Set<string>();
+
     for (const landmark of this.landmarks) {
-      const path = this.generatePath(landmark, this.turnpike, selectedTiles);
+      const path = this.generatePath(landmark, this.turnpike, existingRoads);
       this.solutionPaths.push(path);
 
-      // Add all path tiles to selected set
+      // Add all path tiles to existing roads (for path sharing)
       for (const pos of path) {
-        selectedTiles.add(this.posKey(pos));
+        existingRoads.add(this.posKey(pos));
       }
     }
 
-    // Convert selected tiles to road tile configs
-    for (const key of selectedTiles) {
+    // Create road tiles ONLY from tiles in solution paths
+    const tilesInSolutionPaths = new Set<string>();
+    for (const path of this.solutionPaths) {
+      for (const pos of path) {
+        tilesInSolutionPaths.add(this.posKey(pos));
+      }
+    }
+
+    // Convert tiles to road tile configs
+    for (const key of tilesInSolutionPaths) {
       const [rowStr, colStr] = key.split(",");
       const pos: TilePosition = { row: parseInt(rowStr), col: parseInt(colStr) };
 
@@ -701,6 +710,9 @@ export class LevelGenerator {
     // Build a map of which landmarks connect to which tiles
     const landmarkConnections = new Map<string, Set<string>>();
 
+    // Build a map of which tiles are actually adjacent in solution paths
+    const pathConnections = new Map<string, Set<string>>();
+
     this.solutionPaths.forEach((path, landmarkIndex) => {
       const landmark = this.landmarks[landmarkIndex];
       const landmarkKey = this.posKey(landmark);
@@ -708,20 +720,64 @@ export class LevelGenerator {
 
       // Landmark connects to first tile in its path
       if (path.length > 0) {
-        connections.add(this.posKey(path[0]));
+        const firstTileKey = this.posKey(path[0]);
+        connections.add(firstTileKey);
+
+        // Add bidirectional connection between landmark and first tile
+        if (!pathConnections.has(landmarkKey)) {
+          pathConnections.set(landmarkKey, new Set());
+        }
+        pathConnections.get(landmarkKey)!.add(firstTileKey);
+
+        if (!pathConnections.has(firstTileKey)) {
+          pathConnections.set(firstTileKey, new Set());
+        }
+        pathConnections.get(firstTileKey)!.add(landmarkKey);
       }
 
       landmarkConnections.set(landmarkKey, connections);
+
+      // Record connections between consecutive tiles in path
+      for (let i = 0; i < path.length - 1; i++) {
+        const currentKey = this.posKey(path[i]);
+        const nextKey = this.posKey(path[i + 1]);
+
+        if (!pathConnections.has(currentKey)) {
+          pathConnections.set(currentKey, new Set());
+        }
+        pathConnections.get(currentKey)!.add(nextKey);
+
+        if (!pathConnections.has(nextKey)) {
+          pathConnections.set(nextKey, new Set());
+        }
+        pathConnections.get(nextKey)!.add(currentKey);
+      }
+
+      // Last tile in path connects to turnpike
+      if (path.length > 0) {
+        const lastTileKey = this.posKey(path[path.length - 1]);
+        const turnpikeKey = this.posKey(this.turnpike);
+
+        if (!pathConnections.has(lastTileKey)) {
+          pathConnections.set(lastTileKey, new Set());
+        }
+        pathConnections.get(lastTileKey)!.add(turnpikeKey);
+
+        if (!pathConnections.has(turnpikeKey)) {
+          pathConnections.set(turnpikeKey, new Set());
+        }
+        pathConnections.get(turnpikeKey)!.add(lastTileKey);
+      }
     });
 
     // Process all road tiles
     for (const roadTile of this.roadTiles) {
-      this.assignTileTypeAndRotation(roadTile, landmarkConnections);
+      this.assignTileTypeAndRotation(roadTile, landmarkConnections, pathConnections);
     }
 
     // Orient landmarks to face their connected road tile
     for (const landmark of this.landmarks) {
-      this.orientLandmark(landmark, landmarkConnections);
+      this.orientLandmark(landmark, landmarkConnections, pathConnections);
     }
   }
 
@@ -730,10 +786,11 @@ export class LevelGenerator {
    */
   private assignTileTypeAndRotation(
     tile: TileConfig,
-    landmarkConnections: Map<string, Set<string>>
+    landmarkConnections: Map<string, Set<string>>,
+    pathConnections: Map<string, Set<string>>
   ): void {
     // Get all connected directions
-    const connections = this.getConnectedDirections(tile, landmarkConnections);
+    const connections = this.getConnectedDirections(tile, landmarkConnections, pathConnections);
     const connectionCount = connections.length;
 
     if (connectionCount === 2) {
@@ -767,9 +824,10 @@ export class LevelGenerator {
    */
   private orientLandmark(
     landmark: TileConfig,
-    landmarkConnections: Map<string, Set<string>>
+    landmarkConnections: Map<string, Set<string>>,
+    pathConnections: Map<string, Set<string>>
   ): void {
-    const connections = this.getConnectedDirections(landmark, landmarkConnections);
+    const connections = this.getConnectedDirections(landmark, landmarkConnections, pathConnections);
 
     if (connections.length === 0) {
       console.warn(`Landmark at (${landmark.row}, ${landmark.col}) has no connections`);
@@ -790,7 +848,8 @@ export class LevelGenerator {
    */
   private getConnectedDirections(
     tile: TileConfig,
-    landmarkConnections: Map<string, Set<string>>
+    landmarkConnections: Map<string, Set<string>>,
+    pathConnections: Map<string, Set<string>>
   ): Direction[] {
     const pos: TilePosition = { row: tile.row, col: tile.col };
     const tileKey = this.posKey(pos);
@@ -803,23 +862,16 @@ export class LevelGenerator {
 
     const connections: Direction[] = [];
 
+    // Get tiles that are actually connected in solution paths
+    const connectedTiles = pathConnections.get(tileKey) || new Set();
+
     for (const neighbor of neighbors) {
       if (!this.inBounds(neighbor.pos)) continue;
 
-      const neighborTile = this.getTile(neighbor.pos);
-      if (!neighborTile) continue;
-
       const neighborKey = this.posKey(neighbor.pos);
 
-      // Check if neighbor is a landmark
-      if (neighborTile.tileType === "landmark") {
-        // Only connect if this tile is in the landmark's path
-        const landmarkConns = landmarkConnections.get(neighborKey);
-        if (landmarkConns && landmarkConns.has(tileKey)) {
-          connections.push(neighbor.dir);
-        }
-      } else {
-        // Road or turnpike - always connects if adjacent
+      // Only connect if this neighbor is in the pathConnections map
+      if (connectedTiles.has(neighborKey)) {
         connections.push(neighbor.dir);
       }
     }

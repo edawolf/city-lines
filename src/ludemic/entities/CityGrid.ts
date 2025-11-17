@@ -312,11 +312,15 @@ export class CityGrid extends Container {
 
     if (this.game && typeof this.game.emit === "function") {
       console.log("📢 [CityGrid] Emitting path_complete on game container");
+      console.log("[CityGrid] 🎯 EMITTING path_complete EVENT NOW");
       this.game.emitGame("path_complete", {
         landmarks: this.landmarks,
         turnpikes: this.turnpikes,
         graph: this.connectionGraph,
       });
+      console.log("[CityGrid] ✅ path_complete EVENT EMITTED");
+    } else {
+      console.warn("[CityGrid] ⚠️ Cannot emit path_complete - game container not available");
     }
   }
 

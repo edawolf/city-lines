@@ -296,11 +296,15 @@ export class PrimitiveTestScreen extends Container {
       // Create one-time handler for path_complete
       const pathCompleteHandler = () => {
         console.log(
+          "[PrimitiveTestScreen] 🎯 PATH_COMPLETE EVENT RECEIVED!",
+        );
+        console.log(
           "[PrimitiveTestScreen] ✅ Path complete detected, advancing to next level in 6 seconds...",
         );
 
         // Wait 6 seconds, then advance to next level
         setTimeout(() => {
+          console.log("[PrimitiveTestScreen] ⏰ 6 second timeout triggered");
           const maxLevel = this.MAX_LEVEL - 1;
           if (this.currentLevelIndex < maxLevel) {
             console.log(
@@ -315,6 +319,7 @@ export class PrimitiveTestScreen extends Container {
 
       // Use onGame() to listen to GameContainer's internal event emitter
       this.game.onGame("path_complete", pathCompleteHandler);
+      console.log(`[PrimitiveTestScreen] ✅ path_complete listener attached for level ${levelIndex + 1}`);
 
       console.log(`✅ Loaded: ${(levelConfig as any).name}`);
     } catch (error) {
