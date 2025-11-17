@@ -38,6 +38,7 @@ export class HeadlineDisplay extends Container {
   private viewportWidth = 0; // Will be set by resize() - no hardcoded default
   private viewportHeight = 0; // Will be set by resize() - no hardcoded default
   private currentLevel = 1; // Track current level number
+  private game: any; // Reference to game container for emitting events
 
   // Animation state
   private currentHeadline = "";
@@ -182,9 +183,22 @@ export class HeadlineDisplay extends Container {
     if (!this.hasEmittedContinue) {
       this.hasEmittedContinue = true;
       this.emit("continue_clicked");
+
+      // Also emit on game container if available
+      if (this.game && typeof this.game.emitGame === "function") {
+        console.log("[HeadlineDisplay] Emitting continue_clicked on game container");
+        this.game.emitGame("continue_clicked");
+      }
     }
     // Hide the modal immediately when button is clicked
     this.hide();
+  }
+
+  /**
+   * Set the game container reference (for emitting events)
+   */
+  setGame(game: any): void {
+    this.game = game;
   }
 
   /**

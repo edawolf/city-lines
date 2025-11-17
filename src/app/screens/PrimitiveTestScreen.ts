@@ -299,27 +299,28 @@ export class PrimitiveTestScreen extends Container {
           "[PrimitiveTestScreen] 🎯 PATH_COMPLETE EVENT RECEIVED!",
         );
         console.log(
-          "[PrimitiveTestScreen] ✅ Path complete detected, advancing to next level in 6 seconds...",
+          "[PrimitiveTestScreen] ✅ Path complete detected, waiting for user to click Continue...",
         );
+      };
 
-        // Wait 6 seconds, then advance to next level
-        setTimeout(() => {
-          console.log("[PrimitiveTestScreen] ⏰ 6 second timeout triggered");
-          const maxLevel = this.MAX_LEVEL - 1;
-          if (this.currentLevelIndex < maxLevel) {
-            console.log(
-              `[PrimitiveTestScreen] 6 seconds elapsed, calling nextLevel() from ${this.currentLevelIndex + 1} to ${this.currentLevelIndex + 2}`,
-            );
-            this.nextLevel();
-          } else {
-            console.log("🎉 All levels complete!");
-          }
-        }, 6000); // 6 seconds
+      // Create handler for when user clicks Continue button
+      const continueClickedHandler = () => {
+        console.log("[PrimitiveTestScreen] 🎯 Continue button clicked, advancing to next level...");
+        const maxLevel = this.MAX_LEVEL - 1;
+        if (this.currentLevelIndex < maxLevel) {
+          console.log(
+            `[PrimitiveTestScreen] Calling nextLevel() from ${this.currentLevelIndex + 1} to ${this.currentLevelIndex + 2}`,
+          );
+          this.nextLevel();
+        } else {
+          console.log("🎉 All levels complete!");
+        }
       };
 
       // Use onGame() to listen to GameContainer's internal event emitter
       this.game.onGame("path_complete", pathCompleteHandler);
-      console.log(`[PrimitiveTestScreen] ✅ path_complete listener attached for level ${levelIndex + 1}`);
+      this.game.onGame("continue_clicked", continueClickedHandler);
+      console.log(`[PrimitiveTestScreen] ✅ path_complete and continue_clicked listeners attached for level ${levelIndex + 1}`);
 
       console.log(`✅ Loaded: ${(levelConfig as any).name}`);
     } catch (error) {

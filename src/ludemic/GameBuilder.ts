@@ -717,7 +717,9 @@ export class GameBuilder {
         } else if (uiConfig.type === "LevelCompleteScreen") {
           game.setLevelCompleteScreen(uiElement as LevelCompleteScreen);
         } else if (uiConfig.type === "HeadlineDisplay") {
-          game.setHeadlineDisplay(uiElement as HeadlineDisplay);
+          const headlineDisplay = uiElement as HeadlineDisplay;
+          headlineDisplay.setGame(game); // Set game reference for event emission
+          game.setHeadlineDisplay(headlineDisplay);
         }
       });
     }
