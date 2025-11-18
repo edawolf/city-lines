@@ -1,5 +1,5 @@
 import { setEngine } from "./app/getEngine";
-import { PrimitiveTestScreen } from "./app/screens/PrimitiveTestScreen";
+import { TitleScreen } from "./app/screens/TitleScreen";
 import { userSettings } from "./app/utils/userSettings";
 import { CreationEngine } from "./engine/engine";
 
@@ -23,6 +23,6 @@ setEngine(engine);
   // Initialize the user settings
   userSettings.init();
 
-  // Show the game screen (PrimitiveTestScreen)
-  await engine.navigation.showScreen(PrimitiveTestScreen);
+  // Show the title screen first
+  await engine.navigation.showScreen(TitleScreen);
 })();
