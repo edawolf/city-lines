@@ -142,7 +142,9 @@ export class LevelGenerator {
     // Phase 3: Assign tile types and rotations
     this.assignTileTypesAndRotations();
 
-    // TODO: Phase 4: Scramble rotations
+    // Phase 4: Scramble rotations
+    this.scrambleRotations();
+
     // TODO: Phase 5: Validate
 
     return {
@@ -953,5 +955,40 @@ export class LevelGenerator {
       case Direction.West: return 270;
       default: return 0;
     }
+  }
+
+  // ==========================================================================
+  // Phase 4: Scramble Rotations
+  // ==========================================================================
+
+  /**
+   * Phase 4: Scramble rotations to create puzzle
+   *
+   * Randomly rotates each road tile to create the initial puzzle state.
+   * The solution state (solutionRotation) is preserved for validation.
+   * Landmarks and turnpike are not rotatable, so they keep their orientation.
+   */
+  private scrambleRotations(): void {
+    const validRotations = [0, 90, 180, 270];
+
+    if (this.roadTiles.length === 0) {
+      console.warn('[LevelGenerator] No road tiles to scramble');
+      return;
+    }
+
+    for (const tile of this.roadTiles) {
+      if (!tile.rotatable) {
+        console.warn(
+          `[LevelGenerator] Non-rotatable road tile at (${tile.row},${tile.col})`
+        );
+        continue;
+      }
+
+      tile.rotation = this.rng.choice(validRotations);
+    }
+
+    console.log(
+      `[LevelGenerator] Scrambled ${this.roadTiles.length} road tiles`
+    );
   }
 }
