@@ -29,13 +29,28 @@ export class InfiniteLevelManager {
     const params = this.getDifficultyParams(levelNumber);
 
     // Use level number as seed for determinism
-    const seed = levelNumber * 12345;
+    const baseSeed = levelNumber * 12345;
+    const MAX_ATTEMPTS = 10;
 
-    // Generate level
-    const generated = LevelGenerator.generate(params, seed);
+    // Try up to 10 times with different seeds
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      try {
+        const seed = baseSeed + attempt; // Different seed each attempt
+        const generated = LevelGenerator.generate(params, seed);
+        return this.convertToGameConfig(generated, levelNumber);
+      } catch (error) {
+        console.warn(
+          `[InfiniteLevelManager] Level ${levelNumber} generation attempt ${attempt + 1} failed:`,
+          (error as Error).message,
+        );
+        // Loop continues to next attempt
+      }
+    }
 
-    // Convert to GameConfig format
-    return this.convertToGameConfig(generated, levelNumber);
+    // All attempts failed - throw error
+    throw new Error(
+      `Failed to generate level ${levelNumber} after ${MAX_ATTEMPTS} attempts`,
+    );
   }
 
   /**
