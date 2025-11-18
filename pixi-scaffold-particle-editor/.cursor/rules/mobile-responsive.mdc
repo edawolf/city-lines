@@ -1,0 +1,56 @@
+---
+description: Mobile and responsive design patterns for PixiJS games
+---
+
+# Mobile & Responsive Design
+
+## Touch Event Handling
+```typescript
+// Prevent default touch behaviors on canvas
+app.view.style.touchAction = 'none';
+
+// Use pointer events for unified mouse/touch handling
+sprite.on('pointerdown', onInteraction);
+sprite.on('pointermove', onDrag);
+sprite.on('pointerup', onRelease);
+```
+
+## DOM-Canvas Interaction
+When UI overlays PixiJS canvas:
+```css
+/* Main UI container should allow events to pass through */
+.ui-container {
+    pointer-events: none;
+}
+
+/* Only interactive elements should capture events */
+.ui-button {
+    pointer-events: auto;
+}
+```
+
+## Responsive Sizing
+```typescript
+// Use proper resolution for device pixel ratio
+await app.init({
+    resolution: window.devicePixelRatio || 1,
+    autoDensity: true
+});
+
+// Implement resize handling
+app.renderer.resize(window.innerWidth, window.innerHeight);
+```
+
+## Layout Testing
+Reference [DEBUG_GRAPHICS.MD](mdc:LUDEMIC_CONTEXT/DEBUG_GRAPHICS.MD) for layout test patterns:
+- Corner positioning tests
+- Center alignment verification
+- Touch target size validation (minimum 44px)
+- Responsive text scaling
+- Safe area handling
+
+## Performance Considerations
+- Use texture atlases for mobile GPU efficiency
+- Implement object culling for off-screen objects
+- Limit particle counts on mobile devices
+- Cache static UI elements as textures

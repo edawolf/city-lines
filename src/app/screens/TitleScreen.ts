@@ -2,10 +2,13 @@ import { Container, Graphics, Text } from "pixi.js";
 import type { Ticker } from "pixi.js";
 import { animate } from "motion";
 import type { AnimationPlaybackControls } from "motion/react";
+import { FancyButton } from "@pixi/ui";
 
 import { engine } from "../getEngine";
 import { UI_CONFIG } from "../../ludemic/config/ui-config";
-import { audioManager } from "../../ludemic/AudioManager";
+import { responsiveFontSize } from "../../ludemic/config/UIConfig";
+import { RoadTile, RoadType, LandmarkType } from "../../ludemic/entities/RoadTile";
+import { ParticleManager } from "../../ludemic/effects/ParticleManager";
 
 /**
  * TitleScreen
@@ -19,11 +22,12 @@ export class TitleScreen extends Container {
   private background!: Graphics;
   private titleText!: Text;
   private taglineText!: Text;
-  private promptText!: Text;
+  private startButton!: FancyButton;
   private screenWidth = 0;
   private screenHeight = 0;
-  private keydownListener?: (e: KeyboardEvent) => void;
-  private clickListener?: () => void;
+  private miniPuzzle!: Container;
+  private puzzleTiles: RoadTile[] = [];
+  private particleContainer!: Container;
 
   constructor() {
     super();
@@ -35,19 +39,22 @@ export class TitleScreen extends Container {
   async show(): Promise<void> {
     console.log("[TitleScreen] show() called");
 
-    // Start background music
-    audioManager.playBGMusic(0.15);
-    audioManager.playBGLayer(0.3);
-
     // Create dark background
     this.background = new Graphics();
     this.addChild(this.background);
 
-    // Create title text
+    // Create particle container (behind other elements)
+    this.particleContainer = new Container();
+    this.addChild(this.particleContainer);
+
+    // Initialize ParticleManager for title screen (force reinit since we're on a new screen)
+    ParticleManager.initialize(this.particleContainer, true);
+
+    // Create title text (will be sized in resize())
     this.titleText = new Text({
       text: "CITY LINES",
       style: {
-        fontSize: 72,
+        fontSize: 72, // Placeholder, will be updated in resize()
         fill: 0xffffff,
         fontFamily: "Arial, sans-serif",
         fontWeight: "bold",
@@ -58,35 +65,47 @@ export class TitleScreen extends Container {
     this.titleText.alpha = 0; // Start invisible for animation
     this.addChild(this.titleText);
 
-    // Create tagline text
+    // Create tagline text (will be sized in resize())
     this.taglineText = new Text({
       text: "Build New Jersey roads and reveal top news from the week!",
       style: {
-        fontSize: 20,
+        fontSize: 20, // Placeholder, will be updated in resize()
         fill: 0xcccccc,
         fontFamily: "Arial, sans-serif",
         align: "center",
         wordWrap: true,
-        wordWrapWidth: 600,
+        wordWrapWidth: 600, // Placeholder, will be updated in resize()
       },
     });
     this.taglineText.anchor.set(0.5);
     this.taglineText.alpha = 0; // Start invisible for animation
     this.addChild(this.taglineText);
 
-    // Create prompt text (press any key / click to start)
-    this.promptText = new Text({
-      text: "Press any key or click to start",
+    // Create start button (will be sized in resize())
+    const buttonText = new Text({
+      text: "Click to Start",
       style: {
-        fontSize: 18,
-        fill: 0x888888,
+        fontSize: 24,
+        fill: 0xffffff,
         fontFamily: "Arial, sans-serif",
-        align: "center",
+        fontWeight: "bold",
       },
     });
-    this.promptText.anchor.set(0.5);
-    this.promptText.alpha = 0; // Start invisible for animation
-    this.addChild(this.promptText);
+
+    this.startButton = new FancyButton({
+      defaultView: new Graphics().rect(0, 0, 200, 60).fill(0x4CAF50),
+      hoverView: new Graphics().rect(0, 0, 200, 60).fill(0x66BB6A),
+      pressedView: new Graphics().rect(0, 0, 200, 60).fill(0x388E3C),
+      text: buttonText,
+    });
+    this.startButton.anchor.set(0.5);
+    this.startButton.alpha = 0; // Start invisible for animation
+    this.addChild(this.startButton);
+
+    // Create mini puzzle (3x1 grid: House, Road, Turnpike)
+    this.miniPuzzle = new Container();
+    await this.createMiniPuzzle();
+    this.addChild(this.miniPuzzle);
 
     // Setup input listeners
     this.setupInputListeners();
@@ -123,27 +142,27 @@ export class TitleScreen extends Container {
     );
     await taglineAnim;
 
-    // Fade in prompt
-    const promptAnim = animate(
-      this.promptText,
+    // Fade in start button
+    const buttonAnim = animate(
+      this.startButton,
       { alpha: 1 },
       { duration: 0.6, ease: "easeOut" },
     );
-    await promptAnim;
+    await buttonAnim;
   }
 
   /**
-   * Start pulsing animation on prompt text
+   * Start pulsing animation on start button
    */
   private startPromptPulse(): void {
     const pulse = () => {
       animate(
-        this.promptText,
-        { alpha: [1, 0.3, 1] },
+        this.startButton.scale,
+        { x: [1, 1.05, 1], y: [1, 1.05, 1] },
         { duration: 2.0, ease: "easeInOut" },
       ).finished.then(() => {
         // Loop pulse animation
-        if (this.promptText && this.promptText.parent) {
+        if (this.startButton && this.startButton.parent) {
           pulse();
         }
       });
@@ -152,22 +171,79 @@ export class TitleScreen extends Container {
   }
 
   /**
-   * Setup keyboard and mouse input listeners
+   * Create mini puzzle (3x1 grid: House, Road, Turnpike)
+   */
+  private async createMiniPuzzle(): Promise<void> {
+    const tileSize = 160; // Fixed tile size for title screen
+
+    // Create House tile (left)
+    const houseTile = new RoadTile({
+      row: 0,
+      col: 0,
+      tileType: "straight",
+      imageKey: "home",
+      roadType: RoadType.House,
+      landmarkType: LandmarkType.Home,
+      config: {
+        tileType: "straight",
+        roadType: RoadType.House,
+        rotation: 0,
+        rotatable: true,
+        size: tileSize,
+        landmarkType: LandmarkType.Home,
+      },
+    });
+    this.puzzleTiles.push(houseTile);
+    this.miniPuzzle.addChild(houseTile);
+
+    // Create Road tile (middle)
+    const roadTile = new RoadTile({
+      row: 1,
+      col: 0,
+      tileType: "straight",
+      imageKey: "straight",
+      roadType: RoadType.LocalRoad,
+      config: {
+        tileType: "straight",
+        roadType: RoadType.LocalRoad,
+        rotation: 0,
+        rotatable: true,
+        size: tileSize,
+      },
+    });
+    this.puzzleTiles.push(roadTile);
+    this.miniPuzzle.addChild(roadTile);
+
+    // Create Turnpike tile (right)
+    const turnpikeTile = new RoadTile({
+      row: 2,
+      col: 0,
+      tileType: "straight",
+      imageKey: "turnpike",
+      roadType: RoadType.Turnpike,
+      config: {
+        tileType: "straight",
+        roadType: RoadType.Turnpike,
+        rotation: 0,
+        rotatable: true,
+        size: tileSize,
+      },
+    });
+    this.puzzleTiles.push(turnpikeTile);
+    this.miniPuzzle.addChild(turnpikeTile);
+
+    // Wait a frame for tiles to initialize their sprites
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
+
+  /**
+   * Setup button click listener
    */
   private setupInputListeners(): void {
-    // Keyboard listener
-    this.keydownListener = (_e: KeyboardEvent) => {
+    // Button click listener
+    this.startButton.onPress.connect(() => {
       this.startGame();
-    };
-    document.addEventListener("keydown", this.keydownListener);
-
-    // Click listener
-    this.background.eventMode = "static";
-    this.background.cursor = "pointer";
-    this.clickListener = () => {
-      this.startGame();
-    };
-    this.background.on("pointerdown", this.clickListener);
+    });
   }
 
   /**
@@ -194,6 +270,19 @@ export class TitleScreen extends Container {
     this.screenWidth = width;
     this.screenHeight = height;
 
+    const config = UI_CONFIG.TITLE_SCREEN;
+    console.log("[TitleScreen] Full config:", config);
+    console.log("[TitleScreen] Tagline config:", config.tagline);
+    const centerX = width / 2;
+    const centerY = height / 2;
+
+    // Safe area padding (5% on each side)
+    const safeAreaPadding = width * 0.05;
+    const minX = safeAreaPadding;
+    const maxX = width - safeAreaPadding;
+    const minY = safeAreaPadding;
+    const maxY = height - safeAreaPadding;
+
     // Update background
     if (this.background) {
       this.background.clear();
@@ -202,22 +291,88 @@ export class TitleScreen extends Container {
         .fill(UI_CONFIG.COLORS.gridBackground);
     }
 
-    // Position title in center
+    // Update and position title text
     if (this.titleText) {
-      this.titleText.x = width / 2;
-      this.titleText.y = height / 2 - 60; // Slightly above center
+      const titleFontSize = responsiveFontSize(
+        config.title.fontSizePercent * 100,
+        width,
+        config.title.minFontSize,
+        config.title.maxFontSize,
+      );
+      this.titleText.style.fontSize = titleFontSize;
+      this.titleText.style.wordWrap = true;
+      this.titleText.style.wordWrapWidth = maxX - minX;
+      this.titleText.x = centerX;
+
+      // Calculate desired Y position
+      let titleY = centerY + height * config.title.offsetFromCenterPercent;
+      // Clamp to safe area
+      const titleHalfHeight = this.titleText.height / 2;
+      titleY = Math.max(minY + titleHalfHeight, Math.min(maxY - titleHalfHeight, titleY));
+      this.titleText.y = titleY;
     }
 
-    // Position tagline below title
+    // Update and position tagline text
     if (this.taglineText) {
-      this.taglineText.x = width / 2;
-      this.taglineText.y = height / 2 + 40; // Below title
+      const taglineFontSize = responsiveFontSize(
+        config.tagline.fontSizePercent * 100,
+        width,
+        config.tagline.minFontSize,
+        config.tagline.maxFontSize,
+      );
+      const wrapWidth = width * config.tagline.wordWrapPercent;
+      console.log(`[TitleScreen] Tagline wordWrapWidth: ${wrapWidth}px (${config.tagline.wordWrapPercent * 100}% of ${width}px)`);
+
+      this.taglineText.style.fontSize = taglineFontSize;
+      this.taglineText.style.wordWrap = true;
+      this.taglineText.style.wordWrapWidth = wrapWidth;
+      this.taglineText.text = this.taglineText.text; // Force text update
+      this.taglineText.x = centerX;
+
+      // Calculate desired Y position
+      let taglineY = centerY + height * config.tagline.offsetFromCenterPercent;
+      // Clamp to safe area
+      const taglineHalfHeight = this.taglineText.height / 2;
+      taglineY = Math.max(minY + taglineHalfHeight, Math.min(maxY - taglineHalfHeight, taglineY));
+      this.taglineText.y = taglineY;
     }
 
-    // Position prompt at bottom
-    if (this.promptText) {
-      this.promptText.x = width / 2;
-      this.promptText.y = height - 80; // 80px from bottom
+    // Update and position start button
+    if (this.startButton) {
+      this.startButton.x = centerX;
+
+      // Calculate desired Y position
+      let buttonY = height - height * config.prompt.offsetFromBottomPercent;
+      // Clamp to safe area
+      const buttonHalfHeight = this.startButton.height / 2;
+      buttonY = Math.max(minY + buttonHalfHeight, Math.min(maxY - buttonHalfHeight, buttonY));
+      this.startButton.y = buttonY;
+    }
+
+    // Update and position intro puzzle (horizontal grid layout)
+    if (this.miniPuzzle && this.puzzleTiles.length > 0) {
+      const puzzleConfig = config.introPuzzle;
+      const tileSize = 160; // Base tile size (unscaled)
+
+      // Calculate responsive scale for the entire puzzle
+      const desiredTileSize = Math.max(
+        puzzleConfig.minTileSize,
+        Math.min(puzzleConfig.maxTileSize, width * puzzleConfig.tileSizePercent)
+      );
+      const scale = desiredTileSize / tileSize;
+
+      // Position tiles horizontally centered around origin
+      // Tiles are drawn centered at their position, so offset by half tile to center the group
+      this.puzzleTiles.forEach((tile, index) => {
+        tile.position.set((index - 1) * tileSize, 0);
+      });
+
+      // Apply scale to entire puzzle
+      this.miniPuzzle.scale.set(scale);
+
+      // Position the puzzle container at screen center
+      this.miniPuzzle.x = centerX;
+      this.miniPuzzle.y = centerY + height * puzzleConfig.offsetFromCenterPercent;
     }
   }
 
@@ -240,9 +395,9 @@ export class TitleScreen extends Container {
         animate(this.taglineText, { alpha: 0 }, { duration: 0.3 }),
       );
     }
-    if (this.promptText) {
+    if (this.startButton) {
       fadeOutPromises.push(
-        animate(this.promptText, { alpha: 0 }, { duration: 0.3 }),
+        animate(this.startButton, { alpha: 0 }, { duration: 0.3 }),
       );
     }
 
@@ -251,10 +406,18 @@ export class TitleScreen extends Container {
   }
 
   /**
-   * Update loop (not used for title screen)
+   * Update loop - needed for particle animations
    */
-  update(_time: Ticker): void {
-    // No update logic needed
+  update(time: Ticker): void {
+    // Update particle system if it exists
+    if (this.particleContainer && this.particleContainer.children.length > 0) {
+      console.log(`[TitleScreen] 🔄 Updating ${this.particleContainer.children.length} particle systems`);
+      this.particleContainer.children.forEach((child: any) => {
+        if (child.update) {
+          child.update(time.deltaTime);
+        }
+      });
+    }
   }
 
   /**
@@ -262,9 +425,6 @@ export class TitleScreen extends Container {
    */
   destroy(): void {
     // Remove event listeners
-    if (this.keydownListener) {
-      document.removeEventListener("keydown", this.keydownListener);
-    }
     if (this.clickListener && this.background) {
       this.background.off("pointerdown", this.clickListener);
     }

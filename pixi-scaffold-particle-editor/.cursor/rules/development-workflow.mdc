@@ -1,0 +1,39 @@
+---
+description: Development workflow and tooling
+---
+
+# Development Workflow
+
+## Build System
+- Primary command: `bun run dev` for development
+- Build: `bun run build` (includes linting and TypeScript compilation)
+- Linting: `bun run lint` using ESLint with Prettier
+
+## Asset Processing
+Assets are automatically processed by AssetPack during build:
+- Source files in `raw-assets/` are processed to `public/assets/`
+- Supports texture packing, format conversion, and optimization
+- Use development server for hot-reloading asset changes
+
+## Testing Approach
+User prefers providing test results manually rather than opening multiple terminal windows. When testing:
+- Focus on visual/functional testing
+- Use debug graphics for layout verification
+- Test on multiple screen sizes and orientations
+
+## Deployment
+- Project deploys to Vercel
+- Uses 'gcloud deploy' for simplified deployment when applicable
+- Cloud Build handles build and deploy steps automatically
+
+## Documentation
+Reference guides in `LUDEMIC_CONTEXT/`:
+- [PIXI_JS_DEVELOPMENT_GUIDE.MD](mdc:LUDEMIC_CONTEXT/PIXI_JS_DEVELOPMENT_GUIDE.MD) for comprehensive PixiJS patterns
+- [DEBUG_GRAPHICS.MD](mdc:LUDEMIC_CONTEXT/DEBUG_GRAPHICS.MD) for layout testing
+
+## Code Quality
+- Use TypeScript for type safety
+- Follow ESLint rules with Prettier formatting
+- Implement proper error handling and logging
+- Use descriptive variable and function names
+- Comment complex game logic and algorithms

@@ -1,0 +1,75 @@
+---
+description: Game architecture and engine patterns
+---
+
+# Game Architecture Patterns
+
+## Engine Integration
+This project uses a custom CreationEngine built on PixiJS. Always use the engine instance:
+
+```typescript
+import { getEngine } from './app/getEngine';
+
+const engine = getEngine();
+// Access systems: engine.navigation, engine.audio, engine.resize
+```
+
+## Screen Management
+```typescript
+// Screens extend Container and handle their own lifecycle
+class GameScreen extends Container {
+    async show() {
+        await this.loadAssets();
+        this.setupUI();
+    }
+    
+    async hide() {
+        this.cleanup();
+    }
+}
+
+// Navigation between screens
+await engine.navigation.showScreen(MainScreen);
+```
+
+## Component-Based Design
+```typescript
+// Game objects as components
+export class Player extends Container {
+    private speed = 5;
+    private direction = 0;
+    
+    constructor(texture: Texture) {
+        super();
+        this.setupSprite(texture);
+        this.setupPhysics();
+    }
+    
+    update(deltaTime: number) {
+        // Update logic here
+        this.move(deltaTime);
+        this.handleCollisions();
+    }
+}
+```
+
+## Plugin System
+The engine supports plugins for extending functionality:
+- AudioPlugin for sound management
+- NavigationPlugin for screen transitions
+- ResizePlugin for responsive handling
+
+## Game Loop Integration
+```typescript
+// Use engine ticker for game updates
+engine.ticker.add((deltaTime) => {
+    gameObjects.forEach(obj => obj.update(deltaTime));
+    physics.update(deltaTime);
+    ui.update();
+});
+```
+
+## State Management
+- Use [userSettings.ts](mdc:src/app/utils/userSettings.ts) for persistent user preferences
+- Implement game state as serializable objects
+- Use engine events for state change notifications

@@ -878,6 +878,8 @@ export class RoadTile extends Container {
    * Handle pointer down (click/tap)
    */
   private handlePointerDown = (event: FederatedPointerEvent) => {
+    console.log(`[RoadTile] 🖱️ CLICKED at (${this.gridPos.row}, ${this.gridPos.col}), current rotation: ${this.rotationDegrees}°`);
+
     // Prevent event propagation
     event.stopPropagation();
 
@@ -895,18 +897,29 @@ export class RoadTile extends Container {
     // Play rotation sound
     audioManager.playRotateSound();
 
-    // Create particle burst effect
-    try {
-      const particleManager = ParticleManager.getInstance();
-      const localPos = this.position;
-      particleManager.createBurst(localPos.x, localPos.y, 50, {
-        color: 0x2d5016, // Dark green
-        size: 2,
-        speed: 8,
-        lifetime: 0.5,
-      });
-    } catch (error) {
-      console.warn("[RoadTile] ParticleManager not available:", error);
+    // Create particle burst effect ONLY when rotation reaches 90 degrees
+    if (this.rotationDegrees === 90) {
+      console.log("[RoadTile] 🎆 ROTATION REACHED 90 DEGREES - TRIGGERING PARTICLES");
+      try {
+        const particleManager = ParticleManager.getInstance();
+        console.log("[RoadTile] ParticleManager instance:", particleManager);
+
+        // Get position relative to the particle container
+        // Particle container is a child of CityGrid (this tile's grandparent)
+        const particleContainer = particleManager.getContainer();
+        const localPos = particleContainer.toLocal(this.position, this.parent);
+        console.log("[RoadTile] Particle position (relative to particle container):", localPos);
+
+        particleManager.createBurst(localPos.x, localPos.y, 50, {
+          color: 0x2d5016, // Dark green
+          size: 2,
+          speed: 8,
+          lifetime: 0.5,
+        });
+        console.log("[RoadTile] ✅ Particle burst created successfully");
+      } catch (error) {
+        console.error("[RoadTile] ❌ ParticleManager error:", error);
+      }
     }
 
     console.log(

@@ -1,0 +1,676 @@
+---
+description: When the user asks to evaluate the gameplay or asks "is this game fun?"
+alwaysApply: false
+---
+# Ludemic Game Engine
+
+Created: September 17, 2025 10:19 AM
+
+Roles: Game engine architect, performance engineer, ECS systems designer, LLM integration specialist
+Expertise: High-performance web games, deterministic simulation, mobile optimization, AI-assisted development
+
+## System Overview
+
+Deterministic, performance-optimized game engine for web/mobile platforms with LLM integration. Combines cache-efficient ECS architecture with developer-friendly APIs and AI-safe JSON configuration.
+
+## Design Philosophies
+
+Philosophy {
+  MiyamotoPlaygroundTest: "feel_first_mechanics() - responsive input, satisfying feedback, emergent complexity from simple rules"
+
+  KiShoTenKetsu: {
+    ki: "initialize_player_state() - establish baseline mechanics"
+    sho: "expand_possibility_space() - layer complexity gradually"
+    ten: "introduce_paradigm_shift() - subvert expectations systematically"
+    ketsu: "synthesize_learned_patterns() - unite all mechanics in climax"
+  }
+
+  BlowOrthogonality: "orthogonal_complexity_expansion() - each new element × all previous elements = emergent mechanics"
+
+  AonumaFreedom: "non_linear_skill_expression() - multiple solution paths, player agency over methodology"
+
+  PopeDeduction: "information_synthesis_mechanics() - scattered data coalesces through player reasoning"
+
+  BalatroViral: "exponential_reward_escalation() - synergy stacking, multiplicative feedback, 'just one more' cycles"
+
+  KoreanRetention: "retention_maximization_protocols() - daily cycles, social pressure, monetization psychology"
+}
+
+## Core Constraints
+
+- 60fps mobile performance with 1000+ entities
+- Deterministic simulation for reproducible gameplay
+- Zero allocations in hot update loops
+- LLM-safe configuration with validation
+- Cache-friendly struct-of-arrays data layout
+- Fixed timestep simulation at 60Hz
+- Atomic state transactions with rollback
+- Mobile memory budget: <100MB
+
+## Performance Targets
+
+interface PerformanceTarget {
+  mobile {
+    entities: 1000 @ 60fps
+    frameTimeP95: <20ms
+    memoryUsage: <100MB
+    loadTime: <2s
+  }
+
+  desktop {
+    entities: 3000 @ 60fps
+    frameTimeP95: <16ms
+    memoryUsage: <200MB
+    loadTime: <1s
+  }
+
+  constraint: Zero GC pressure in update loops
+  constraint: Spatial hash collision detection only
+  constraint: Object pooling for all temporaries
+}
+
+## Architecture
+
+### Dual API Design
+
+interface DualAPI {
+  lowLevel: "Struct-of-arrays ECS for zero-GC performance"
+  highLevel: "Object-oriented Component facade for rapid development"
+  bridge: "Automatic registration between Component API and ECS stores"
+
+  constraint: Components auto-sync to ECS on modification
+  constraint: ECS operations batch by default
+}
+
+### Entity Component System
+
+interface Entity {
+  id: string
+  components: Component[]
+
+  add(component) => this
+  remove(componentType) => this
+  has(componentType) => boolean
+
+  constraint: All entities exist in World registry
+  constraint: Components bridge to ECS stores automatically
+}
+
+interface Component {
+  entity: Entity
+  type: string
+
+  onAdd() => void
+  onRemove() => void
+  toECS() => ECSData
+
+  constraint: Must implement ECS bridge methods
+  constraint: No allocations in update path
+}
+
+### World & Systems
+
+interface World {
+  entities: map<entityId, Entity>
+  stores: map<componentType, ECSStore>
+  scheduler: Scheduler
+
+  create(entityId?) => Entity
+  destroy(entityId) => void
+  step(deltaTime) => void
+  snapshot() => WorldState
+
+  constraint: Fixed timestep 16.667ms (60Hz)
+  constraint: Deterministic from seed
+  constraint: Atomic state changes only
+}
+
+interface System {
+  priority: number = 50
+
+  init(world) => void
+  update(dt, world) => void
+
+  constraint: Batch process entities where possible
+  constraint: Access ECS stores directly for performance
+}
+
+fn Scheduler.step(deltaTime) {
+  accumulator += deltaTime
+
+  while (accumulator >= FIXED_TIMESTEP) {
+    for system in systems.sortedBy(priority) {
+      system.update(FIXED_TIMESTEP, world)
+    }
+    accumulator -= FIXED_TIMESTEP
+  }
+}
+
+## Ludemes (Game Mechanics)
+
+interface Ludeme {
+  id: string
+  params: record<string, any>
+  requires: string[]  // Required component types
+  conflicts: string[] // Incompatible ludemes
+
+  validate(world) => ValidationResult
+  apply(entity) => void
+
+  constraint: Schema validated with Zod
+  constraint: Conflict detection before application
+  constraint: Dry-run simulation available
+}
+
+Example Ludeme {
+  id: "movement.throwing"
+  params {
+    velocity: 500
+    angle: 45
+    gravity: 980
+  }
+  requires: ["Transform", "Motion"]
+  conflicts: ["movement.seeking", "movement.steering"]
+}
+
+fn LudemeRegistry.apply(ludeme, entity) {
+  // Validation pipeline
+  schemaResult = validateSchema(ludeme)
+  conflictResult = detectConflicts(ludeme, entity)
+  dryRunResult = simulateDryRun(ludeme, entity)
+
+  if (!schemaResult.valid) {
+    return { success: false, errors: schemaResult.errors }
+  }
+
+  if (conflictResult.conflicts.length > 0) {
+    return {
+      success: false,
+      conflicts: conflictResult.conflicts,
+      suggestion: resolveConflicts(conflictResult)
+    }
+  }
+
+  // Atomic application with rollback
+  snapshot = world.snapshot()
+  try {
+    ludeme.apply(entity)
+    checkInvariants(world)
+  } catch (error) {
+    world.restore(snapshot)
+    return { success: false, error }
+  }
+
+  return { success: true }
+}
+
+## LLM Integration
+
+interface LLMInterface {
+  processInstruction(instruction) {
+    parsed = parseNaturalLanguage(instruction)
+    validated = validateSchema(parsed)
+    conflicts = detectConflicts(parsed)
+    dryRun = simulateDryRun(parsed)
+
+    if (!validated.success) {
+      return {
+        success: false,
+        errors: validated.errors,
+        suggestion: generateFixSuggestion(validated)
+      }
+    }
+
+    if (conflicts.length > 0) {
+      return {
+        success: false,
+        conflicts,
+        suggestion: resolveConflictsSuggestion(conflicts)
+      }
+    }
+
+    applyAtomic(parsed)
+  }
+
+  constraint: All modifications through JSON patches
+  constraint: Schema validation with Zod
+  constraint: Performance budget enforcement
+  constraint: Rollback on invariant violation
+}
+
+Example LLMPatch {
+  entities: [{
+    id: "player"
+    components: [
+      { type: "Motion", params: { maxSpeed: 500 } }
+    ]
+  }]
+  ludemes: [{
+    id: "movement.dashing"
+    params: { dashSpeed: 800, cooldown: 1.5 }
+  }]
+}
+
+## Phaser Integration
+
+interface GameScene extends Phaser.Scene {
+  world: World
+  scheduler: Scheduler
+  renderSync: RenderSyncSystem
+
+  create() {
+    this.world = new World({ seed: this.gameSeed })
+    this.scheduler = new Scheduler([
+      new MovementSystem(),
+      new CollisionSystem(),
+      new RenderSyncSystem(this)
+    ])
+  }
+
+  update(time, delta) {
+    this.scheduler.step(delta)
+  }
+
+  constraint: ECS world owns all game state
+  constraint: Phaser scene only for rendering
+  constraint: Display objects pooled and reused
+}
+
+interface RenderSyncSystem implements System {
+  spritePool: Pool<Phaser.Sprite>
+
+  update(dt, world) {
+    for entity in world.entities {
+      if (!entity.sprite) {
+        entity.sprite = spritePool.acquire()
+      }
+
+      // Sync ECS state to display objects
+      transform = world.transforms.get(entity.id)
+      entity.sprite.setPosition(transform.x, transform.y)
+      entity.sprite.setRotation(transform.rotation)
+    }
+  }
+
+  constraint: Object pooling for all sprites
+  constraint: Batch rendering operations
+  constraint: Culling for off-screen entities
+}
+
+## Deterministic Simulation
+
+interface DeterministicWorld extends World {
+  seed: number
+  rng: SeededRNG
+  tick: number
+
+  constraint: Fixed timestep only (16.667ms)
+  constraint: No Date.now() or Math.random()
+  constraint: Integer-based physics where possible
+  constraint: Reproducible from seed + input sequence
+}
+
+fn createDeterministicTest(seed) {
+  world1 = createWorld({ seed })
+  world2 = createWorld({ seed })
+
+  for i in 1..1000 {
+    world1.step(16.667)
+    world2.step(16.667)
+  }
+
+  assert(world1.snapshot() == world2.snapshot())
+}
+
+## Component Examples
+
+Component Transform {
+  x: number
+  y: number
+  rotation: number = 0
+  scale: number = 1
+
+  toECS() => {
+    world.transforms.set(entity.id, { x, y, rotation, scale })
+  }
+}
+
+Component Motion {
+  vx: number = 0
+  vy: number = 0
+  maxSpeed: number = 350
+  acceleration: number = 800
+  friction: number = 0.95
+
+  toECS() => {
+    world.velocities.set(entity.id, { vx, vy })
+    world.movement.set(entity.id, { maxSpeed, acceleration, friction })
+  }
+}
+
+Component Health {
+  current: number
+  max: number
+
+  damage(amount) {
+    this.current = Math.max(0, this.current - amount)
+    if (this.current == 0) {
+      entity.destroy()
+    }
+  }
+
+  heal(amount) {
+    this.current = Math.min(this.max, this.current + amount)
+  }
+}
+
+## System Examples
+
+System MovementSystem {
+  priority: 10
+
+  update(dt, world) {
+    // Batch process all entities with velocity
+    world.positions.updateBatch(dt, world.velocities)
+
+    // Apply friction
+    for id, velocity in world.velocities {
+      movement = world.movement.get(id)
+      velocity.vx *= movement.friction
+      velocity.vy *= movement.friction
+
+      // Clamp to max speed
+      speed = sqrt(velocity.vx^2 + velocity.vy^2)
+      if (speed > movement.maxSpeed) {
+        scale = movement.maxSpeed / speed
+        velocity.vx *= scale
+        velocity.vy *= scale
+      }
+    }
+  }
+
+  constraint: Zero allocations in update loop
+  constraint: Batch operations on ECS stores
+}
+
+System CollisionSystem {
+  priority: 20
+  spatialHash: SpatialHash
+
+  update(dt, world) {
+    spatialHash.clear()
+
+    // Insert all collidable entities
+    for id, transform in world.transforms {
+      if (world.colliders.has(id)) {
+        spatialHash.insert(id, transform)
+      }
+    }
+
+    // Check collisions only for nearby entities
+    for id, collider in world.colliders {
+      nearby = spatialHash.query(collider.bounds)
+      for otherId in nearby {
+        if (checkCollision(id, otherId)) {
+          handleCollision(id, otherId)
+        }
+      }
+    }
+  }
+
+  constraint: Spatial hash for broad phase
+  constraint: AABB for narrow phase
+  constraint: Object pooling for collision results
+}
+
+## Debug Tools
+
+interface DebugOverlay {
+  metrics {
+    fps: number
+    frameTime: number
+    p95: number
+    p99: number
+    memory: number
+    entities: number
+    gcEvents: number
+  }
+
+  systemBreakdown: map<systemName, timing>
+
+  alerts {
+    performance: frameTime > 16.667
+    memory: memoryUsage > budget
+    gc: gcEvent detected
+  }
+
+  constraint: <1ms overhead for metrics collection
+  constraint: Toggleable with hotkey
+}
+
+interface EntityInspector {
+  selectedEntity: Entity
+  componentEditor: ComponentEditor
+  ludemeConflicts: ConflictVisualizer
+  stateDiff: DiffViewer
+  dependencyGraph: GraphVisualization
+
+  constraint: Live editing with validation
+  constraint: Rollback on invalid changes
+}
+
+## Testing Strategy
+
+Test DeterministicSimulation {
+  seed = 12345
+  world1 = createWorld({ seed })
+  world2 = createWorld({ seed })
+
+  for i in 1..1000 {
+    world1.step(16.667)
+    world2.step(16.667)
+  }
+
+  assert(world1.snapshot() == world2.snapshot())
+}
+
+Test PerformanceBudget {
+  world = createWorld()
+
+  for i in 1..1000 {
+    world.create("entity_${i}")
+      .add(new Transform())
+      .add(new Motion())
+      .add(new Collider())
+  }
+
+  timings = []
+  for i in 1..100 {
+    start = performance.now()
+    world.step(16.667)
+    timings.push(performance.now() - start)
+  }
+
+  assert(percentile(timings, 95) < 16.667)
+}
+
+Test LudemeConflictDetection {
+  entity = world.create()
+
+  entity.addLudeme({ id: "movement.seeking" })
+  result = entity.addLudeme({ id: "movement.throwing" })
+
+  assert(!result.success)
+  assert(result.conflicts.includes("movement.seeking"))
+  assert(result.suggestion != null)
+}
+
+## Repository Structure
+
+Structure {
+  /ludemic-engine
+    /packages
+      /core          # ECS, scheduler, deterministic math
+      /components    # High-level component API
+      /renderer      # Phaser integration with pooling
+      /ludemes       # JSON-configurable mechanics
+      /runtime       # Game execution environment
+      /dev-tools     # Debug overlay, inspector, profiler
+    /templates       # Ready-to-use game templates
+    /examples        # Example implementations
+    /apps
+      /web           # React shell application
+    /docs
+      /adr           # Architecture decision records
+}
+
+## Game Templates
+
+Template ShooterTemplate {
+  fn create(config) {
+    world = new World({ seed: config.seed })
+
+    player = world.create("player")
+      .add(new Transform(400, 300))
+      .add(new Motion({ maxSpeed: 350 }))
+      .add(new Health({ max: 100 }))
+      .addLudeme({ id: "weapon.basic", params: { fireRate: 0.3 } })
+
+    for i in 1..config.enemyCount {
+      world.create("enemy_${i}")
+        .add(new Transform(random(0, 800), random(0, 100)))
+        .add(new Motion({ maxSpeed: 150 }))
+        .add(new Health({ max: 50 }))
+        .addLudeme({ id: "ai.seeking", params: { target: "player" } })
+    }
+
+    return world
+  }
+}
+
+## /commands
+
+/benchmark [duration] - Run performance benchmarks
+/profile [duration] - Capture performance profile
+/snapshot - Generate golden snapshot for current state
+/validate [ludemeId] - Validate ludeme schema and conflicts
+/inspect [entityId] - Open entity inspector
+/replay [snapshotId] - Replay from saved state
+/analyze - Generate dependency graph and analytics
+/test:determinism [iterations] - Validate deterministic behavior
+
+## Options
+
+Options {
+  debugMode: boolean = false
+  showOverlay: boolean = false
+  targetFPS: 60 | 30 = 60
+  mobile: boolean = auto-detect
+  seed: number = random()
+  profiling: boolean = false
+  strictValidation: boolean = true
+}
+
+## Common Patterns
+
+Pattern EntityFactory {
+  pooledEntities = new Map<entityType, Pool<Entity>>()
+
+  create(type, config) {
+    entity = pooledEntities.get(type).acquire()
+    entity.reset(config)
+    return entity
+  }
+
+  destroy(entity) {
+    pooledEntities.get(entity.type).release(entity)
+  }
+}
+
+Pattern StateMachine {
+  Component StateMachine {
+    currentState: string
+    states: map<stateName, StateConfig>
+
+    transition(newState) {
+      states[currentState].onExit(entity)
+      currentState = newState
+      states[currentState].onEnter(entity)
+    }
+  }
+}
+
+Pattern InputBuffer {
+  Component InputBuffer {
+    buffer: FixedQueue<Input>
+    maxBuffer: number = 10
+
+    push(input) {
+      buffer.push({ input, timestamp: world.tick })
+    }
+
+    consume() => buffer.shift()
+  }
+}
+
+## Key Technologies
+
+Tech Stack {
+  TypeScript: "Strict mode for type safety"
+  Phaser3: "WebGL rendering with mobile optimizations"
+  CustomECS: "Struct-of-arrays for hot components"
+  Zod: "Runtime schema validation for LLM safety"
+  Vite: "Fast build tooling and HMR"
+  Vitest: "Unit and integration testing"
+  Playwright: "End-to-end testing"
+}
+
+## Troubleshooting
+
+Issue PerformanceDegradation {
+  symptoms: "FPS drops, frame time spikes"
+  diagnosis {
+    - Check debug overlay for system bottlenecks
+    - Use profiler to identify allocation hotspots
+    - Verify batch processing in systems
+    - Monitor GC events
+  }
+  solutions {
+    - Convert to struct-of-arrays if needed
+    - Add object pooling
+    - Batch operations
+    - Reduce entity count
+  }
+}
+
+Issue DeterminismBroken {
+  symptoms: "Golden snapshots fail, replays diverge"
+  diagnosis {
+    - Run golden snapshot tests
+    - Check for floating-point precision issues
+    - Verify fixed timestep configuration
+    - Look for race conditions in systems
+  }
+  solutions {
+    - Use integer math where possible
+    - Ensure systems process in priority order
+    - Remove Date.now() or Math.random()
+    - Add determinism validation tests
+  }
+}
+
+Issue LLMIntegrationFailure {
+  symptoms: "JSON patches rejected, conflicts detected"
+  diagnosis {
+    - Validate JSON schema compliance
+    - Check for ludeme conflicts
+    - Review performance budget limits
+    - Test with dry-run simulation
+  }
+  solutions {
+    - Fix schema violations
+    - Resolve ludeme conflicts
+    - Adjust performance budgets
+    - Provide better error messages to LLM
+  }
+}

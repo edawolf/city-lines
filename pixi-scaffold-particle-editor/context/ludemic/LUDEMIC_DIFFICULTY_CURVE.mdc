@@ -1,0 +1,738 @@
+---
+description: When the user wants to create a difficulty curve for game
+alwaysApply: false
+---
+# Ludemic Difficulty Curve System
+
+Created: September 17, 2025 10:20 AM
+
+Roles: Game designer, systems architect, flow state engineer
+Expertise: Game difficulty progression, ki-sho-ten-ketsu narrative structure, musical composition principles, player psychology
+
+## System Overview
+
+Ludemic Engine difficulty curves combine narrative structure with musical composition principles to maintain player flow state through measurable, dynamic progression.
+
+## Core Constraints
+
+- Tension and release cycle rhythm
+- One concept introduction per cycle maximum
+- Flow state maintenance priority
+- 20% easier starts than player expectation
+- Mastery valleys every 3-4 levels
+- Orthogonal difficulty dimensions
+- No spikes exceeding 40% between levels
+
+## Difficulty Dimension
+
+interface DifficultyDimension {
+  name: string
+  range { min: 0..10, max: 0..10 }
+  curve: "linear" | "exponential" | "logarithmic" | "step" | "wave"
+  restLevels?: number[]
+  priority: 0..100 = 50
+
+  constraint: restLevels provide skill consolidation periods
+  constraint: higher priority dimensions dominate difficulty perception
+}
+
+## Ki-Sho-Ten-Ketsu Cycle
+
+interface KiShoTenKetsuCycle {
+  startLevel: number
+  duration: 4..8
+  phases {
+    ki { levels, intensity: 0..1 }    // gentle introduction
+    sho { levels, intensity: 0..1 }   // steady development
+    ten { levels, intensity: 0..1 }   // crisis peak
+    ketsu { levels, intensity: 0..1 } // mastery valley
+  }
+  conceptIntroduction?: string
+
+  constraint ki.intensity = 0.8
+  constraint sho.intensity = 1.0
+  constraint ten.intensity = 1.4
+  constraint ketsu.intensity = 0.6
+  constraint sum(phases.*.levels) = duration
+}
+
+## Difficulty Curve
+
+interface DifficultyCurve {
+  id: string
+  sessionDuration: number // minutes
+  targetLevels: number
+  dimensions: DifficultyDimension[]
+  cycles: KiShoTenKetsuCycle[]
+  playerData?: {
+    skillLevel: "beginner" | "intermediate" | "advanced"
+    preferences: record<string, number>
+  }
+
+  constraint: cycles cover full level range
+  constraint: dimension count <= 5 for clarity
+}
+
+## Curve Generation Engine
+
+fn calculateDimensionValue(dimension, level, phase) {
+  if (level in dimension.restLevels) {
+    return lastActiveValue(dimension.name) || dimension.range.min
+  }
+
+  baseValue = applyCurve(dimension, level)
+  phaseModifier = getPhaseModifier(phase, dimension)
+
+  clamp(
+    baseValue * phaseModifier,
+    dimension.range.min,
+    dimension.range.max
+  )
+}
+
+fn applyCurve(dimension, level) {
+  progress = level / 20
+  range = dimension.range.max - dimension.range.min
+
+  match (dimension.curve) {
+    case "linear" => dimension.range.min + (progress * range)
+    case "exponential" => dimension.range.min + (progress^2 * range)
+    case "logarithmic" => dimension.range.min + (log(1 + progress) / log(2) * range)
+    case "step" => {
+      steps = 4
+      step = floor(progress * steps) / steps
+      dimension.range.min + (step * range)
+    }
+    case "wave" => {
+      wave = 0.5 + 0.5 * sin(progress * π * 2)
+      dimension.range.min + (wave * range)
+    }
+    default => dimension.range.min + (progress * range)
+  }
+}
+
+## Difficulty Curve Patterns
+
+### Classic Arcade Pattern
+
+```json
+{
+  "id": "classic_arcade",
+  "sessionDuration": 10,
+  "targetLevels": 20,
+  "dimensions": [
+    {
+      "name": "enemy_speed",
+      "range": { "min": 1, "max": 8 },
+      "curve": "exponential",
+      "priority": 80
+    },
+    {
+      "name": "enemy_count",
+      "range": { "min": 1, "max": 6 },
+      "curve": "linear",
+      "restLevels": [4, 8, 12, 16, 20],
+      "priority": 70
+    },
+    {
+      "name": "pattern_complexity",
+      "range": { "min": 1, "max": 5 },
+      "curve": "step",
+      "priority": 60
+    }
+  ],
+  "cycles": [
+    {
+      "startLevel": 1,
+      "duration": 4,
+      "phases": {
+        "ki": { "levels": 1, "intensity": 0.8 },
+        "sho": { "levels": 1, "intensity": 1.0 },
+        "ten": { "levels": 1, "intensity": 1.4 },
+        "ketsu": { "levels": 1, "intensity": 0.6 }
+      },
+      "conceptIntroduction": "basic_movement"
+    }
+  ]
+}
+```
+
+### Puzzle Progression Pattern
+
+```json
+{
+  "id": "puzzle_progression",
+  "sessionDuration": 15,
+  "targetLevels": 30,
+  "dimensions": [
+    {
+      "name": "deduction_complexity",
+      "range": { "min": 1, "max": 10 },
+      "curve": "logarithmic",
+      "priority": 90
+    },
+    {
+      "name": "time_pressure",
+      "range": { "min": 0, "max": 8 },
+      "curve": "step",
+      "restLevels": [1, 2, 3, 4, 8, 12, 16, 20, 24, 28],
+      "priority": 50
+    },
+    {
+      "name": "mechanic_variety",
+      "range": { "min": 1, "max": 6 },
+      "curve": "step",
+      "priority": 70
+    }
+  ]
+}
+```
+
+## Dynamic Difficulty Adjustment
+
+interface DynamicDifficultyAdjuster {
+  playerMetrics: map<playerId, PlayerMetric>
+
+  adjustForPlayer(playerId, level, performance) {
+    metrics = getPlayerMetrics(playerId)
+    trend = analyzePerformanceTrend(metrics, performance)
+    adjustment = calculateAdjustment(trend)
+    baseConfig = curveEngine.generateLevelConfig('default', level)
+
+    applyAdjustments(baseConfig, adjustment)
+  }
+
+  constraint: limit adjustment frequency to avoid jarring changes
+  constraint: smooth transitions between difficulty states
+}
+
+fn analyzePerformanceTrend(metrics, current) {
+  recent = metrics.recentPerformance[-5..-1]
+  average = sum(recent.*.score) / length(recent)
+
+  match (current.score) {
+    case (score > average * 1.2) => "excelling"
+    case (score < average * 0.8) => "struggling"
+    default => "balanced"
+  }
+}
+
+fn calculateAdjustment(trend) {
+  match (trend) {
+    case "excelling" => { multiplier: 1.15, conceptIntroduction: true }
+    case "balanced" => { multiplier: 1.0, conceptIntroduction: false }
+    case "struggling" => { multiplier: 0.85, conceptIntroduction: false }
+  }
+}
+
+## Level Configuration Generation
+
+fn generateLudemes(difficultyValues, cycle, phase) {
+  configurations = []
+
+  // Generate based on difficulty dimensions
+  for each dimension, value in difficultyValues {
+    configurations += generateDimensionLudemes(dimension, value)
+  }
+
+  // Add concept introduction in ki phase
+  if (phase.name = "ki" && cycle.conceptIntroduction) {
+    configurations += generateConceptLudeme(cycle.conceptIntroduction)
+  }
+
+  configurations
+}
+
+fn generateEnemyLudemes(complexity) {
+  baseCount = ceil(complexity / 2)
+  behaviorComplexity = min(3, ceil(complexity / 3))
+
+  for i in 1..baseCount {
+    emit({
+      type: "enemy.spawn",
+      params: {
+        position: { x: random(0, 800), y: 50 },
+        aiType: selectAIType(behaviorComplexity),
+        health: 20 + (complexity * 10),
+        speed: 100 + (complexity * 20)
+      }
+    })
+  }
+}
+
+## Flow State Assessment
+
+fn assessFlowState(playerState, config) {
+  challenge = calculateChallengeLevel(config)
+  skill = playerState.skillLevel
+
+  match {
+    case (challenge > skill * 1.3) => "anxiety"
+    case (challenge < skill * 0.7) => "boredom"
+    case (challenge >= skill * 0.9 && challenge <= skill * 1.2) => "flow"
+    default => "neutral"
+  }
+}
+
+## Curve Visualization
+
+fn generateDifficultyScore(curve) {
+  symbols = "▁▂▃▄▅▆▇█"
+
+  for each dimension in curve.dimensions {
+    track = ""
+    for level in 1..curve.targetLevels {
+      value = calculateDimensionValue(dimension, level)
+      normalized = (value - dimension.range.min) / (dimension.range.max - dimension.range.min)
+      symbolIndex = min(7, floor(normalized * 8))
+      track += symbols[symbolIndex]
+    }
+
+    emit("$dimension.name: $track")
+  }
+}
+
+## Shooter Template Integration
+
+ShooterDifficultyTemplate {
+  fn createProgression(config) {
+    DifficultyCurve {
+      id: "shooter_${config.difficulty}"
+      sessionDuration: config.sessionLength || 10
+      targetLevels: 20
+
+      dimensions: [
+        {
+          name: "enemy_aggression",
+          range: { min: 1, max: 8 },
+          curve: "exponential",
+          priority: 90
+        },
+        {
+          name: "projectile_speed",
+          range: { min: 100, max: 800 },
+          curve: "linear",
+          priority: 70
+        },
+        {
+          name: "power_up_frequency",
+          range: { min: 0, max: 5 },
+          curve: "wave",
+          restLevels: [3, 7, 11, 15, 19],
+          priority: 40
+        }
+      ]
+
+      cycles: generateShooterCycles(config)
+    }
+  }
+
+  concepts = ["basic_shooting", "enemy_varieties", "environmental_hazards", "combo_systems", "boss_encounters"]
+}
+
+## Performance Optimization
+
+Constraints {
+  Pre-compute curves during initialization
+  Cache level configurations for repeated access
+  Batch difficulty adjustments
+  Use lookup tables for complex calculations
+  Pool configuration objects to reduce GC pressure
+  Lazy load dimension calculations
+  Buffer player metrics to avoid reactive adjustments
+}
+
+## Analytics & Measurement
+
+Metrics {
+  Track completion rates per difficulty level
+  Monitor time-to-complete distributions
+  Measure retry frequency as difficulty indicator
+  Analyze flow state duration using engagement metrics
+  A/B test curve parameters
+}
+
+## /commands
+
+/generate [curveId] [level] - Generate level configuration for specific curve and level
+/visualize [curveId] - Display ASCII visualization of difficulty progression
+/test [curveId] [playerProfile] - Simulate player experience through curve
+/adjust [playerId] [level] [performance] - Apply dynamic difficulty adjustment
+/validate [curveId] - Run automated validation tests on curve
+/analyze [curveId] - Generate analytics report for curve performance
+
+## Options
+
+Options {
+  visualizationStyle: "ascii" | "mermaid" | "json"
+  adjustmentSensitivity: 0..1 = 0.5
+  flowStateTarget: 0..1 = 0.7
+  debugMode: boolean = false
+}
+# Ludemic Difficulty Curve System
+
+Created: September 17, 2025 10:20 AM
+
+Roles: Game designer, systems architect, flow state engineer
+Expertise: Game difficulty progression, ki-sho-ten-ketsu narrative structure, musical composition principles, player psychology
+
+## System Overview
+
+Ludemic Engine difficulty curves combine narrative structure with musical composition principles to maintain player flow state through measurable, dynamic progression.
+
+## Core Constraints
+
+- Tension and release cycle rhythm
+- One concept introduction per cycle maximum
+- Flow state maintenance priority
+- 20% easier starts than player expectation
+- Mastery valleys every 3-4 levels
+- Orthogonal difficulty dimensions
+- No spikes exceeding 40% between levels
+
+## Difficulty Dimension
+
+interface DifficultyDimension {
+  name: string
+  range { min: 0..10, max: 0..10 }
+  curve: "linear" | "exponential" | "logarithmic" | "step" | "wave"
+  restLevels?: number[]
+  priority: 0..100 = 50
+
+  constraint: restLevels provide skill consolidation periods
+  constraint: higher priority dimensions dominate difficulty perception
+}
+
+## Ki-Sho-Ten-Ketsu Cycle
+
+interface KiShoTenKetsuCycle {
+  startLevel: number
+  duration: 4..8
+  phases {
+    ki { levels, intensity: 0..1 }    // gentle introduction
+    sho { levels, intensity: 0..1 }   // steady development
+    ten { levels, intensity: 0..1 }   // crisis peak
+    ketsu { levels, intensity: 0..1 } // mastery valley
+  }
+  conceptIntroduction?: string
+
+  constraint ki.intensity = 0.8
+  constraint sho.intensity = 1.0
+  constraint ten.intensity = 1.4
+  constraint ketsu.intensity = 0.6
+  constraint sum(phases.*.levels) = duration
+}
+
+## Difficulty Curve
+
+interface DifficultyCurve {
+  id: string
+  sessionDuration: number // minutes
+  targetLevels: number
+  dimensions: DifficultyDimension[]
+  cycles: KiShoTenKetsuCycle[]
+  playerData?: {
+    skillLevel: "beginner" | "intermediate" | "advanced"
+    preferences: record<string, number>
+  }
+
+  constraint: cycles cover full level range
+  constraint: dimension count <= 5 for clarity
+}
+
+## Curve Generation Engine
+
+fn calculateDimensionValue(dimension, level, phase) {
+  if (level in dimension.restLevels) {
+    return lastActiveValue(dimension.name) || dimension.range.min
+  }
+
+  baseValue = applyCurve(dimension, level)
+  phaseModifier = getPhaseModifier(phase, dimension)
+
+  clamp(
+    baseValue * phaseModifier,
+    dimension.range.min,
+    dimension.range.max
+  )
+}
+
+fn applyCurve(dimension, level) {
+  progress = level / 20
+  range = dimension.range.max - dimension.range.min
+
+  match (dimension.curve) {
+    case "linear" => dimension.range.min + (progress * range)
+    case "exponential" => dimension.range.min + (progress^2 * range)
+    case "logarithmic" => dimension.range.min + (log(1 + progress) / log(2) * range)
+    case "step" => {
+      steps = 4
+      step = floor(progress * steps) / steps
+      dimension.range.min + (step * range)
+    }
+    case "wave" => {
+      wave = 0.5 + 0.5 * sin(progress * π * 2)
+      dimension.range.min + (wave * range)
+    }
+    default => dimension.range.min + (progress * range)
+  }
+}
+
+## Difficulty Curve Patterns
+
+### Classic Arcade Pattern
+
+```json
+{
+  "id": "classic_arcade",
+  "sessionDuration": 10,
+  "targetLevels": 20,
+  "dimensions": [
+    {
+      "name": "enemy_speed",
+      "range": { "min": 1, "max": 8 },
+      "curve": "exponential",
+      "priority": 80
+    },
+    {
+      "name": "enemy_count",
+      "range": { "min": 1, "max": 6 },
+      "curve": "linear",
+      "restLevels": [4, 8, 12, 16, 20],
+      "priority": 70
+    },
+    {
+      "name": "pattern_complexity",
+      "range": { "min": 1, "max": 5 },
+      "curve": "step",
+      "priority": 60
+    }
+  ],
+  "cycles": [
+    {
+      "startLevel": 1,
+      "duration": 4,
+      "phases": {
+        "ki": { "levels": 1, "intensity": 0.8 },
+        "sho": { "levels": 1, "intensity": 1.0 },
+        "ten": { "levels": 1, "intensity": 1.4 },
+        "ketsu": { "levels": 1, "intensity": 0.6 }
+      },
+      "conceptIntroduction": "basic_movement"
+    }
+  ]
+}
+```
+
+### Puzzle Progression Pattern
+
+```json
+{
+  "id": "puzzle_progression",
+  "sessionDuration": 15,
+  "targetLevels": 30,
+  "dimensions": [
+    {
+      "name": "deduction_complexity",
+      "range": { "min": 1, "max": 10 },
+      "curve": "logarithmic",
+      "priority": 90
+    },
+    {
+      "name": "time_pressure",
+      "range": { "min": 0, "max": 8 },
+      "curve": "step",
+      "restLevels": [1, 2, 3, 4, 8, 12, 16, 20, 24, 28],
+      "priority": 50
+    },
+    {
+      "name": "mechanic_variety",
+      "range": { "min": 1, "max": 6 },
+      "curve": "step",
+      "priority": 70
+    }
+  ]
+}
+```
+
+## Dynamic Difficulty Adjustment
+
+interface DynamicDifficultyAdjuster {
+  playerMetrics: map<playerId, PlayerMetric>
+
+  adjustForPlayer(playerId, level, performance) {
+    metrics = getPlayerMetrics(playerId)
+    trend = analyzePerformanceTrend(metrics, performance)
+    adjustment = calculateAdjustment(trend)
+    baseConfig = curveEngine.generateLevelConfig('default', level)
+
+    applyAdjustments(baseConfig, adjustment)
+  }
+
+  constraint: limit adjustment frequency to avoid jarring changes
+  constraint: smooth transitions between difficulty states
+}
+
+fn analyzePerformanceTrend(metrics, current) {
+  recent = metrics.recentPerformance[-5..-1]
+  average = sum(recent.*.score) / length(recent)
+
+  match (current.score) {
+    case (score > average * 1.2) => "excelling"
+    case (score < average * 0.8) => "struggling"
+    default => "balanced"
+  }
+}
+
+fn calculateAdjustment(trend) {
+  match (trend) {
+    case "excelling" => { multiplier: 1.15, conceptIntroduction: true }
+    case "balanced" => { multiplier: 1.0, conceptIntroduction: false }
+    case "struggling" => { multiplier: 0.85, conceptIntroduction: false }
+  }
+}
+
+## Level Configuration Generation
+
+fn generateLudemes(difficultyValues, cycle, phase) {
+  configurations = []
+
+  // Generate based on difficulty dimensions
+  for each dimension, value in difficultyValues {
+    configurations += generateDimensionLudemes(dimension, value)
+  }
+
+  // Add concept introduction in ki phase
+  if (phase.name = "ki" && cycle.conceptIntroduction) {
+    configurations += generateConceptLudeme(cycle.conceptIntroduction)
+  }
+
+  configurations
+}
+
+fn generateEnemyLudemes(complexity) {
+  baseCount = ceil(complexity / 2)
+  behaviorComplexity = min(3, ceil(complexity / 3))
+
+  for i in 1..baseCount {
+    emit({
+      type: "enemy.spawn",
+      params: {
+        position: { x: random(0, 800), y: 50 },
+        aiType: selectAIType(behaviorComplexity),
+        health: 20 + (complexity * 10),
+        speed: 100 + (complexity * 20)
+      }
+    })
+  }
+}
+
+## Flow State Assessment
+
+fn assessFlowState(playerState, config) {
+  challenge = calculateChallengeLevel(config)
+  skill = playerState.skillLevel
+
+  match {
+    case (challenge > skill * 1.3) => "anxiety"
+    case (challenge < skill * 0.7) => "boredom"
+    case (challenge >= skill * 0.9 && challenge <= skill * 1.2) => "flow"
+    default => "neutral"
+  }
+}
+
+## Curve Visualization
+
+fn generateDifficultyScore(curve) {
+  symbols = "▁▂▃▄▅▆▇█"
+
+  for each dimension in curve.dimensions {
+    track = ""
+    for level in 1..curve.targetLevels {
+      value = calculateDimensionValue(dimension, level)
+      normalized = (value - dimension.range.min) / (dimension.range.max - dimension.range.min)
+      symbolIndex = min(7, floor(normalized * 8))
+      track += symbols[symbolIndex]
+    }
+
+    emit("$dimension.name: $track")
+  }
+}
+
+## Shooter Template Integration
+
+ShooterDifficultyTemplate {
+  fn createProgression(config) {
+    DifficultyCurve {
+      id: "shooter_${config.difficulty}"
+      sessionDuration: config.sessionLength || 10
+      targetLevels: 20
+
+      dimensions: [
+        {
+          name: "enemy_aggression",
+          range: { min: 1, max: 8 },
+          curve: "exponential",
+          priority: 90
+        },
+        {
+          name: "projectile_speed",
+          range: { min: 100, max: 800 },
+          curve: "linear",
+          priority: 70
+        },
+        {
+          name: "power_up_frequency",
+          range: { min: 0, max: 5 },
+          curve: "wave",
+          restLevels: [3, 7, 11, 15, 19],
+          priority: 40
+        }
+      ]
+
+      cycles: generateShooterCycles(config)
+    }
+  }
+
+  concepts = ["basic_shooting", "enemy_varieties", "environmental_hazards", "combo_systems", "boss_encounters"]
+}
+
+## Performance Optimization
+
+Constraints {
+  Pre-compute curves during initialization
+  Cache level configurations for repeated access
+  Batch difficulty adjustments
+  Use lookup tables for complex calculations
+  Pool configuration objects to reduce GC pressure
+  Lazy load dimension calculations
+  Buffer player metrics to avoid reactive adjustments
+}
+
+## Analytics & Measurement
+
+Metrics {
+  Track completion rates per difficulty level
+  Monitor time-to-complete distributions
+  Measure retry frequency as difficulty indicator
+  Analyze flow state duration using engagement metrics
+  A/B test curve parameters
+}
+
+## /commands
+
+/generate [curveId] [level] - Generate level configuration for specific curve and level
+/visualize [curveId] - Display ASCII visualization of difficulty progression
+/test [curveId] [playerProfile] - Simulate player experience through curve
+/adjust [playerId] [level] [performance] - Apply dynamic difficulty adjustment
+/validate [curveId] - Run automated validation tests on curve
+/analyze [curveId] - Generate analytics report for curve performance
+
+## Options
+
+Options {
+  visualizationStyle: "ascii" | "mermaid" | "json"
+  adjustmentSensitivity: 0..1 = 0.5
+  flowStateTarget: 0..1 = 0.7
+  debugMode: boolean = false
+}

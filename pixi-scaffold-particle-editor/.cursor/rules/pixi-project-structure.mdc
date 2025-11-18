@@ -1,0 +1,29 @@
+---
+alwaysApply: true
+---
+
+# PixiJS Game Project Structure
+
+This project uses a custom game engine built on PixiJS v8+ with the following structure:
+
+## Core Files
+- [main.ts](mdc:src/main.ts) - Entry point that initializes the CreationEngine
+- [engine.ts](mdc:src/engine/engine.ts) - Core game engine implementation
+- [vite.config.ts](mdc:vite.config.ts) - Build configuration with asset processing
+
+## Directory Structure
+- `src/app/` - Application-specific code (screens, UI components, utils)
+- `src/engine/` - Reusable game engine systems (audio, navigation, resize)
+- `src/app/screens/` - Game screens (LoadScreen, MainScreen)
+- `src/app/ui/` - Reusable UI components (Button, Label, etc.)
+- `public/assets/` - Processed game assets (images, sounds, atlases)
+- `raw-assets/` - Source assets before processing
+- `LUDEMIC_CONTEXT/` - Documentation and development guides
+
+## Package Management
+- Uses bun as package manager (prefer bun over npm)
+- Uses Vite for development and hot reloading
+- Deploys to Vercel with Tailwind CSS v3 support
+
+## Asset Pipeline
+Assets are processed by AssetPack and organized into bundles for optimal loading.

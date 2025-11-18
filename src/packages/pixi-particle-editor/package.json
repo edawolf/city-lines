@@ -1,0 +1,31 @@
+{
+  "name": "@pixi-scaffold/particle-editor",
+  "version": "1.0.0",
+  "description": "Professional particle editor and VFX library for PixiJS v8+ applications",
+  "main": "./index.ts",
+  "type": "module",
+  "keywords": [
+    "pixi",
+    "pixijs",
+    "particle",
+    "vfx",
+    "editor",
+    "game-dev"
+  ],
+  "peerDependencies": {
+    "pixi.js": "^8.0.0",
+    "tweakpane": "^4.0.0"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./ParticleEditorScreen": "./ParticleEditorScreen.ts",
+    "./ParticleSystem": "./ParticleSystem.ts",
+    "./types": "./types.ts"
+  },
+  "files": [
+    "*.ts",
+    "README.md",
+    "package.json"
+  ]
+}
+

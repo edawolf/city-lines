@@ -2,10 +2,15 @@
  * ParticleManager - Manages particle effects for the game
  *
  * Handles creation, updating, and cleanup of particle effects.
- * Particles are simple visual effects that fade out over time.
+ * Now powered by the advanced ParticleSystem for better visuals.
  */
 
-import { Container, Graphics } from "pixi.js";
+import { Container } from "pixi.js";
+import {
+  ParticleSystem,
+  deepCloneConfig,
+  DEFAULT_PARTICLE_CONFIG,
+} from "../../packages/pixi-particle-editor";
 
 export interface ParticleConfig {
   x: number;
@@ -17,61 +22,10 @@ export interface ParticleConfig {
   lifetime: number; // in seconds
 }
 
-class Particle extends Graphics {
-  public velocityX: number;
-  public velocityY: number;
-  public lifetime: number;
-  public maxLifetime: number;
-
-  constructor(config: ParticleConfig) {
-    super();
-
-    // Draw particle as a circle
-    this.circle(0, 0, config.size);
-    this.fill(config.color);
-
-    // Set position
-    this.x = config.x;
-    this.y = config.y;
-
-    // Set velocity
-    this.velocityX = config.velocityX;
-    this.velocityY = config.velocityY;
-
-    // Set lifetime
-    this.lifetime = config.lifetime;
-    this.maxLifetime = config.lifetime;
-  }
-
-  /**
-   * Update particle position and lifetime
-   * @param deltaTime - Time since last frame (in seconds)
-   * @returns true if particle is still alive, false if it should be removed
-   */
-  public update(deltaTime: number): boolean {
-    // Calculate ease-out factor (starts at 1, approaches 0)
-    const lifeProgress = this.lifetime / this.maxLifetime;
-    const easeOutFactor = lifeProgress * lifeProgress; // Quadratic ease-out
-
-    // Update position with ease-out velocity
-    this.x += this.velocityX * deltaTime * 60 * easeOutFactor;
-    this.y += this.velocityY * deltaTime * 60 * easeOutFactor;
-
-    // Update lifetime
-    this.lifetime -= deltaTime;
-
-    // Fade out based on remaining lifetime
-    this.alpha = Math.max(0, this.lifetime / this.maxLifetime);
-
-    // Return true if still alive
-    return this.lifetime > 0;
-  }
-}
-
 export class ParticleManager {
   private static instance: ParticleManager;
-  private particles: Particle[] = [];
   private particleContainer: Container;
+  private particleSystem?: ParticleSystem;
 
   private constructor(particleContainer: Container) {
     this.particleContainer = particleContainer;
@@ -92,6 +46,16 @@ export class ParticleManager {
         ParticleManager.instance.clear();
       }
       ParticleManager.instance = new ParticleManager(particleContainer);
+
+      // Initialize the advanced particle system
+      ParticleManager.instance.particleSystem = new ParticleSystem(
+        "/assets/vfx/",
+      );
+      particleContainer.addChild(ParticleManager.instance.particleSystem);
+
+      console.log(
+        "[ParticleManager] 🎨 Initialized with advanced ParticleSystem",
+      );
     }
     return ParticleManager.instance;
   }
@@ -106,6 +70,13 @@ export class ParticleManager {
       );
     }
     return ParticleManager.instance;
+  }
+
+  /**
+   * Get the particle container for coordinate transformations
+   */
+  public getContainer(): Container {
+    return this.particleContainer;
   }
 
   /**
@@ -126,34 +97,65 @@ export class ParticleManager {
       lifetime?: number;
     } = {},
   ): void {
+    if (!this.particleSystem) {
+      console.warn("[ParticleManager] ParticleSystem not initialized");
+      return;
+    }
+
     const {
       color = 0x2d5016, // Dark green
-      size = 2,
-      speed = 2,
+      size = 4,
+      speed = 5,
       lifetime = 1.0,
     } = config;
 
-    for (let i = 0; i < count; i++) {
-      // Fully random angle for natural spread (not evenly distributed)
-      const angle = Math.random() * Math.PI * 2;
-      // Add speed variation (0.5x to 1.5x) for more organic look
-      const speedVariation = speed * (0.5 + Math.random());
-      const velocityX = Math.cos(angle) * speedVariation;
-      const velocityY = Math.sin(angle) * speedVariation;
+    // Create advanced particle configuration
+    const particleConfig = deepCloneConfig(DEFAULT_PARTICLE_CONFIG);
 
-      const particle = new Particle({
-        x,
-        y,
-        color,
-        size,
-        velocityX,
-        velocityY,
-        lifetime,
+    // Convert hex color to RGB
+    const r = (color >> 16) & 0xff;
+    const g = (color >> 8) & 0xff;
+    const b = color & 0xff;
+
+    // Configure burst effect
+    particleConfig.textureName = "white-circle.png"; // Use a soft circle texture
+    particleConfig.burst = true; // All particles at once
+    particleConfig.maxParticles = count;
+    particleConfig.particleLifetime = lifetime;
+    particleConfig.emitterLifetime = 0; // Instant burst
+    particleConfig.loop = false;
+    particleConfig.emitting = true;
+
+    // Appearance
+    particleConfig.colorStart = { r, g, b };
+    particleConfig.colorEnd = { r, g, b };
+    particleConfig.alphaStart = 1.0;
+    particleConfig.alphaEnd = 0.0;
+    particleConfig.blendMode = "normal";
+
+    // Size
+    particleConfig.sizeMode = "pixels";
+    particleConfig.sizeStartPixels = size;
+    particleConfig.sizeEndPixels = size * 0.5;
+
+    // Movement - radial burst in all directions
+    particleConfig.angle = 0;
+    particleConfig.angleVariance = 360;
+    particleConfig.speed = speed;
+    particleConfig.speedVariance = speed * 0.3;
+    particleConfig.acceleration = -speed * 0.5; // Slow down over time
+    particleConfig.gravity = 0;
+
+    // Rotation
+    particleConfig.rotationStart = 0;
+    particleConfig.rotationSpeed = 0;
+
+    // Create the spawner (it will auto-emit and destroy itself)
+    this.particleSystem
+      .createSpawner(particleConfig, x, y, `Burst_${Date.now()}`)
+      .catch((err) => {
+        console.warn("[ParticleManager] Failed to create burst:", err);
       });
-
-      this.particles.push(particle);
-      this.particleContainer.addChild(particle);
-    }
 
     console.log(
       `[ParticleManager] 💥 Created burst of ${count} particles at (${x}, ${y})`,
@@ -166,74 +168,95 @@ export class ParticleManager {
    * @param viewportWidth - Width of the viewport
    * @param viewportHeight - Height of the viewport
    */
-  public createConfetti(viewportWidth: number, _viewportHeight: number): void {
+  public createConfetti(viewportWidth: number, viewportHeight: number): void {
+    if (!this.particleSystem) {
+      console.warn("[ParticleManager] ParticleSystem not initialized");
+      return;
+    }
+
     console.log("[ParticleManager] 🎉 Creating FAST confetti celebration!");
 
     const confettiColors = [
-      0xff6b6b, // Red
-      0x4ecdc4, // Cyan
-      0xffe66d, // Yellow
-      0x95e1d3, // Light green
-      0xf38181, // Pink
-      0xaa96da, // Purple
-      0xfcbad3, // Light pink
-      0xa8e6cf, // Mint
-      0xff9f43, // Orange
-      0x5f27cd, // Deep purple
+      { r: 255, g: 107, b: 107 }, // Red
+      { r: 78, g: 205, b: 196 }, // Cyan
+      { r: 255, g: 230, b: 109 }, // Yellow
+      { r: 149, g: 225, b: 211 }, // Light green
+      { r: 243, g: 129, b: 129 }, // Pink
+      { r: 170, g: 150, b: 218 }, // Purple
+      { r: 252, g: 186, b: 211 }, // Light pink
+      { r: 168, g: 230, b: 207 }, // Mint
+      { r: 255, g: 159, b: 67 }, // Orange
+      { r: 95, g: 39, b: 205 }, // Deep purple
     ];
 
-    const particleCount = 150; // More particles for fuller effect
+    // Create multiple spawners across the top of the screen
+    const spawnerCount = 5;
+    const spacing = viewportWidth / (spawnerCount + 1);
 
-    for (let i = 0; i < particleCount; i++) {
-      // Spawn from top of screen, spread across width
-      const x = Math.random() * viewportWidth;
-      const y = -50; // Start higher above screen
+    for (let i = 0; i < spawnerCount; i++) {
+      const x = spacing * (i + 1);
+      const y = -50;
 
-      // Random color from palette
+      // Random color for this spawner
       const color =
         confettiColors[Math.floor(Math.random() * confettiColors.length)];
 
-      // FASTER confetti - falls down with MORE horizontal drift
-      const velocityX = (Math.random() - 0.5) * 8; // Stronger horizontal drift (was 3)
-      const velocityY = Math.random() * 8 + 5; // FASTER fall speed: 5-13 (was 2-6)
+      const particleConfig = deepCloneConfig(DEFAULT_PARTICLE_CONFIG);
 
-      // Larger particles for better visibility at high speed
-      const size = Math.random() * 6 + 4; // 4-10 pixels (was 3-7)
+      // Configure confetti effect
+      particleConfig.textureName = "circle_05.png";
+      particleConfig.burst = false; // Continuous spawn
+      particleConfig.maxParticles = 200;
+      particleConfig.particleLifetime = 2.0;
+      particleConfig.emitterLifetime = 0.5; // Spawn for 0.5 seconds
+      particleConfig.spawnRate = 80; // Particles per second
+      particleConfig.loop = false;
+      particleConfig.emitting = true;
 
-      // Shorter lifetime - moves fast so doesn't need to last as long
-      const lifetime = Math.random() * 1.5 + 1; // 1-2.5 seconds (was 2-4)
+      // Appearance - use the random color
+      particleConfig.colorStart = color;
+      particleConfig.colorEnd = color;
+      particleConfig.alphaStart = 1.0;
+      particleConfig.alphaEnd = 0.3;
+      particleConfig.blendMode = "normal";
 
-      const particle = new Particle({
-        x,
-        y,
-        color,
-        size,
-        velocityX,
-        velocityY,
-        lifetime,
-      });
+      // Size - larger particles
+      particleConfig.sizeMode = "pixels";
+      particleConfig.sizeStartPixels = 8;
+      particleConfig.sizeEndPixels = 4;
 
-      this.particles.push(particle);
-      this.particleContainer.addChild(particle);
+      // Movement - fall down with horizontal spread
+      particleConfig.angle = 90; // Down
+      particleConfig.angleVariance = 30; // Spread
+      particleConfig.speed = 8;
+      particleConfig.speedVariance = 3;
+      particleConfig.acceleration = 0;
+      particleConfig.gravity = 0.5; // Fall faster
+
+      // Rotation for more dynamic look
+      particleConfig.rotationStart = 0;
+      particleConfig.rotationSpeed = 5;
+      particleConfig.rotationDirection = "random";
+
+      // Create the spawner
+      this.particleSystem
+        .createSpawner(particleConfig, x, y, `Confetti_${i}_${Date.now()}`)
+        .catch((err) => {
+          console.warn("[ParticleManager] Failed to create confetti:", err);
+        });
     }
   }
 
   /**
    * Update all particles
-   * @param deltaTime - Time since last frame (in seconds)
+   * @param deltaTime - Time since last frame (in seconds) - Note: Passed as Ticker object internally
    */
   public update(deltaTime: number): void {
-    // Update particles and remove dead ones
-    for (let i = this.particles.length - 1; i >= 0; i--) {
-      const particle = this.particles[i];
-      const isAlive = particle.update(deltaTime);
-
-      if (!isAlive) {
-        // Remove particle
-        this.particleContainer.removeChild(particle);
-        particle.destroy();
-        this.particles.splice(i, 1);
-      }
+    if (this.particleSystem) {
+      // The ParticleSystem expects a Ticker object, but we receive deltaTime
+      // Create a mock Ticker object with the deltaTime property
+      const mockTicker = { deltaTime: deltaTime * 60 } as any;
+      this.particleSystem.update(mockTicker);
     }
   }
 
@@ -241,10 +264,9 @@ export class ParticleManager {
    * Clear all particles
    */
   public clear(): void {
-    this.particles.forEach((particle) => {
-      this.particleContainer.removeChild(particle);
-      particle.destroy();
-    });
-    this.particles = [];
+    if (this.particleSystem) {
+      this.particleSystem.clear();
+      console.log("[ParticleManager] 🧹 Cleared all particles");
+    }
   }
 }

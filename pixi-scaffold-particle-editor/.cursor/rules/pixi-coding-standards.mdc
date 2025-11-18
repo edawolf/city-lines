@@ -1,0 +1,44 @@
+---
+globs: *.ts,*.js,*.tsx,*.jsx
+---
+
+# PixiJS Development Standards
+
+## Import Conventions
+```typescript
+// Always import from pixi.js explicitly
+import { Application, Container, Sprite, Assets } from 'pixi.js';
+
+// Engine imports use relative paths
+import { getEngine } from '../getEngine';
+import { CreationEngine } from '../../engine/engine';
+```
+
+## Class Patterns
+- Extend PixiJS Container for game objects: `class Player extends Container`
+- Use composition for UI components: `class Button extends Container`
+- Implement update() methods for game objects that need per-frame updates
+- Use proper anchor points: `sprite.anchor.set(0.5)` for center anchoring
+
+## Event Handling
+```typescript
+// Use PixiJS event modes appropriately
+sprite.eventMode = 'static';  // For non-moving interactive objects
+sprite.eventMode = 'dynamic'; // For moving interactive objects
+sprite.eventMode = 'none';    // For non-interactive objects
+
+// Pointer events for cross-platform compatibility
+sprite.on('pointerdown', handler);
+sprite.on('pointerup', handler);
+```
+
+## Performance Best Practices
+- Cache complex containers: `container.cacheAsTexture()`
+- Use appropriate event modes to optimize interaction handling
+- Implement object pooling for frequently created/destroyed objects
+- Use Assets.backgroundLoad() for preloading next level assets
+
+## Memory Management
+- Always destroy unused display objects: `sprite.destroy()`
+- Unload unused assets: `Assets.unload(alias)`
+- Remove event listeners when objects are destroyed

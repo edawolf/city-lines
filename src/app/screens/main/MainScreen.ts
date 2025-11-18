@@ -10,6 +10,7 @@ import { SettingsPopup } from "../../popups/SettingsPopup";
 import { Button } from "../../ui/Button";
 import { LayoutIntentCompiler } from "../../layout/LayoutIntent";
 import { IntentLibrary } from "../../layout/IntentLibrary";
+import { audioManager } from "../../../ludemic/AudioManager";
 
 import { Bouncer } from "./Bouncer";
 
@@ -234,7 +235,9 @@ export class MainScreen extends Container {
 
   /** Show screen with animations */
   public async show(): Promise<void> {
-    engine().audio.bgm.play("main/sounds/bgm-main.mp3", { volume: 0.5 });
+    // Start background music (traffic sounds)
+    audioManager.playBGMusic(0.15);
+    audioManager.playBGLayer(0.3);
 
     const elementsToAnimate = [
       this.pauseButton,

@@ -1,0 +1,112 @@
+{
+  "version": "1.0",
+  "timestamp": "2025-10-27T15:48:43.114Z",
+  "spawners": [
+    {
+      "id": "spawner_1",
+      "name": "Sparks",
+      "position": {
+        "x": 1280,
+        "y": 635.5
+      },
+      "visible": true,
+      "config": {
+        "textureName": "spark.png",
+        "alphaStart": 1,
+        "alphaEnd": 0,
+        "sizeMode": "pixels",
+        "sizeStartPixels": 30,
+        "sizeEndPixels": 10,
+        "scaleStart": 0.02,
+        "scaleEnd": 0.01,
+        "scaleVariance": 0.3,
+        "colorStart": {
+          "r": 255,
+          "g": 246.72972972972977,
+          "b": 178.5
+        },
+        "colorEnd": {
+          "r": 130.6875,
+          "g": 77.83853462837833,
+          "b": 27.771093749999995
+        },
+        "speed": 3,
+        "speedVariance": 0.3,
+        "angle": 270,
+        "angleVariance": 80,
+        "acceleration": 0,
+        "gravity": 0.05,
+        "rotationStart": 0,
+        "rotationSpeed": 0,
+        "rotationVariance": 0,
+        "rotationDirection": "random",
+        "emitterStartDelay": 0,
+        "emitterLifetime": 0,
+        "emitterLifetimeVariance": 0,
+        "particleLifetime": 1,
+        "particleLifetimeVariance": 0.2,
+        "loop": false,
+        "emitting": true,
+        "burst": true,
+        "spawnRate": 30,
+        "maxParticles": 50,
+        "particlesPerWave": 30,
+        "blendMode": "add",
+        "autoPlay": true
+      }
+    },
+    {
+      "id": "spawner_2",
+      "name": "Explosion",
+      "position": {
+        "x": 1280,
+        "y": 635.5
+      },
+      "visible": true,
+      "config": {
+        "textureName": "explodeplume.png",
+        "alphaStart": 1,
+        "alphaEnd": 0,
+        "sizeMode": "pixels",
+        "sizeStartPixels": 30,
+        "sizeEndPixels": 10,
+        "scaleStart": 0.02,
+        "scaleEnd": 0.01,
+        "scaleVariance": 0.3,
+        "colorStart": {
+          "r": 255,
+          "g": 255,
+          "b": 255
+        },
+        "colorEnd": {
+          "r": 255,
+          "g": 255,
+          "b": 255
+        },
+        "speed": 1.9999999999999998,
+        "speedVariance": 0.3,
+        "angle": 270,
+        "angleVariance": 80,
+        "acceleration": 0,
+        "gravity": 0,
+        "rotationStart": 0,
+        "rotationSpeed": 2.5,
+        "rotationVariance": 0.65,
+        "rotationDirection": "random",
+        "emitterStartDelay": 0,
+        "emitterLifetime": 0,
+        "emitterLifetimeVariance": 0,
+        "particleLifetime": 1,
+        "particleLifetimeVariance": 0.2,
+        "loop": false,
+        "emitting": true,
+        "burst": true,
+        "spawnRate": 30,
+        "maxParticles": 50,
+        "particlesPerWave": 30,
+        "blendMode": "add",
+        "autoPlay": true
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, Graphics, Text, Sprite } from "pixi.js";
 
 import type { RoadTile } from "./RoadTile";
 import { RoadType } from "./RoadTile";
@@ -334,6 +334,73 @@ export class CityGrid extends Container {
     this.rebuildConnectionGraph();
     this.highlightConnectedRoads(); // Highlight any initially connected roads
     this.validateLandmarkConnections();
+
+    // Add decorative trees to empty tiles
+    this.placeTreeDecorations();
+  }
+
+  /**
+   * Place decorative trees on empty grid tiles (max 2 per level)
+   */
+  private placeTreeDecorations(): void {
+    // Find empty tiles (positions with no road tile)
+    const emptyTiles: { row: number; col: number }[] = [];
+
+    for (let row = 0; row < this.config.rows; row++) {
+      for (let col = 0; col < this.config.cols; col++) {
+        if (!this.grid[row][col]) {
+          emptyTiles.push({ row, col });
+        }
+      }
+    }
+
+    if (emptyTiles.length === 0) {
+      console.log("[CityGrid] 🌳 No empty tiles for tree decorations");
+      return;
+    }
+
+    // Place max 2 trees randomly
+    const treeCount = Math.min(2, emptyTiles.length);
+    const shuffled = emptyTiles.sort(() => Math.random() - 0.5);
+
+    for (let i = 0; i < treeCount; i++) {
+      const pos = shuffled[i];
+      this.addTreeAt(pos.row, pos.col);
+    }
+
+    console.log(`[CityGrid] 🌳 Placed ${treeCount} tree(s) on empty tiles`);
+  }
+
+  /**
+   * Add a tree decoration sprite at the specified grid position
+   */
+  private addTreeAt(row: number, col: number): void {
+    try {
+      const tree = Sprite.from("tree-1.png");
+
+      // Calculate world position from grid coordinates
+      const tileSize = this.calculatedTileSize || this.config.tileSize || 80;
+      const x = col * tileSize + tileSize / 2;
+      const y = row * tileSize + tileSize / 2;
+
+      tree.position.set(x, y);
+      tree.anchor.set(0.5);
+
+      // Scale to fit tile (80% of tile size for breathing room)
+      const scale = (tileSize * 0.8) / tree.width;
+      tree.scale.set(scale);
+
+      // Slight transparency and random rotation for variety
+      tree.alpha = 0.9;
+      tree.angle = Math.random() * 10 - 5; // ±5 degrees
+
+      // Add to background layer (behind road tiles)
+      this.backgroundGraphics.addChild(tree);
+    } catch (error) {
+      console.warn(
+        `[CityGrid] Could not load tree decoration: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
   }
 
   /**

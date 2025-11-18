@@ -130,6 +130,48 @@ export const UI_CONFIG = {
   },
 
   /**
+   * Title Screen (Initial game screen)
+   */
+  TITLE_SCREEN: {
+    // Background
+    backgroundAlpha: 1.0, // Solid background
+
+    // Main title "CITY LINES"
+    title: {
+      fontSizePercent: 0.06, // 8% of viewport width
+      minFontSize: 36,
+      maxFontSize: 96,
+      offsetFromCenterPercent: -0.28, // 8% above center (negative = up)
+    },
+
+    // Tagline text
+    tagline: {
+      fontSizePercent: 0.018, // 2.2% of viewport width
+      minFontSize: 14,
+      maxFontSize: 28,
+      offsetFromCenterPercent: -0.2, // 5.5% below center (positive = down)
+      wordWrapPercent: 0.4, // 80% of screen width for word wrapping
+    },
+
+    // Prompt text "Press any key or click to start"
+    prompt: {
+      fontSizePercent: 0.02, // 2% of viewport width
+      minFontSize: 12,
+      maxFontSize: 24,
+      offsetFromBottomPercent: 0.1, // 10% from bottom of screen
+    },
+
+    // Intro puzzle (3x1 grid preview)
+    introPuzzle: {
+      tileSizePercent: 0.12, // 12% of viewport width per tile
+      minTileSize: 80,
+      maxTileSize: 180,
+      spacing: 10, // Pixels between tiles
+      offsetFromCenterPercent: 0.05, // 5% below center
+    },
+  },
+
+  /**
    * Grid and Tile Settings
    */
   GRID: {

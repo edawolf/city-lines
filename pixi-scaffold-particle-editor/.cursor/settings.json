@@ -1,0 +1,14 @@
+{
+  "composer": {
+    "autoApplyChanges": true,
+    "confirmBeforeApply": false
+  },
+  "chat": {
+    "autoApplyEdits": true
+  },
+  "ai": {
+    "autoApplyCodeChanges": true,
+    "requireConfirmationForFileChanges": false
+  }
+}
+
