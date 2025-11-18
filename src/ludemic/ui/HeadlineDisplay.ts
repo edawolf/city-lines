@@ -186,7 +186,9 @@ export class HeadlineDisplay extends Container {
 
       // Also emit on game container if available
       if (this.game && typeof this.game.emitGame === "function") {
-        console.log("[HeadlineDisplay] Emitting continue_clicked on game container");
+        console.log(
+          "[HeadlineDisplay] Emitting continue_clicked on game container",
+        );
         this.game.emitGame("continue_clicked");
       }
     }

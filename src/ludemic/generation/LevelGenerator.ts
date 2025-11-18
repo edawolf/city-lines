@@ -216,22 +216,38 @@ export class LevelGenerator {
     const edges: TilePosition[] = [];
 
     // Top edge
-    for (let col = excludeCorners ? 1 : 0; col < (excludeCorners ? this.gridSize - 1 : this.gridSize); col++) {
+    for (
+      let col = excludeCorners ? 1 : 0;
+      col < (excludeCorners ? this.gridSize - 1 : this.gridSize);
+      col++
+    ) {
       edges.push({ row: 0, col });
     }
 
     // Bottom edge
-    for (let col = excludeCorners ? 1 : 0; col < (excludeCorners ? this.gridSize - 1 : this.gridSize); col++) {
+    for (
+      let col = excludeCorners ? 1 : 0;
+      col < (excludeCorners ? this.gridSize - 1 : this.gridSize);
+      col++
+    ) {
       edges.push({ row: this.gridSize - 1, col });
     }
 
     // Left edge
-    for (let row = excludeCorners ? 1 : 0; row < (excludeCorners ? this.gridSize - 1 : this.gridSize); row++) {
+    for (
+      let row = excludeCorners ? 1 : 0;
+      row < (excludeCorners ? this.gridSize - 1 : this.gridSize);
+      row++
+    ) {
       edges.push({ row, col: 0 });
     }
 
     // Right edge
-    for (let row = excludeCorners ? 1 : 0; row < (excludeCorners ? this.gridSize - 1 : this.gridSize); row++) {
+    for (
+      let row = excludeCorners ? 1 : 0;
+      row < (excludeCorners ? this.gridSize - 1 : this.gridSize);
+      row++
+    ) {
       edges.push({ row, col: this.gridSize - 1 });
     }
 
@@ -285,7 +301,7 @@ export class LevelGenerator {
         // Check minimum distance from turnpike
         const distanceFromTurnpike = this.manhattanDistance(
           candidate,
-          this.turnpike
+          this.turnpike,
         );
         if (distanceFromTurnpike < MIN_DISTANCE_FROM_TURNPIKE) {
           attempts++;
@@ -326,7 +342,7 @@ export class LevelGenerator {
 
       if (!placed) {
         throw new Error(
-          `Could not place landmark ${i + 1} after ${MAX_ATTEMPTS} attempts`
+          `Could not place landmark ${i + 1} after ${MAX_ATTEMPTS} attempts`,
         );
       }
     }
@@ -365,7 +381,10 @@ export class LevelGenerator {
     // Convert tiles to road tile configs
     for (const key of tilesInSolutionPaths) {
       const [rowStr, colStr] = key.split(",");
-      const pos: TilePosition = { row: parseInt(rowStr), col: parseInt(colStr) };
+      const pos: TilePosition = {
+        row: parseInt(rowStr),
+        col: parseInt(colStr),
+      };
 
       // Skip if this is already a landmark or turnpike
       const existing = this.getTile(pos);
@@ -393,9 +412,9 @@ export class LevelGenerator {
   private generatePath(
     start: TilePosition,
     target: TilePosition,
-    existingRoads: Set<string>
+    existingRoads: Set<string>,
   ): TilePosition[] {
-    const MAX_PATH_LENGTH = this.gridSize * this.gridSize; // Safety limit
+    const _MAX_PATH_LENGTH = this.gridSize * this.gridSize; // Safety limit (intentionally unused)
     const MAX_ATTEMPTS = 50; // Increased for better success rate
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
@@ -405,7 +424,7 @@ export class LevelGenerator {
         if (path.length >= 1) {
           return path;
         }
-      } catch (e) {
+      } catch (_e) {
         // Path generation failed, try again
         continue;
       }
@@ -413,7 +432,7 @@ export class LevelGenerator {
 
     // If all attempts fail, throw error
     throw new Error(
-      `Could not generate valid path from (${start.row},${start.col}) to (${target.row},${target.col})`
+      `Could not generate valid path from (${start.row},${start.col}) to (${target.row},${target.col})`,
     );
   }
 
@@ -423,7 +442,7 @@ export class LevelGenerator {
   private attemptPath(
     start: TilePosition,
     target: TilePosition,
-    existingRoads: Set<string>
+    existingRoads: Set<string>,
   ): TilePosition[] {
     const path: TilePosition[] = [];
     const visited = new Set<string>();
@@ -431,7 +450,11 @@ export class LevelGenerator {
     const MAX_STEPS = this.gridSize * this.gridSize;
 
     // Start from first step away from landmark
-    const firstStep = this.getFirstStepFromLandmark(start, visited, existingRoads);
+    const firstStep = this.getFirstStepFromLandmark(
+      start,
+      visited,
+      existingRoads,
+    );
     if (!firstStep) {
       throw new Error("Cannot find first step from landmark");
     }
@@ -453,7 +476,13 @@ export class LevelGenerator {
       }
 
       // Get valid next steps
-      const candidates = this.getValidNextSteps(current, target, visited, existingRoads, path);
+      const candidates = this.getValidNextSteps(
+        current,
+        target,
+        visited,
+        existingRoads,
+        path,
+      );
 
       if (candidates.length === 0) {
         throw new Error("Path stuck - no valid candidates");
@@ -479,7 +508,7 @@ export class LevelGenerator {
   private getFirstStepFromLandmark(
     landmark: TilePosition,
     visited: Set<string>,
-    existingRoads: Set<string>
+    existingRoads: Set<string>,
   ): TilePosition | null {
     const neighbors = this.getCardinalNeighbors(landmark);
 
@@ -491,7 +520,8 @@ export class LevelGenerator {
       // IMPORTANT: Pass the landmark as part of "currentPath" so it's counted as a connection
       // when checking if this would create crossroads
       const tempCurrentPath = [landmark];
-      if (this.wouldCreateCrossroads(n, existingRoads, tempCurrentPath)) return false;
+      if (this.wouldCreateCrossroads(n, existingRoads, tempCurrentPath))
+        return false;
       return true;
     });
 
@@ -506,7 +536,7 @@ export class LevelGenerator {
     target: TilePosition,
     visited: Set<string>,
     existingRoads: Set<string>,
-    currentPath: TilePosition[]
+    currentPath: TilePosition[],
   ): TilePosition[] {
     const neighbors = this.getCardinalNeighbors(current);
 
@@ -523,7 +553,8 @@ export class LevelGenerator {
       if (this.isLandmark(n)) return false;
 
       // Check for crossroads (would create 4 neighbors)
-      if (this.wouldCreateCrossroads(n, existingRoads, currentPath)) return false;
+      if (this.wouldCreateCrossroads(n, existingRoads, currentPath))
+        return false;
 
       return true;
     });
@@ -538,7 +569,7 @@ export class LevelGenerator {
   private wouldCreateCrossroads(
     pos: TilePosition,
     existingRoads: Set<string>,
-    currentPath: TilePosition[]
+    currentPath: TilePosition[],
   ): boolean {
     const neighbors = this.getCardinalNeighbors(pos);
 
@@ -547,7 +578,9 @@ export class LevelGenerator {
 
     for (const n of neighbors) {
       const isRoad = existingRoads.has(this.posKey(n));
-      const isInCurrentPath = currentPath.some((p) => p.row === n.row && p.col === n.col);
+      const isInCurrentPath = currentPath.some(
+        (p) => p.row === n.row && p.col === n.col,
+      );
       const isEndpoint = this.isEndpoint(n);
 
       // Count ALL neighbors (including endpoints like landmarks/turnpike)
@@ -558,7 +591,10 @@ export class LevelGenerator {
         // (Only check road tiles, not endpoints, since endpoints can have unlimited connections)
         if (isRoad && !isEndpoint) {
           // Count how many connections this existing road tile already has
-          const neighborConnectionCount = this.countExistingConnections(n, existingRoads);
+          const neighborConnectionCount = this.countExistingConnections(
+            n,
+            existingRoads,
+          );
 
           // If it already has 3 connections, adding this would make 4!
           if (neighborConnectionCount >= 3) {
@@ -577,7 +613,7 @@ export class LevelGenerator {
    */
   private countExistingConnections(
     pos: TilePosition,
-    existingRoads: Set<string>
+    existingRoads: Set<string>,
   ): number {
     const neighbors = this.getCardinalNeighbors(pos);
     let count = 0;
@@ -605,7 +641,10 @@ export class LevelGenerator {
   /**
    * Find candidate closest to target (Manhattan distance)
    */
-  private closestToTarget(candidates: TilePosition[], target: TilePosition): TilePosition {
+  private closestToTarget(
+    candidates: TilePosition[],
+    target: TilePosition,
+  ): TilePosition {
     let closest = candidates[0];
     let minDist = this.manhattanDistance(closest, target);
 
@@ -774,7 +813,11 @@ export class LevelGenerator {
 
     // Process all road tiles
     for (const roadTile of this.roadTiles) {
-      this.assignTileTypeAndRotation(roadTile, landmarkConnections, pathConnections);
+      this.assignTileTypeAndRotation(
+        roadTile,
+        landmarkConnections,
+        pathConnections,
+      );
     }
 
     // Orient landmarks to face their connected road tile
@@ -789,10 +832,14 @@ export class LevelGenerator {
   private assignTileTypeAndRotation(
     tile: TileConfig,
     landmarkConnections: Map<string, Set<string>>,
-    pathConnections: Map<string, Set<string>>
+    pathConnections: Map<string, Set<string>>,
   ): void {
     // Get all connected directions
-    const connections = this.getConnectedDirections(tile, landmarkConnections, pathConnections);
+    const connections = this.getConnectedDirections(
+      tile,
+      landmarkConnections,
+      pathConnections,
+    );
     const connectionCount = connections.length;
 
     if (connectionCount === 2) {
@@ -812,7 +859,9 @@ export class LevelGenerator {
       tile.solutionRotation = this.getRotationForTJunction(connections);
     } else {
       // Invalid connection count (should not happen with our constraints)
-      console.warn(`Invalid connection count ${connectionCount} at (${tile.row}, ${tile.col})`);
+      console.warn(
+        `Invalid connection count ${connectionCount} at (${tile.row}, ${tile.col})`,
+      );
       tile.tileType = "straight";
       tile.solutionRotation = 0;
     }
@@ -827,12 +876,18 @@ export class LevelGenerator {
   private orientLandmark(
     landmark: TileConfig,
     landmarkConnections: Map<string, Set<string>>,
-    pathConnections: Map<string, Set<string>>
+    pathConnections: Map<string, Set<string>>,
   ): void {
-    const connections = this.getConnectedDirections(landmark, landmarkConnections, pathConnections);
+    const connections = this.getConnectedDirections(
+      landmark,
+      landmarkConnections,
+      pathConnections,
+    );
 
     if (connections.length === 0) {
-      console.warn(`Landmark at (${landmark.row}, ${landmark.col}) has no connections`);
+      console.warn(
+        `Landmark at (${landmark.row}, ${landmark.col}) has no connections`,
+      );
       landmark.rotation = 0;
       landmark.solutionRotation = 0;
       return;
@@ -851,7 +906,7 @@ export class LevelGenerator {
   private getConnectedDirections(
     tile: TileConfig,
     landmarkConnections: Map<string, Set<string>>,
-    pathConnections: Map<string, Set<string>>
+    pathConnections: Map<string, Set<string>>,
   ): Direction[] {
     const pos: TilePosition = { row: tile.row, col: tile.col };
     const tileKey = this.posKey(pos);
@@ -918,8 +973,8 @@ export class LevelGenerator {
     const hasSouth = dirs.includes(Direction.South);
     const hasWest = dirs.includes(Direction.West);
 
-    if (hasNorth && hasEast) return 0;   // N-E corner
-    if (hasEast && hasSouth) return 90;  // E-S corner
+    if (hasNorth && hasEast) return 0; // N-E corner
+    if (hasEast && hasSouth) return 90; // E-S corner
     if (hasSouth && hasWest) return 180; // S-W corner
     if (hasWest && hasNorth) return 270; // W-N corner
 
@@ -936,8 +991,8 @@ export class LevelGenerator {
     const hasSouth = dirs.includes(Direction.South);
     const hasWest = dirs.includes(Direction.West);
 
-    if (!hasWest) return 0;   // N-E-S (stem points West)
-    if (!hasNorth) return 90;  // E-S-W (stem points North)
+    if (!hasWest) return 0; // N-E-S (stem points West)
+    if (!hasNorth) return 90; // E-S-W (stem points North)
     if (!hasEast) return 180; // S-W-N (stem points East)
     if (!hasSouth) return 270; // W-N-E (stem points South)
 
@@ -949,11 +1004,16 @@ export class LevelGenerator {
    */
   private directionToRotation(dir: Direction): number {
     switch (dir) {
-      case Direction.North: return 0;
-      case Direction.East: return 90;
-      case Direction.South: return 180;
-      case Direction.West: return 270;
-      default: return 0;
+      case Direction.North:
+        return 0;
+      case Direction.East:
+        return 90;
+      case Direction.South:
+        return 180;
+      case Direction.West:
+        return 270;
+      default:
+        return 0;
     }
   }
 
@@ -972,14 +1032,14 @@ export class LevelGenerator {
     const validRotations = [0, 90, 180, 270];
 
     if (this.roadTiles.length === 0) {
-      console.warn('[LevelGenerator] No road tiles to scramble');
+      console.warn("[LevelGenerator] No road tiles to scramble");
       return;
     }
 
     for (const tile of this.roadTiles) {
       if (!tile.rotatable) {
         console.warn(
-          `[LevelGenerator] Non-rotatable road tile at (${tile.row},${tile.col})`
+          `[LevelGenerator] Non-rotatable road tile at (${tile.row},${tile.col})`,
         );
         continue;
       }
@@ -988,7 +1048,7 @@ export class LevelGenerator {
     }
 
     console.log(
-      `[LevelGenerator] Scrambled ${this.roadTiles.length} road tiles`
+      `[LevelGenerator] Scrambled ${this.roadTiles.length} road tiles`,
     );
   }
 }

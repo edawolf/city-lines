@@ -1,6 +1,10 @@
 import { CityLinesLevelLoader } from "../levels/CityLinesLevelLoader";
 import type { GameConfig } from "../config/types";
-import { LevelGenerator, type DifficultyParams, type GeneratedLevel } from "./LevelGenerator";
+import {
+  LevelGenerator,
+  type DifficultyParams,
+  type GeneratedLevel,
+} from "./LevelGenerator";
 import { UI_CONFIG } from "../config/ui-config";
 
 /**
@@ -92,7 +96,7 @@ export class InfiniteLevelManager {
    */
   private static convertToGameConfig(
     generated: GeneratedLevel,
-    levelNumber: number
+    levelNumber: number,
   ): GameConfig {
     const { gridSize, turnpike, landmarks, roadTiles } = generated;
 
@@ -191,7 +195,7 @@ export class InfiniteLevelManager {
     (gameConfig as any).gridTiles = gridTiles;
 
     console.log(
-      `[InfiniteLevelManager] Generated level ${levelNumber}: ${gridSize.rows}x${gridSize.cols} grid, ${gridTiles.length} tiles`
+      `[InfiniteLevelManager] Generated level ${levelNumber}: ${gridSize.rows}x${gridSize.cols} grid, ${gridTiles.length} tiles`,
     );
 
     return gameConfig;

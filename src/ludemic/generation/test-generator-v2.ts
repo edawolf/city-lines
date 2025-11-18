@@ -88,16 +88,14 @@ function visualizeLevel(level: any, title: string): void {
     const path = solutionPaths[i] || [];
     const pathStr = path.map((p: any) => `(${p.row},${p.col})`).join(" → ");
     console.log(
-      `  ${i + 1}. ${l.landmarkType} at (${l.row}, ${l.col}) - Path: ${pathStr}`
+      `  ${i + 1}. ${l.landmarkType} at (${l.row}, ${l.col}) - Path: ${pathStr}`,
     );
   });
 
   // Print tile types and rotations
   console.log("\nRoad Tile Details:");
   roadTiles.forEach((r: any) => {
-    console.log(
-      `  (${r.row},${r.col}): ${r.tileType} @ ${r.rotation}°`
-    );
+    console.log(`  (${r.row},${r.col}): ${r.tileType} @ ${r.rotation}°`);
   });
 }
 
@@ -131,13 +129,13 @@ function testGenerator(): void {
     console.log("\nLevel 1 (seed 99999):");
     console.log(`Turnpike: (${level1.turnpike.row}, ${level1.turnpike.col})`);
     console.log(
-      `Landmarks: ${level1.landmarks.map((l) => `(${l.row},${l.col})`).join(", ")}`
+      `Landmarks: ${level1.landmarks.map((l) => `(${l.row},${l.col})`).join(", ")}`,
     );
 
     console.log("\nLevel 2 (seed 99999):");
     console.log(`Turnpike: (${level2.turnpike.row}, ${level2.turnpike.col})`);
     console.log(
-      `Landmarks: ${level2.landmarks.map((l) => `(${l.row},${l.col})`).join(", ")}`
+      `Landmarks: ${level2.landmarks.map((l) => `(${l.row},${l.col})`).join(", ")}`,
     );
 
     const isDeterministic =
@@ -147,12 +145,10 @@ function testGenerator(): void {
       level1.landmarks.every(
         (l, i) =>
           l.row === level2.landmarks[i].row &&
-          l.col === level2.landmarks[i].col
+          l.col === level2.landmarks[i].col,
       );
 
-    console.log(
-      `\n✅ Deterministic: ${isDeterministic ? "YES" : "NO"}`
-    );
+    console.log(`\n✅ Deterministic: ${isDeterministic ? "YES" : "NO"}`);
 
     console.log("\n🎉 Phase 1 tests completed successfully!");
   } catch (error) {

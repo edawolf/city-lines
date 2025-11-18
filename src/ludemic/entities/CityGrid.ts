@@ -320,7 +320,9 @@ export class CityGrid extends Container {
       });
       console.log("[CityGrid] ✅ path_complete EVENT EMITTED");
     } else {
-      console.warn("[CityGrid] ⚠️ Cannot emit path_complete - game container not available");
+      console.warn(
+        "[CityGrid] ⚠️ Cannot emit path_complete - game container not available",
+      );
     }
   }
 

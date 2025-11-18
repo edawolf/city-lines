@@ -1,0 +1,531 @@
+# Vercel Deployment Standards - MANDATORY FOR ALL CODE CHANGES
+
+**CRITICAL**: These rules MUST be followed for EVERY code change to prevent Vercel build failures.
+
+---
+
+## 🤖 MANDATORY LLM PRE-COMMIT PROTOCOL
+
+**BEFORE EVERY `git commit` or `git push`, THE LLM MUST:**
+
+### Step 1: Run Auto-Fix Commands
+```bash
+npm run lint -- --fix
+```
+
+### Step 2: Verify Zero Errors
+```bash
+npm run lint
+```
+- **MUST return 0 errors** (warnings are acceptable)
+- If errors exist, **DO NOT PROCEED** - fix them first
+
+### Step 3: Run Type Check
+```bash
+npx tsc --noEmit
+```
+- **MUST pass with no errors**
+- If errors exist, **DO NOT PROCEED** - fix them first
+
+### Step 4: Test Build Locally
+```bash
+npm run build
+```
+- **MUST complete successfully**
+- If build fails, **DO NOT PROCEED** - fix errors first
+
+### Step 5: Only After ALL Checks Pass
+```bash
+git add .
+git commit -m "your commit message"
+git push origin main
+```
+
+### 🚨 FAILURE PROTOCOL:
+If ANY step fails:
+1. ❌ **STOP IMMEDIATELY** - Do not commit or push
+2. 🔍 **Read the error output** carefully
+3. 🛠️ **Fix the specific errors** using the rules in this document
+4. 🔁 **Restart from Step 1**
+
+### ✅ SUCCESS CRITERIA:
+- All 4 verification commands pass with zero errors
+- Build completes successfully
+- Only then proceed with git commit and push
+
+**THIS IS NOT OPTIONAL. THIS IS MANDATORY FOR EVERY COMMIT/PUSH.**
+
+---
+
+## 🚨 RULE 1: NO `any` TYPES - EVER
+
+### ❌ NEVER DO THIS:
+```typescript
+function foo(data: any) { }
+const bar: any = {};
+(entity as any).something
+```
+
+### ✅ ALWAYS DO THIS:
+```typescript
+function foo(data: unknown) { }
+const bar: Record<string, unknown> = {};
+(entity as Container).something
+
+// If truly dynamic, use proper types:
+interface DynamicConfig {
+  [key: string]: string | number | boolean;
+}
+```
+
+### Common Replacements:
+- `any` → `unknown` (for truly unknown types, then narrow with type guards)
+- `any[]` → `unknown[]` or `Array<specific-type>`
+- `Record<string, any>` → `Record<string, unknown>` or define interface
+- `(obj as any).prop` → Define proper interface or use type assertion with specific type
+
+**WHY**: ESLint rule `@typescript-eslint/no-explicit-any` blocks builds. Use `unknown` and type guards instead.
+
+---
+
+## 🚨 RULE 2: PRETTIER FORMATTING - AUTO-FIX BEFORE COMMIT
+
+### Always Run Before Commit/Push:
+```bash
+npm run lint -- --fix
+# or
+npx prettier --write "src/**/*.ts"
+```
+
+### Common Prettier Issues:
+
+#### A. Line Length (Max 80-100 characters)
+❌ **BAD:**
+```typescript
+console.log("[CityGrid] ⚠️ Cannot emit path_complete - game container not available");
+```
+
+✅ **GOOD:**
+```typescript
+console.log(
+  "[CityGrid] ⚠️ Cannot emit path_complete - game container not available",
+);
+```
+
+#### B. Trailing Commas (Always add them)
+❌ **BAD:**
+```typescript
+const obj = {
+  foo: 1,
+  bar: 2
+};
+
+function test(a: string, b: number) { }
+```
+
+✅ **GOOD:**
+```typescript
+const obj = {
+  foo: 1,
+  bar: 2,
+};
+
+function test(a: string, b: number): void { }
+```
+
+#### C. Import Formatting
+❌ **BAD:**
+```typescript
+import { LevelGenerator, type DifficultyParams, type GeneratedLevel } from './types';
+```
+
+✅ **GOOD:**
+```typescript
+import {
+  LevelGenerator,
+  type DifficultyParams,
+  type GeneratedLevel,
+} from "./types";
+```
+
+#### D. Multi-line Function Calls
+❌ **BAD:**
+```typescript
+someFunction(veryLongParameter, anotherLongParameter, yetAnotherParameter);
+```
+
+✅ **GOOD:**
+```typescript
+someFunction(
+  veryLongParameter,
+  anotherLongParameter,
+  yetAnotherParameter,
+);
+```
+
+#### E. Quote Style (Use double quotes)
+❌ **BAD:**
+```typescript
+const msg = 'Hello world';
+```
+
+✅ **GOOD:**
+```typescript
+const msg = "Hello world";
+```
+
+---
+
+## 🚨 RULE 3: NO UNUSED VARIABLES
+
+### ❌ NEVER DO THIS:
+```typescript
+const MAX_PATH_LENGTH = 100; // defined but never used
+
+try {
+  // ...
+} catch (e) { // 'e' defined but never used
+  console.log("Error occurred");
+}
+```
+
+### ✅ ALWAYS DO THIS:
+```typescript
+// Option 1: Remove if truly unused
+// (delete MAX_PATH_LENGTH entirely)
+
+// Option 2: Use underscore prefix for intentionally unused
+const _MAX_PATH_LENGTH = 100; // marked as intentionally unused
+
+try {
+  // ...
+} catch (_e) { // underscore = intentionally unused
+  console.log("Error occurred");
+}
+
+// Option 3: Actually use it
+try {
+  // ...
+} catch (error) {
+  console.error("Error occurred:", error);
+}
+```
+
+**WHY**: `@typescript-eslint/no-unused-vars` blocks builds. Prefix with `_` if intentionally unused.
+
+---
+
+## 🚨 RULE 4: PROPER TYPE DEFINITIONS
+
+### For Config Objects:
+❌ **BAD:**
+```typescript
+interface Config {
+  [key: string]: any;
+}
+```
+
+✅ **GOOD:**
+```typescript
+interface Config {
+  [key: string]: string | number | boolean | ConfigValue;
+}
+
+// Or better - define explicit shape:
+interface Config {
+  speed: number;
+  color: string;
+  enabled: boolean;
+}
+```
+
+### For Event Handlers:
+❌ **BAD:**
+```typescript
+game.on("event", (data: any) => { });
+```
+
+✅ **GOOD:**
+```typescript
+interface EventData {
+  entityId: string;
+  value: number;
+}
+
+game.on("event", (data: EventData) => { });
+
+// Or if truly unknown:
+game.on("event", (data: unknown) => {
+  if (isEventData(data)) {
+    // Type guard narrows to EventData
+  }
+});
+```
+
+### For Function Parameters:
+❌ **BAD:**
+```typescript
+function process(entity: any, config: any) { }
+```
+
+✅ **GOOD:**
+```typescript
+import { Container } from "pixi.js";
+
+interface ProcessConfig {
+  speed: number;
+  duration: number;
+}
+
+function process(entity: Container, config: ProcessConfig): void { }
+```
+
+---
+
+## 🚨 RULE 5: SPECIFIC FILE PATTERNS
+
+### LevelGenerator.ts Pattern:
+```typescript
+// ✅ GOOD - Proper loop formatting
+for (
+  let col = excludeCorners ? 1 : 0;
+  col < (excludeCorners ? this.gridSize - 1 : this.gridSize);
+  col++
+) {
+  // ...
+}
+
+// ✅ GOOD - Proper object formatting
+return {
+  row: parseInt(rowStr),
+  col: parseInt(colStr),
+};
+
+// ✅ GOOD - Proper function call formatting
+this.findPath(
+  start,
+  visited,
+  existingRoads,
+);
+```
+
+### GameBuilder.ts Pattern:
+```typescript
+// ✅ GOOD - Type entity methods properly
+getPrimitive(type: string): Primitive | null {
+  return (this as Record<string, unknown>)[type] as Primitive | null;
+}
+
+// Better - define proper interface
+interface PrimitiveContainer {
+  primitives: Map<string, Primitive>;
+}
+
+function getPrimitive(
+  this: PrimitiveContainer,
+  type: string,
+): Primitive | null {
+  return this.primitives.get(type) ?? null;
+}
+```
+
+### CityGrid.ts Pattern:
+```typescript
+// ✅ GOOD - Proper console.log formatting
+console.error(
+  "[CityGrid] ⚠️ Cannot emit path_complete - game container not available",
+);
+
+// ✅ GOOD - Type event handlers
+game.on("event_name", (data: EventPayload) => {
+  // typed handler
+});
+```
+
+---
+
+## 🚨 RULE 6: PRE-COMMIT CHECKLIST (MANDATORY)
+
+### Before EVERY `git commit`:
+
+1. **Run linter with auto-fix:**
+   ```bash
+   npm run lint -- --fix
+   ```
+
+2. **Check for remaining errors:**
+   ```bash
+   npm run lint
+   ```
+   - **MUST show 0 errors**
+   - Warnings are OK, but errors BLOCK deployment
+
+3. **Run TypeScript compiler:**
+   ```bash
+   npx tsc --noEmit
+   ```
+   - **MUST pass with no errors**
+
+4. **Test build locally:**
+   ```bash
+   npm run build
+   ```
+   - **MUST complete successfully**
+
+### Before EVERY `git push`:
+
+1. **Verify all checks pass:**
+   ```bash
+   npm run lint && npx tsc --noEmit && npm run build
+   ```
+
+2. **If ANY step fails:**
+   - ❌ **DO NOT PUSH**
+   - Fix errors first
+   - Re-run checks
+
+---
+
+## 🚨 RULE 7: WHEN MODIFYING EXISTING FILES
+
+### Always Check:
+
+1. **Preserve existing formatting style**
+2. **Add trailing commas to all multi-line structures**
+3. **Use double quotes for strings**
+4. **Break long lines (>100 chars)**
+5. **Type all parameters (no `any`)**
+6. **Remove or prefix unused variables with `_`**
+
+### When Adding New Code:
+
+```typescript
+// ✅ COMPLETE EXAMPLE OF PROPER CODE
+import {
+  Container,
+  Graphics,
+  Text,
+} from "pixi.js";
+
+interface EntityConfig {
+  speed: number;
+  color: string;
+  enabled: boolean;
+}
+
+export class MyEntity extends Container {
+  private config: EntityConfig;
+  private velocity = { x: 0, y: 0 };
+
+  constructor(config: EntityConfig) {
+    super();
+    this.config = config;
+    this.setup();
+  }
+
+  private setup(): void {
+    // Implementation with proper types
+    const graphics = new Graphics()
+      .rect(0, 0, 50, 50)
+      .fill(this.config.color);
+
+    this.addChild(graphics);
+  }
+
+  public update(deltaTime: number): void {
+    this.x += this.velocity.x * deltaTime;
+    this.y += this.velocity.y * deltaTime;
+  }
+
+  public destroy(): void {
+    // Cleanup
+    super.destroy();
+  }
+}
+```
+
+---
+
+## 🚨 RULE 8: EMERGENCY FIX (If Build Fails on Vercel)
+
+### If Vercel Build Fails:
+
+1. **Pull latest code:**
+   ```bash
+   git pull origin main
+   ```
+
+2. **Run auto-fix on ALL files:**
+   ```bash
+   npx prettier --write "src/**/*.ts"
+   npm run lint -- --fix
+   ```
+
+3. **Fix remaining errors manually** (check Vercel logs)
+
+4. **Test build locally:**
+   ```bash
+   npm run build
+   ```
+
+5. **Commit fixes:**
+   ```bash
+   git add .
+   git commit -m "fix: resolve linting and formatting errors for Vercel deployment"
+   git push origin main
+   ```
+
+---
+
+## 📋 QUICK REFERENCE: Common Error Fixes
+
+| Error | Fix |
+|-------|-----|
+| `Unexpected any` | Replace with `unknown`, `Record<string, unknown>`, or specific type |
+| `Insert ","` | Add trailing comma |
+| `Replace '...' with "..."` | Use double quotes |
+| `Insert ⏎` | Break long line into multiple lines |
+| `Delete ...` | Remove extra whitespace |
+| `'X' is assigned but never used` | Remove variable or prefix with `_` |
+| `'X' is defined but never used` | Use variable or prefix with `_` |
+
+---
+
+## ✅ VERIFICATION COMMANDS
+
+### Run these before EVERY commit:
+
+```bash
+# 1. Auto-fix formatting
+npm run lint -- --fix
+
+# 2. Check for remaining issues
+npm run lint
+
+# 3. Type check
+npx tsc --noEmit
+
+# 4. Test build
+npm run build
+```
+
+**ALL MUST PASS BEFORE COMMITTING**
+
+---
+
+## 🎯 SUMMARY: THE GOLDEN RULES
+
+1. ❌ **NO `any` TYPES** → Use `unknown` + type guards
+2. ✅ **ALWAYS ADD TRAILING COMMAS** → Multi-line objects/arrays/params
+3. ✅ **USE DOUBLE QUOTES** → For all strings
+4. ✅ **BREAK LONG LINES** → Max 100 characters
+5. ✅ **PREFIX UNUSED VARS WITH `_`** → Or remove them
+6. ✅ **RUN `npm run lint -- --fix`** → Before every commit
+7. ✅ **TEST BUILD LOCALLY** → Before every push
+8. ✅ **TYPE EVERYTHING** → No implicit any, no shortcuts
+
+---
+
+**REMEMBER**: If Vercel build fails, the code does NOT deploy. Following these rules prevents deployment failures.
+
+**ALWAYS verify locally BEFORE pushing to GitHub.**
