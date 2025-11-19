@@ -205,10 +205,6 @@ export class HeadlineDisplay extends Container {
    * Show a new headline with typewriter animation (inline below level text, no modal)
    */
   public show(headline: string): void {
-    console.log(
-      `[HeadlineDisplay] 🎬 show() called with headline: "${headline}"`,
-    );
-
     this.currentHeadline = headline;
     this.displayedChars = 0;
     this.typewriterTimer = 0;
@@ -223,10 +219,6 @@ export class HeadlineDisplay extends Container {
     // Modal elements stay hidden
     this.modalOverlay.visible = false;
     this.modalContainer.visible = false;
-
-    console.log(
-      `[HeadlineDisplay] Headline container shown (inline mode, no modal)`,
-    );
 
     // If viewport dimensions haven't been set yet (still 0x0), try to get them from the parent
     if (this.viewportWidth === 0 || this.viewportHeight === 0) {
@@ -245,8 +237,6 @@ export class HeadlineDisplay extends Container {
 
     // Recalculate position with actual headline text
     this.resize(this.viewportWidth, this.viewportHeight);
-
-    console.log(`[HeadlineDisplay] ✅ show() complete, state: ${this.state}`);
   }
 
   /**
@@ -381,10 +371,6 @@ export class HeadlineDisplay extends Container {
    * Draw modal layout (overlay + white container + buttons) - DEPRECATED
    */
   private drawBackground(): void {
-    console.log(
-      `[HeadlineDisplay] 🎨 drawBackground() called, text length: ${this.headlineText.text.length}`,
-    );
-
     this.modalOverlay.clear();
     this.modalContainer.clear();
     this.backgroundPanel.clear();
@@ -392,7 +378,6 @@ export class HeadlineDisplay extends Container {
     this.continueButtonBackground.clear();
 
     if (this.headlineText.text.length === 0) {
-      console.log(`[HeadlineDisplay] ⚠️ drawBackground() skipped - no text`);
       return;
     }
 
@@ -445,29 +430,6 @@ export class HeadlineDisplay extends Container {
     // Draw white modal container (centered) - use constrained height
     const modalX = -modalWidth / 2;
     const modalY = -constrainedModalHeight / 2;
-
-    // Get actual screen bounds
-    const actualBounds = this.getBounds();
-    const modalContainerBounds = this.modalContainer.getBounds();
-
-    // Debug logging
-    console.log(`[HeadlineDisplay] Modal sizing:
-      Viewport: ${this.viewportWidth}x${this.viewportHeight}
-      Modal width: ${Math.round(modalWidth)}px (${UI_CONFIG.HEADLINE_MODAL.widthPercent * 100}%)
-      Modal X range (calculated): ${Math.round(this.viewportWidth / 2 + modalX)} to ${Math.round(this.viewportWidth / 2 + modalX + modalWidth)}
-      HeadlineDisplay position: (${Math.round(this.x)}, ${Math.round(this.y)})
-      HeadlineDisplay bounds: X ${Math.round(actualBounds.x)} to ${Math.round(actualBounds.x + actualBounds.width)}, Y ${Math.round(actualBounds.y)} to ${Math.round(actualBounds.y + actualBounds.height)}
-      ModalContainer actual bounds: X ${Math.round(modalContainerBounds.x)} to ${Math.round(modalContainerBounds.x + modalContainerBounds.width)}
-      Max modal height: ${Math.round(maxModalHeight)}px (${UI_CONFIG.HEADLINE_MODAL.heightPercent * 100}%)
-      Text bounds: ${Math.round(textBounds.width)}x${Math.round(textBounds.height)}px
-      Text wrap width: ${Math.round(maxTextWidth)}px
-      Buttons+padding: ${Math.round(buttonsAndPadding)}px
-      Ideal height: ${Math.round(idealModalHeight)}px
-      Constrained height: ${Math.round(constrainedModalHeight)}px
-      Available text height: ${Math.round(availableTextHeight)}px
-      Modal container position: (${Math.round(this.viewportWidth / 2)}, ${Math.round(this.viewportHeight / 2)})
-      Modal local bounds: X ${Math.round(modalX)} to ${Math.round(modalX + modalWidth)}, Y ${Math.round(modalY)} to ${Math.round(modalY + constrainedModalHeight)}
-    `);
 
     this.modalContainer
       .roundRect(modalX, modalY, modalWidth, constrainedModalHeight, 10)
@@ -525,9 +487,6 @@ export class HeadlineDisplay extends Container {
    * Level text at top center, headline text below it
    */
   public resize(width: number, height: number): void {
-    console.log(
-      `[HeadlineDisplay] 📏 resize() called with: ${width}x${height} (previous: ${this.viewportWidth}x${this.viewportHeight})`,
-    );
     this.viewportWidth = width;
     this.viewportHeight = height;
 

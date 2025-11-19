@@ -153,10 +153,6 @@ export class ParticleManager {
       .catch((err) => {
 
       });
-
-    console.log(
-      `[ParticleManager] 💥 Created burst of ${count} particles at (${x}, ${y})`,
-    );
   }
 
   /**
