@@ -40,6 +40,7 @@ export interface TileConfig {
   solutionRotation: number; // Correct rotation
   rotatable: boolean;
   landmarkType?: LandmarkType;
+  decorationType?: string; // For decorative tiles (tree-1, tree-2, bush-1, etc.)
 }
 
 export interface GeneratedLevel {
