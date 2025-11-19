@@ -59,13 +59,11 @@ export class BounceCollision extends Primitive {
     // Lazily get game container (parent is set after init)
     if (!this.game && this.entity.parent) {
       this.game = this.entity.parent as unknown as GameContainer;
-
     }
 
     // Get movement primitive to access/modify velocity
     const movement = this.getMovementPrimitive();
     if (!movement) {
-
       return;
     }
 
@@ -113,7 +111,6 @@ export class BounceCollision extends Primitive {
             bounced = true;
           }
         } else {
-
         }
       });
     }

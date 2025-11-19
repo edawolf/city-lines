@@ -34,7 +34,6 @@ export class BoundaryTrigger extends Primitive {
     this.game = entity.parent as Container & {
       emitGame: (event: string, ...args: unknown[]) => void;
     };
-
   }
 
   update(): void {
@@ -44,7 +43,6 @@ export class BoundaryTrigger extends Primitive {
     if (crossed) {
       // Only trigger once unless continuous mode
       if (!this.hasTriggered || this.config.continuous) {
-
         this.game.emitGame(this.config.triggerEvent, this.entity);
         this.hasTriggered = true;
 

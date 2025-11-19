@@ -46,7 +46,6 @@ export class LevelManager extends Primitive {
 
     // Listen for block destruction
     this.game.onGame(this.config.blockDestroyedEvent, this.onBlockDestroyed);
-
   }
 
   update(): void {
@@ -54,7 +53,6 @@ export class LevelManager extends Primitive {
     const blocks = this.game.getEntitiesByType(this.config.blockEntityType);
 
     if (blocks.length === 0 && this.blocksCleared > 0) {
-
       this.game.emitGame(this.config.levelCompleteEvent, {
         level: this.currentLevel,
         blocksCleared: this.blocksCleared,
@@ -63,7 +61,6 @@ export class LevelManager extends Primitive {
       // Advance to next level
       this.currentLevel++;
       this.blocksCleared = 0;
-
     }
   }
 
@@ -94,7 +91,6 @@ export class LevelManager extends Primitive {
   reset(): void {
     this.currentLevel = this.config.startLevel ?? 1;
     this.blocksCleared = 0;
-
   }
 
   destroy(): void {

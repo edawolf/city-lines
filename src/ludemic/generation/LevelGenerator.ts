@@ -1032,7 +1032,6 @@ export class LevelGenerator {
     const validRotations = [0, 90, 180, 270];
 
     if (this.roadTiles.length === 0) {
-
       return;
     }
 
@@ -1046,6 +1045,5 @@ export class LevelGenerator {
 
       tile.rotation = this.rng.choice(validRotations);
     }
-
   }
 }

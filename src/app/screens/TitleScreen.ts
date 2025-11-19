@@ -7,7 +7,11 @@ import { FancyButton } from "@pixi/ui";
 import { engine } from "../getEngine";
 import { UI_CONFIG } from "../../ludemic/config/ui-config";
 import { responsiveFontSize } from "../../ludemic/config/UIConfig";
-import { RoadTile, RoadType, LandmarkType } from "../../ludemic/entities/RoadTile";
+import {
+  RoadTile,
+  RoadType,
+  LandmarkType,
+} from "../../ludemic/entities/RoadTile";
 import { ParticleManager } from "../../ludemic/effects/ParticleManager";
 
 /**
@@ -91,9 +95,9 @@ export class TitleScreen extends Container {
     });
 
     this.startButton = new FancyButton({
-      defaultView: new Graphics().rect(0, 0, 200, 60).fill(0x4CAF50),
-      hoverView: new Graphics().rect(0, 0, 200, 60).fill(0x66BB6A),
-      pressedView: new Graphics().rect(0, 0, 200, 60).fill(0x388E3C),
+      defaultView: new Graphics().rect(0, 0, 200, 60).fill(0x4caf50),
+      hoverView: new Graphics().rect(0, 0, 200, 60).fill(0x66bb6a),
+      pressedView: new Graphics().rect(0, 0, 200, 60).fill(0x388e3c),
       text: buttonText,
     });
     this.startButton.anchor.set(0.5);
@@ -224,7 +228,7 @@ export class TitleScreen extends Container {
     this.miniPuzzle.addChild(turnpikeTile);
 
     // Wait a frame for tiles to initialize their sprites
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   /**
@@ -241,7 +245,6 @@ export class TitleScreen extends Container {
    * Start the game (transition to level 1)
    */
   private async startGame(): Promise<void> {
-
     // Play a sound effect if available
     // audioManager.playRotateSound(); // Optional: add a "start" sound
 
@@ -297,7 +300,10 @@ export class TitleScreen extends Container {
       let titleY = centerY + height * config.title.offsetFromCenterPercent;
       // Clamp to safe area
       const titleHalfHeight = this.titleText.height / 2;
-      titleY = Math.max(minY + titleHalfHeight, Math.min(maxY - titleHalfHeight, titleY));
+      titleY = Math.max(
+        minY + titleHalfHeight,
+        Math.min(maxY - titleHalfHeight, titleY),
+      );
       this.titleText.y = titleY;
     }
 
@@ -321,7 +327,10 @@ export class TitleScreen extends Container {
       let taglineY = centerY + height * config.tagline.offsetFromCenterPercent;
       // Clamp to safe area
       const taglineHalfHeight = this.taglineText.height / 2;
-      taglineY = Math.max(minY + taglineHalfHeight, Math.min(maxY - taglineHalfHeight, taglineY));
+      taglineY = Math.max(
+        minY + taglineHalfHeight,
+        Math.min(maxY - taglineHalfHeight, taglineY),
+      );
       this.taglineText.y = taglineY;
     }
 
@@ -333,7 +342,10 @@ export class TitleScreen extends Container {
       let buttonY = height - height * config.prompt.offsetFromBottomPercent;
       // Clamp to safe area
       const buttonHalfHeight = this.startButton.height / 2;
-      buttonY = Math.max(minY + buttonHalfHeight, Math.min(maxY - buttonHalfHeight, buttonY));
+      buttonY = Math.max(
+        minY + buttonHalfHeight,
+        Math.min(maxY - buttonHalfHeight, buttonY),
+      );
       this.startButton.y = buttonY;
     }
 
@@ -345,7 +357,10 @@ export class TitleScreen extends Container {
       // Calculate responsive scale for the entire puzzle
       const desiredTileSize = Math.max(
         puzzleConfig.minTileSize,
-        Math.min(puzzleConfig.maxTileSize, width * puzzleConfig.tileSizePercent)
+        Math.min(
+          puzzleConfig.maxTileSize,
+          width * puzzleConfig.tileSizePercent,
+        ),
       );
       const scale = desiredTileSize / tileSize;
 
@@ -360,7 +375,8 @@ export class TitleScreen extends Container {
 
       // Position the puzzle container at screen center
       this.miniPuzzle.x = centerX;
-      this.miniPuzzle.y = centerY + height * puzzleConfig.offsetFromCenterPercent;
+      this.miniPuzzle.y =
+        centerY + height * puzzleConfig.offsetFromCenterPercent;
     }
   }
 
@@ -397,7 +413,6 @@ export class TitleScreen extends Container {
   update(time: Ticker): void {
     // Update particle system if it exists
     if (this.particleContainer && this.particleContainer.children.length > 0) {
-
       this.particleContainer.children.forEach((child: any) => {
         if (child.update) {
           child.update(time.deltaTime);

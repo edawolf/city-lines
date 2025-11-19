@@ -49,7 +49,6 @@ export class ComboMultiplier extends Primitive {
 
     // Listen for hit events
     this.game.onGame(this.config.listenForEvent, this.handleHit);
-
   }
 
   update(): void {
@@ -99,7 +98,6 @@ export class ComboMultiplier extends Primitive {
    */
   private resetCombo(): void {
     if (this.currentCombo > 0) {
-
     }
 
     this.currentCombo = 0;

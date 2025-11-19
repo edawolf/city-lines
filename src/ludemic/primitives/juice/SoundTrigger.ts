@@ -50,7 +50,6 @@ export class SoundTrigger extends Primitive {
   private playSound = () => {
     const audioEngine = engine();
     if (!audioEngine || !audioEngine.audio) {
-
       return;
     }
 
@@ -61,9 +60,7 @@ export class SoundTrigger extends Primitive {
         speed: this.config.pitch ?? 1.0,
         loop: this.config.loop ?? false,
       });
-    } catch (error) {
-
-    }
+    } catch (error) {}
   };
 
   destroy(): void {

@@ -63,6 +63,9 @@ export class GameContainer extends Container {
   private viewportWidth = 0; // Will be set by updateViewport() - no hardcoded default
   private viewportHeight = 0; // Will be set by updateViewport() - no hardcoded default
 
+  // DEBUG: Track update calls
+  private updateCallCount = 0;
+
   // Headlines system
   private headlines: string[] = [];
   private currentHeadlineIndex = 0;
@@ -485,7 +488,6 @@ export class GameContainer extends Container {
    * Restart the entire game
    */
   restart(width: number, height: number): void {
-
     // Update viewport dimensions
     this.viewportWidth = width;
     this.viewportHeight = height;

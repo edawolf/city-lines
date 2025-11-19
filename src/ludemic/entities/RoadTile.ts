@@ -9,6 +9,7 @@ import {
 
 import type { EntityConfig } from "../config/types";
 import { UI_CONFIG } from "../config/ui-config";
+import { PARTICLE_CONFIG } from "../config/particle-config";
 import { audioManager } from "../AudioManager";
 import { ParticleManager } from "../effects/ParticleManager";
 
@@ -836,25 +837,25 @@ export class RoadTile extends Container {
     // Play rotation sound
     audioManager.playRotateSound();
 
-    // Create particle burst effect ONLY when rotation reaches 90 degrees
-    if (this.rotationDegrees === 90) {
-      try {
-        const particleManager = ParticleManager.getInstance();
+    // Create particle burst effect on every rotation
+    try {
+      const particleManager = ParticleManager.getInstance();
 
-        // Get position relative to the particle container
-        // Particle container is a child of CityGrid (this tile's grandparent)
-        const particleContainer = particleManager.getContainer();
-        const localPos = particleContainer.toLocal(this.position, this.parent);
+      // Get position relative to the particle container
+      // Particle container is a child of CityGrid (this tile's grandparent)
+      const particleContainer = particleManager.getContainer();
+      const localPos = particleContainer.toLocal(this.position, this.parent);
 
-        particleManager.createBurst(localPos.x, localPos.y, 50, {
-          color: 0x2d5016, // Dark green
-          size: 2,
-          speed: 8,
-          lifetime: 0.5,
-        });
-      } catch (error) {
-        // Particle system not available - silently fail
-      }
+      // Use centralized particle config
+      const config = PARTICLE_CONFIG.TILE_ROTATION;
+      particleManager.createBurst(localPos.x, localPos.y, config.count, {
+        color: config.color,
+        size: config.size,
+        speed: config.speed,
+        lifetime: config.lifetime,
+      });
+    } catch (error) {
+      // Particle system not available - silently fail
     }
 
     // Emit event for path validation

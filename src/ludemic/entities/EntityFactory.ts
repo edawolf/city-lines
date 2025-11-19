@@ -34,7 +34,6 @@ export class EntityFactory {
     entityClass: new (config: EntityConfig) => Container,
   ): void {
     if (this.registry.has(name)) {
-
     }
     this.registry.set(name, entityClass);
   }

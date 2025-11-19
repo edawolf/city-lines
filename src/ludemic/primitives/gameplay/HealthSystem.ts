@@ -44,7 +44,6 @@ export class HealthSystem extends Primitive {
 
     // Listen for damage events
     this.game.onGame(this.config.damageEvent, this.takeDamage);
-
   }
 
   update(): void {
@@ -67,7 +66,6 @@ export class HealthSystem extends Primitive {
 
     // Check for death
     if (this.currentHealth <= 0 && previousHealth > 0) {
-
       this.game.emitGame(this.config.deathEvent);
     }
   };

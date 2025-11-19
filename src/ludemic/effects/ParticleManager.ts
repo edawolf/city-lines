@@ -11,6 +11,7 @@ import {
   deepCloneConfig,
   DEFAULT_PARTICLE_CONFIG,
 } from "../../packages/pixi-particle-editor";
+import { PARTICLE_CONFIG } from "../config/particle-config";
 
 export interface ParticleConfig {
   x: number;
@@ -51,8 +52,16 @@ export class ParticleManager {
       ParticleManager.instance.particleSystem = new ParticleSystem(
         "/assets/vfx/",
       );
+
+      // CRITICAL: Make ParticleSystem non-interactive so it doesn't block clicks
+      ParticleManager.instance.particleSystem.eventMode = "none";
+      ParticleManager.instance.particleSystem.interactiveChildren = false;
+
       particleContainer.addChild(ParticleManager.instance.particleSystem);
 
+      console.log(
+        "[ParticleManager] 🎨 Initialized with advanced ParticleSystem (non-interactive)",
+      );
     }
     return ParticleManager.instance;
   }
@@ -95,13 +104,13 @@ export class ParticleManager {
     } = {},
   ): void {
     if (!this.particleSystem) {
-
+      console.warn("[ParticleManager] ⚠️ ParticleSystem not initialized!");
       return;
     }
 
     const {
-      color = 0x2d5016, // Dark green
-      size = 4,
+      color = 0xffffff, // BRIGHT WHITE for debugging
+      size = 50, // HUGE for debugging
       speed = 5,
       lifetime = 1.0,
     } = config;
@@ -114,21 +123,24 @@ export class ParticleManager {
     const g = (color >> 8) & 0xff;
     const b = color & 0xff;
 
-    // Configure burst effect
-    particleConfig.textureName = "white-circle.png"; // Use a soft circle texture
+    // Configure burst effect using centralized tile rotation settings
+    const burstConfig = PARTICLE_CONFIG.TILE_ROTATION;
+
+    particleConfig.textureName = burstConfig.textureName;
     particleConfig.burst = true; // All particles at once
     particleConfig.maxParticles = count;
     particleConfig.particleLifetime = lifetime;
-    particleConfig.emitterLifetime = 0; // Instant burst
+    particleConfig.emitterLifetime = 0.1; // Very short emission time (0 can cause issues)
     particleConfig.loop = false;
     particleConfig.emitting = true;
+    particleConfig.autoPlay = true; // Start immediately
 
     // Appearance
     particleConfig.colorStart = { r, g, b };
     particleConfig.colorEnd = { r, g, b };
-    particleConfig.alphaStart = 1.0;
-    particleConfig.alphaEnd = 0.0;
-    particleConfig.blendMode = "normal";
+    particleConfig.alphaStart = burstConfig.alphaStart;
+    particleConfig.alphaEnd = burstConfig.alphaEnd;
+    particleConfig.blendMode = burstConfig.blendMode;
 
     // Size
     particleConfig.sizeMode = "pixels";
@@ -137,21 +149,25 @@ export class ParticleManager {
 
     // Movement - radial burst in all directions
     particleConfig.angle = 0;
-    particleConfig.angleVariance = 360;
+    particleConfig.angleVariance = burstConfig.angleVariance;
     particleConfig.speed = speed;
-    particleConfig.speedVariance = speed * 0.3;
-    particleConfig.acceleration = -speed * 0.5; // Slow down over time
-    particleConfig.gravity = 0;
+    particleConfig.speedVariance = burstConfig.speedVariance;
+    particleConfig.acceleration = -speed * burstConfig.accelerationFactor;
+    particleConfig.gravity = burstConfig.gravity;
 
     // Rotation
     particleConfig.rotationStart = 0;
     particleConfig.rotationSpeed = 0;
 
+    // NOTE: x,y are already in particle container's local space
+    // ParticleSystem expects coordinates relative to itself (which is at 0,0 in the container)
+    // So we can use x,y directly
+
     // Create the spawner (it will auto-emit and destroy itself)
     this.particleSystem
       .createSpawner(particleConfig, x, y, `Burst_${Date.now()}`)
       .catch((err) => {
-
+        console.error("[ParticleManager] ❌ Failed to create burst:", err);
       });
   }
 
@@ -163,25 +179,16 @@ export class ParticleManager {
    */
   public createConfetti(viewportWidth: number, viewportHeight: number): void {
     if (!this.particleSystem) {
-
+      console.warn("[ParticleManager] ⚠️ ParticleSystem not initialized!");
       return;
     }
 
-    const confettiColors = [
-      { r: 255, g: 107, b: 107 }, // Red
-      { r: 78, g: 205, b: 196 }, // Cyan
-      { r: 255, g: 230, b: 109 }, // Yellow
-      { r: 149, g: 225, b: 211 }, // Light green
-      { r: 243, g: 129, b: 129 }, // Pink
-      { r: 170, g: 150, b: 218 }, // Purple
-      { r: 252, g: 186, b: 211 }, // Light pink
-      { r: 168, g: 230, b: 207 }, // Mint
-      { r: 255, g: 159, b: 67 }, // Orange
-      { r: 95, g: 39, b: 205 }, // Deep purple
-    ];
+    // Use centralized confetti config
+    const confettiConfig = PARTICLE_CONFIG.WIN_CONFETTI;
+    const confettiColors = PARTICLE_CONFIG.CONFETTI_COLORS;
 
     // Create multiple spawners across the top of the screen
-    const spawnerCount = 5;
+    const spawnerCount = confettiConfig.spawnerCount;
     const spacing = viewportWidth / (spawnerCount + 1);
 
     for (let i = 0; i < spawnerCount; i++) {
@@ -194,13 +201,13 @@ export class ParticleManager {
 
       const particleConfig = deepCloneConfig(DEFAULT_PARTICLE_CONFIG);
 
-      // Configure confetti effect
-      particleConfig.textureName = "circle_05.png";
+      // Configure confetti effect using centralized settings
+      particleConfig.textureName = confettiConfig.textureName;
       particleConfig.burst = false; // Continuous spawn
-      particleConfig.maxParticles = 200;
-      particleConfig.particleLifetime = 2.0;
-      particleConfig.emitterLifetime = 0.5; // Spawn for 0.5 seconds
-      particleConfig.spawnRate = 80; // Particles per second
+      particleConfig.maxParticles = confettiConfig.particlesPerSpawner;
+      particleConfig.particleLifetime = confettiConfig.particleLifetime;
+      particleConfig.emitterLifetime = confettiConfig.emitterLifetime;
+      particleConfig.spawnRate = confettiConfig.spawnRate;
       particleConfig.loop = false;
       particleConfig.emitting = true;
 
@@ -211,30 +218,28 @@ export class ParticleManager {
       particleConfig.alphaEnd = 0.3;
       particleConfig.blendMode = "normal";
 
-      // Size - larger particles
+      // Size - from config
       particleConfig.sizeMode = "pixels";
-      particleConfig.sizeStartPixels = 8;
-      particleConfig.sizeEndPixels = 4;
+      particleConfig.sizeStartPixels = confettiConfig.sizeStart;
+      particleConfig.sizeEndPixels = confettiConfig.sizeEnd;
 
       // Movement - fall down with horizontal spread
       particleConfig.angle = 90; // Down
-      particleConfig.angleVariance = 30; // Spread
-      particleConfig.speed = 8;
-      particleConfig.speedVariance = 3;
+      particleConfig.angleVariance = confettiConfig.angleSpread;
+      particleConfig.speed = confettiConfig.speed;
+      particleConfig.speedVariance = confettiConfig.speedVariance;
       particleConfig.acceleration = 0;
-      particleConfig.gravity = 0.5; // Fall faster
+      particleConfig.gravity = confettiConfig.gravity;
 
       // Rotation for more dynamic look
       particleConfig.rotationStart = 0;
-      particleConfig.rotationSpeed = 5;
+      particleConfig.rotationSpeed = confettiConfig.rotationSpeed;
       particleConfig.rotationDirection = "random";
 
       // Create the spawner
       this.particleSystem
         .createSpawner(particleConfig, x, y, `Confetti_${i}_${Date.now()}`)
-        .catch((err) => {
-
-        });
+        .catch((err) => {});
     }
   }
 
@@ -257,7 +262,6 @@ export class ParticleManager {
   public clear(): void {
     if (this.particleSystem) {
       this.particleSystem.clear();
-
     }
   }
 }

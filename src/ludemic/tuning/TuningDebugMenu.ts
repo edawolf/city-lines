@@ -241,7 +241,6 @@ export class TuningDebugMenu extends Container {
       widget.eventMode = "static";
       widget.cursor = "pointer";
       widget.on("pointerdown", () => {
-
         // In a full implementation, this would open an input overlay
       });
     } else if (control.type === "toggle") {
@@ -349,16 +348,12 @@ export class TuningDebugMenu extends Container {
   private resetDefaults(): void {
     this.tuningSystem.resetToDefaults();
     this.showTab(this.currentTab); // Refresh display
-
   }
 
-  private saveConfig(): void {
-
-  }
+  private saveConfig(): void {}
 
   private loadConfig(): void {
     // In a full implementation, this would open file picker
-
   }
 
   private downloadConfig(): void {

@@ -40,7 +40,6 @@ export class PrimitiveFactory {
    */
   static register(name: string, primitiveClass: new () => Primitive): void {
     if (this.registry.has(name)) {
-
     }
     this.registry.set(name, primitiveClass);
   }

@@ -249,7 +249,6 @@ export class PathValidator {
     }
 
     if (turnpikes.length === 0) {
-
       return { allConnected: false, disconnectedLandmarks: landmarks };
     }
 
@@ -341,7 +340,6 @@ export class PathValidator {
    * Debug: Print connection graph
    */
   public static debugPrintGraph(graph: Map<RoadTile, RoadTile[]>): void {
-
     graph.forEach((neighbors, tile) => {
       const pos = tile.gridPos;
       const neighborPos = neighbors
@@ -363,7 +361,6 @@ export class PathValidator {
         .join(" → ");
       console.log(`✅ Path found (length ${result.length}): ${pathStr}`);
     } else {
-
     }
   }
 }

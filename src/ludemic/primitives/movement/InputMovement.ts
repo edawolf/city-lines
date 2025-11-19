@@ -62,7 +62,6 @@ export class InputMovement extends Primitive {
       }) => {
         if (key === "paddle_speed") {
           this.config.speed = value;
-
         }
       };
 

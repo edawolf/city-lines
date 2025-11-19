@@ -98,9 +98,7 @@ export class RotateOnClick extends Primitive {
         speed: 8,
         lifetime: 0.5,
       });
-    } catch (error) {
-
-    }
+    } catch (error) {}
 
     console.log(
       `[RotateOnClick] 🔄 Tile rotated to ${this.roadTile.rotation}° at (${this.roadTile.gridPos.row}, ${this.roadTile.gridPos.col})`,

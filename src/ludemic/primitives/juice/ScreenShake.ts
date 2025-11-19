@@ -61,14 +61,11 @@ export class ScreenShake extends Primitive {
       }) => {
         if (key === "screenshake_intensity") {
           this.config.intensity = value;
-
         } else if (key === "screenshake_duration") {
           this.config.duration = value;
-
         } else if (key === "enable_screenshake") {
           // Store enabled state in config
           (this.config as any).enabled = value;
-
         }
       };
 

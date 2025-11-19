@@ -178,7 +178,6 @@ export class HeadlineDisplay extends Container {
    * Handle "Continue" button click
    */
   private handleContinueClick(): void {
-
     // Emit event so PrimitiveTestScreen can advance to next level
     if (!this.hasEmittedContinue) {
       this.hasEmittedContinue = true;
@@ -186,7 +185,6 @@ export class HeadlineDisplay extends Container {
 
       // Also emit on game container if available
       if (this.game && typeof this.game.emitGame === "function") {
-
         this.game.emitGame("continue_clicked");
       }
     }
@@ -227,9 +225,7 @@ export class HeadlineDisplay extends Container {
       if (parent && "viewportWidth" in parent && "viewportHeight" in parent) {
         this.viewportWidth = (parent as any).viewportWidth;
         this.viewportHeight = (parent as any).viewportHeight;
-
       } else {
-
         this.viewportWidth = 800;
         this.viewportHeight = 600;
       }
@@ -328,7 +324,6 @@ export class HeadlineDisplay extends Container {
       // This allows the game to proceed to next level automatically
       // Only emit if user didn't already click Continue button
       if (!this.hasEmittedContinue) {
-
         this.hasEmittedContinue = true;
         this.emit("continue_clicked");
       }

@@ -75,7 +75,6 @@ export class HeadlineReveal implements Primitive {
 
     // Listen for completion event
     this.game.onGame(this.config.triggerOn, this.handleCompletion);
-
   }
 
   /**
@@ -84,7 +83,6 @@ export class HeadlineReveal implements Primitive {
   private handleCompletion = (data?: any) => {
     // Check if headline reveals are disabled
     if (this.config.enabled === false) {
-
       return;
     }
 
@@ -92,7 +90,6 @@ export class HeadlineReveal implements Primitive {
     if (this.config.requiredLandmarks) {
       const valid = this.validateLandmarks(data);
       if (!valid) {
-
         return;
       }
     }
@@ -100,14 +97,12 @@ export class HeadlineReveal implements Primitive {
     // Get headline display from game
     this.headlineDisplay = this.game.getHeadlineDisplay();
     if (!this.headlineDisplay) {
-
       return;
     }
 
     // Get next headline
     const headline = this.getNextHeadline();
     if (!headline) {
-
       return;
     }
 
@@ -117,7 +112,6 @@ export class HeadlineReveal implements Primitive {
     // Play sound if configured
     if (this.config.soundId) {
       // TODO: Integrate with audio system
-
     }
 
     // Emit reveal event for other systems (e.g., particles)
@@ -160,7 +154,6 @@ export class HeadlineReveal implements Primitive {
    */
   public reset(): void {
     this.currentHeadlineIndex = 0;
-
   }
 
   /**
@@ -192,6 +185,5 @@ export class HeadlineReveal implements Primitive {
     if (this.game) {
       this.game.offGame(this.config.triggerOn, this.handleCompletion);
     }
-
   }
 }

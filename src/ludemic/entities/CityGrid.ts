@@ -611,8 +611,8 @@ export class CityGrid extends Container {
     try {
       const particleManager = ParticleManager.getInstance();
       particleManager.update(deltaTime);
-    } catch (_error) {
-      // ParticleManager not initialized yet
+    } catch (error) {
+      // ParticleManager not initialized yet - silently ignore
     }
   }
 

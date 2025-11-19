@@ -68,7 +68,6 @@ export class TuningSystem extends EventEmitter {
    * Reset to default configuration
    */
   resetToDefaults(): void {
-
     this.config = JSON.parse(JSON.stringify(DEFAULT_TUNING));
     this.saveConfig();
     this.emit("configReset");
@@ -122,7 +121,6 @@ export class TuningSystem extends EventEmitter {
       this.config = imported;
       this.saveConfig();
       this.emit("configImported");
-
     } catch (error) {
       console.error("[TuningSystem] Failed to import config:", error);
       throw new Error("Invalid JSON format");
@@ -152,6 +150,5 @@ export class TuningSystem extends EventEmitter {
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
-
   }
 }

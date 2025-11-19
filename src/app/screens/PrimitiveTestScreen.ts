@@ -209,7 +209,6 @@ export class PrimitiveTestScreen extends Container {
         typeof cityGrid.resize === "function"
       ) {
         (cityGrid as any).resize(width, height);
-
       }
 
       // Resize HeadlineDisplay
@@ -269,7 +268,6 @@ export class PrimitiveTestScreen extends Container {
         typeof headlineDisplay.setLevel === "function"
       ) {
         (headlineDisplay as any).setLevel(levelIndex + 1);
-
       }
 
       // Update level info display
@@ -279,10 +277,8 @@ export class PrimitiveTestScreen extends Container {
 
       // Create one-time handler for path_complete
       const pathCompleteHandler = () => {
-
         // Wait 6 seconds, then advance to next level automatically
         setTimeout(() => {
-
           const maxLevel = this.MAX_LEVEL - 1;
           if (this.currentLevelIndex < maxLevel) {
             this.nextLevel();
@@ -306,9 +302,7 @@ export class PrimitiveTestScreen extends Container {
     if (this.currentLevelIndex < maxLevel) {
       this.currentLevelIndex++;
       this.loadLevel(this.currentLevelIndex);
-
     } else {
-
     }
   }
 
@@ -319,9 +313,7 @@ export class PrimitiveTestScreen extends Container {
     if (this.currentLevelIndex > 0) {
       this.currentLevelIndex--;
       this.loadLevel(this.currentLevelIndex);
-
     } else {
-
     }
   }
 
@@ -330,7 +322,6 @@ export class PrimitiveTestScreen extends Container {
    */
   private reloadLevel(): void {
     this.loadLevel(this.currentLevelIndex);
-
   }
 
   /**
@@ -341,9 +332,7 @@ export class PrimitiveTestScreen extends Container {
     if (levelIndex >= 0 && levelIndex <= maxLevel) {
       this.currentLevelIndex = levelIndex;
       this.loadLevel(this.currentLevelIndex);
-
     } else {
-
     }
   }
 

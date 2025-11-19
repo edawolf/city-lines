@@ -336,9 +336,17 @@ export class ParticleSystem extends Container {
 
       // Calculate velocity
       const baseAngle = (spawner.config.angle * Math.PI) / 180;
-      const angleVar =
-        ((Math.random() - 0.5) * spawner.config.angleVariance * Math.PI) / 180;
-      const velocityAngle = baseAngle + angleVar;
+
+      // If angleVariance is 360 (full circle burst), use random angle instead of variance
+      let velocityAngle: number;
+      if (spawner.config.angleVariance >= 360) {
+        velocityAngle = Math.random() * Math.PI * 2; // Full 360° random
+      } else {
+        const angleVar =
+          ((Math.random() - 0.5) * spawner.config.angleVariance * Math.PI) /
+          180;
+        velocityAngle = baseAngle + angleVar;
+      }
 
       const baseSpeed = spawner.config.speed;
       const speedVar = (Math.random() - 0.5) * spawner.config.speedVariance * 2;
