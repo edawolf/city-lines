@@ -205,7 +205,7 @@ export class RoadTile extends Container {
         this.drawTurnpikeIcon();
         break;
       case RoadType.Tree:
-        this.drawTreeIcon();
+        this.drawTreeIcon(); // Fire and forget - async loading
         break;
       default:
         this.drawRoadSegments(color, roadWidth);
@@ -651,17 +651,24 @@ export class RoadTile extends Container {
    * Draw tree decoration icon (🌳)
    * Trees are purely decorational - no rotation, no gameplay interaction
    */
-  private drawTreeIcon(): void {
+  private async drawTreeIcon(): Promise<void> {
     // Use decorationType if provided, otherwise default to tree-1
     const decorationName = this.decorationType || "tree-1";
 
-    // Try to load and use the specified decoration image
+    // Try to load the decoration image (on-demand loading)
     let treeTexture = null;
     try {
+      // First check cache
       treeTexture =
         Assets.cache.get(`${decorationName}.png`) ||
         Assets.cache.get(`main/images/${decorationName}.png`);
+
+      // If not in cache, load it
+      if (!treeTexture) {
+        treeTexture = await Assets.load(`/assets/main/images/${decorationName}.png`);
+      }
     } catch (error) {
+      console.warn(`[RoadTile] Failed to load decoration ${decorationName}:`, error);
       // Silently fail - will use emoji fallback
     }
 

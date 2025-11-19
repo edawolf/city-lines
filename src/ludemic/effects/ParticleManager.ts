@@ -189,13 +189,14 @@ export class ParticleManager {
       particleConfig.spawnRate = confettiConfig.spawnRate;
       particleConfig.loop = false;
       particleConfig.emitting = true;
+      particleConfig.autoPlay = true; // Start immediately (CRITICAL!)
 
       // Appearance - use the random color
       particleConfig.colorStart = color;
       particleConfig.colorEnd = color;
       particleConfig.alphaStart = 1.0;
       particleConfig.alphaEnd = 0.3;
-      particleConfig.blendMode = "normal";
+      particleConfig.blendMode = confettiConfig.blendMode || "normal";
 
       // Size - from config
       particleConfig.sizeMode = "pixels";
@@ -223,7 +224,12 @@ export class ParticleManager {
           spawnY,
           `Confetti_${i}_${Date.now()}`,
         )
-        .catch(() => {});
+        .then(() => {
+          console.log(`[ParticleManager] ✅ Confetti spawner ${i} created successfully`);
+        })
+        .catch((err) => {
+          console.error(`[ParticleManager] ❌ Failed to create confetti spawner ${i}:`, err);
+        });
     }
   }
 

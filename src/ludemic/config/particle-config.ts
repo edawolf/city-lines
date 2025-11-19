@@ -35,6 +35,7 @@ export interface ParticleConfettiConfig {
   angleSpread: number; // Spread angle (degrees)
   rotationSpeed: number; // Spin speed
   textureName: string; // Particle sprite to use
+  blendMode: "normal" | "add" | "multiply" | "screen"; // Blend mode for particles
   spawnX: number; // Spawn X position as percent of screen width (0.0-1.0)
   spawnY: number; // Spawn Y position as percent of screen height (0.0-1.0)
   angle: number; // Base emission angle (270 = up, 90 = down, 0 = right, 180 = left)
@@ -68,20 +69,21 @@ export const PARTICLE_CONFIG = {
    */
   WIN_CONFETTI: {
     spawnerCount: 5,
-    particlesPerSpawner: 200,
-    particleLifetime: 3.0,
-    emitterLifetime: 1.0,
-    spawnRate: 100,
-    sizeStart: 100,
-    sizeEnd: 10,
-    speed: 12,
-    speedVariance: 5,
+    particlesPerSpawner: 100,
+    particleLifetime: 1.5,
+    emitterLifetime: 0.5,
+    spawnRate: 120,
+    sizeStart: 40,
+    sizeEnd: 8,
+    speed: 8,
+    speedVariance: 6,
     gravity: 1.0,
-    angleSpread: 45,
-    rotationSpeed: 8,
-    textureName: "circle_05.png",
+    angleSpread: 50,
+    rotationSpeed: 12,
+    textureName: "rect",
+    blendMode: "normal" as const,
     spawnX: 0.5, // Middle of screen (50%)
-    spawnY: 1.0, // Bottom of screen (100%)
+    spawnY: 1.3, // Bottom of screen (100%)
     angle: 270, // Shoot upward
   } as ParticleConfettiConfig,
 

@@ -430,6 +430,19 @@ export class ParticleSystem extends Container {
       return this.loadedTextures.get(textureName)!;
     }
 
+    // Special case: programmatic white rectangle
+    if (textureName === "rect") {
+      const canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 32;
+      const ctx = canvas.getContext('2d')!;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, 32, 32);
+      const texture = Texture.from(canvas);
+      this.loadedTextures.set(textureName, texture);
+      return texture;
+    }
+
     const image = new Image();
     await new Promise<void>((resolve, reject) => {
       image.onload = () => resolve();

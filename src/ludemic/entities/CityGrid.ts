@@ -251,6 +251,12 @@ export class CityGrid extends Container {
     }
 
     // BOTH validations passed - level complete!
+    console.log("[CityGrid] 🎉🎉🎉 LEVEL COMPLETE! All validations passed!");
+
+    // Set game reference FIRST (needed for confetti)
+    if (!this.game && this.parent) {
+      this.game = this.parent;
+    }
 
     // Play level complete sound
     audioManager.playLevelCompleteSound();
@@ -270,11 +276,6 @@ export class CityGrid extends Container {
       turnpikes: this.turnpikes,
       graph: this.connectionGraph,
     });
-
-    // Also emit on game container if available (for HeadlineReveal)
-    if (!this.game && this.parent) {
-      this.game = this.parent;
-    }
 
     if (this.game && typeof this.game.emit === "function") {
       this.game.emitGame("path_complete", {
@@ -370,18 +371,31 @@ export class CityGrid extends Container {
    * Create confetti particle effect for level completion
    */
   private createConfettiCelebration(): void {
-    try {
-      // Get confetti particle manager from game container (screen-level particles)
-      if (this.game && this.game.particleManager) {
-        const particleManager = this.game.particleManager;
+    console.log("[CityGrid] 🎉 Attempting to create confetti...");
+    console.log("[CityGrid] - this.game:", this.game);
+    console.log("[CityGrid] - particleManager:", this.game?.particleManager);
+    console.log("[CityGrid] - viewport:", this.viewportWidth, "x", this.viewportHeight);
 
-        // Pass screen dimensions (not grid dimensions)
-        // Particle spawn positions are configured in particle-config.ts as percentages
-        particleManager.createConfetti(this.viewportWidth, this.viewportHeight);
-      }
-    } catch (_error) {
-      // ParticleManager not available - silently fail
+    if (!this.game) {
+      console.error("[CityGrid] ❌ Game reference not set!");
+      return;
     }
+
+    if (!this.game.particleManager) {
+      console.error("[CityGrid] ❌ ParticleManager not available on game!");
+      return;
+    }
+
+    if (this.viewportWidth === 0 || this.viewportHeight === 0) {
+      console.warn("[CityGrid] ⚠️ Viewport dimensions are zero! Using fallback 800x600");
+      this.game.particleManager.createConfetti(800, 600);
+      return;
+    }
+
+    // Pass screen dimensions (not grid dimensions)
+    // Particle spawn positions are configured in particle-config.ts as percentages
+    console.log("[CityGrid] ✅ Creating confetti with viewport:", this.viewportWidth, "x", this.viewportHeight);
+    this.game.particleManager.createConfetti(this.viewportWidth, this.viewportHeight);
   }
 
   /**
