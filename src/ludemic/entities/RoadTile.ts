@@ -31,6 +31,7 @@ export enum RoadType {
   LocalRoad = "local_road",
   Turnpike = "turnpike",
   Landmark = "landmark", // Service destinations: diner, gas station, market
+  Tree = "tree", // Decorational only - not part of gameplay/validation
 }
 
 /**
@@ -60,6 +61,7 @@ const BASE_OPENINGS: Record<string, Direction[]> = {
   house: [Direction.South], // Houses connect downward
   landmark: [Direction.North, Direction.East, Direction.South, Direction.West], // Landmarks connect from all sides like turnpikes for proper connection graph building
   turnpike: [Direction.North, Direction.East, Direction.South, Direction.West], // Turnpikes connect from all sides
+  tree: [], // Trees have no openings - purely decorational
 };
 
 /**
@@ -75,6 +77,7 @@ export const CONNECTION_RULES: Record<RoadType, RoadType[]> = {
   ],
   [RoadType.Turnpike]: [RoadType.Landmark, RoadType.LocalRoad],
   [RoadType.Landmark]: [RoadType.Turnpike, RoadType.LocalRoad],
+  [RoadType.Tree]: [], // Trees don't connect to anything - purely decorational
 };
 
 /**
@@ -175,15 +178,17 @@ export class RoadTile extends Container {
     const roadWidth = this.tileSize * 0.3;
     const color = this.getColorForRoadType();
 
-    // Draw background
-    this.graphics
-      .rect(-halfSize, -halfSize, this.tileSize, this.tileSize)
-      .fill(UI_CONFIG.COLORS.tileBackground);
+    // Draw background (skip for trees - they're transparent)
+    if (this.roadType !== RoadType.Tree) {
+      this.graphics
+        .rect(-halfSize, -halfSize, this.tileSize, this.tileSize)
+        .fill(UI_CONFIG.COLORS.tileBackground);
 
-    // Draw grid lines
-    this.graphics
-      .rect(-halfSize, -halfSize, this.tileSize, this.tileSize)
-      .stroke({ width: 1, color: UI_CONFIG.COLORS.tileGridLine });
+      // Draw grid lines
+      this.graphics
+        .rect(-halfSize, -halfSize, this.tileSize, this.tileSize)
+        .stroke({ width: 1, color: UI_CONFIG.COLORS.tileGridLine });
+    }
 
     // Draw based on specific type with icons
     switch (this.roadType) {
@@ -195,6 +200,9 @@ export class RoadTile extends Container {
         break;
       case RoadType.Turnpike:
         this.drawTurnpikeIcon();
+        break;
+      case RoadType.Tree:
+        this.drawTreeIcon();
         break;
       default:
         this.drawRoadSegments(color, roadWidth);
@@ -591,6 +599,60 @@ export class RoadTile extends Container {
   }
 
   /**
+   * Draw tree decoration icon (🌳)
+   * Trees are purely decorational - no rotation, no gameplay interaction
+   */
+  private drawTreeIcon(): void {
+    // Try to load and use tree-1.png image
+    let treeTexture = null;
+    try {
+      treeTexture =
+        Assets.cache.get("tree-1.png") ||
+        Assets.cache.get("main/images/tree-1.png");
+    } catch (error) {
+      // Silently fail - will use emoji fallback
+    }
+
+    if (treeTexture) {
+      // Remove old landmark sprite if exists (reuse for tree)
+      if (this.landmarkSprite) {
+        this.removeChild(this.landmarkSprite);
+      }
+
+      // Create new tree sprite
+      this.landmarkSprite = new Sprite(treeTexture);
+      this.landmarkSprite.anchor.set(0.5);
+
+      // Size the sprite to fill most of the tile (trees are bigger)
+      const iconSize = this.tileSize * 0.9; // 180% of tile size
+      this.landmarkSprite.width = iconSize;
+      this.landmarkSprite.height = iconSize;
+
+      // Position at center
+      this.landmarkSprite.position.set(0, 0);
+
+      // Slight transparency and random rotation for variety
+      this.landmarkSprite.alpha = 0.9;
+      this.landmarkSprite.angle = Math.random() * 10 - 5; // ±5 degrees
+
+      this.addChild(this.landmarkSprite);
+
+      // Hide text label if we have the image
+      if (this.labelText) {
+        this.labelText.visible = false;
+      }
+    } else {
+      // Fallback to emoji icon
+      if (this.labelText) {
+        this.labelText.visible = true;
+        this.labelText.text = "🌳";
+        this.labelText.style.fontSize = this.tileSize * 0.8;
+        this.labelText.position.set(0, 0);
+      }
+    }
+  }
+
+  /**
    * Draw regular road segments
    */
   private drawRoadSegments(color: number, roadWidth: number): void {
@@ -841,13 +903,22 @@ export class RoadTile extends Container {
     try {
       // Get particle manager from parent CityGrid
       const cityGrid = this.parent as any; // CityGrid is the parent
+      console.log("[RoadTile] 🎯 Checking for particle manager...", {
+        hasParent: !!this.parent,
+        parentType: this.parent?.constructor?.name,
+        hasMethod: !!(cityGrid && cityGrid.getTileParticleManager)
+      });
+
       if (cityGrid && cityGrid.getTileParticleManager) {
         const particleManager = cityGrid.getTileParticleManager();
+        console.log("[RoadTile] ✅ Got particle manager:", particleManager);
 
         // Get position relative to the particle container
         // Particle container is a child of CityGrid (same parent as this tile)
         const particleContainer = particleManager.getContainer();
         const localPos = particleContainer.toLocal(this.position, this.parent);
+
+        console.log("[RoadTile] 🎨 Creating burst at:", localPos);
 
         // Use centralized particle config
         const config = PARTICLE_CONFIG.TILE_ROTATION;
@@ -857,9 +928,12 @@ export class RoadTile extends Container {
           speed: config.speed,
           lifetime: config.lifetime,
         });
+      } else {
+        console.warn("[RoadTile] ⚠️ No particle manager found on parent");
       }
     } catch (error) {
       // Particle system not available - silently fail
+      console.error("[RoadTile] ❌ Particle error:", error);
     }
 
     // Emit event for path validation

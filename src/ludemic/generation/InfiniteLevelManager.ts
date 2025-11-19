@@ -98,9 +98,9 @@ export class InfiniteLevelManager {
     generated: GeneratedLevel,
     levelNumber: number,
   ): GameConfig {
-    const { gridSize, turnpike, landmarks, roadTiles } = generated;
+    const { gridSize, turnpike, landmarks, roadTiles, treeTiles } = generated;
 
-    // Combine all tiles (turnpike, landmarks, roads) into gridTiles array
+    // Combine all tiles (turnpike, landmarks, roads, trees) into gridTiles array
     const gridTiles = [
       // Turnpike tile
       {
@@ -132,6 +132,16 @@ export class InfiniteLevelManager {
         rotation: r.rotation,
         rotatable: r.rotatable,
         solutionRotation: r.solutionRotation,
+      })),
+      // Tree tiles (decorational)
+      ...treeTiles.map((t) => ({
+        row: t.row,
+        col: t.col,
+        tileType: t.tileType,
+        roadType: t.roadType,
+        rotation: t.rotation,
+        rotatable: t.rotatable,
+        solutionRotation: t.solutionRotation,
       })),
     ];
 

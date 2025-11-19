@@ -1,4 +1,4 @@
-import { Container, Graphics, Text, Sprite } from "pixi.js";
+import { Container, Graphics, Text } from "pixi.js";
 
 import type { RoadTile } from "./RoadTile";
 import { RoadType } from "./RoadTile";
@@ -155,6 +155,7 @@ export class CityGrid extends Container {
     this.setChildIndex(this.particleContainer, 1);
 
     // Track landmarks (service destinations: diner, gas station, market)
+    // IMPORTANT: Trees are NOT landmarks - they're purely decorational
     if (tile.roadType === RoadType.Landmark) {
       this.landmarks.push(tile);
     }
@@ -162,6 +163,14 @@ export class CityGrid extends Container {
     // Track turnpikes (highway gates - REQUIRED!)
     if (tile.roadType === RoadType.Turnpike) {
       this.turnpikes.push(tile);
+    }
+
+    // Trees are decorational - no event listeners needed
+    if (tile.roadType === RoadType.Tree) {
+      console.log(
+        `[CityGrid] 🌳 Tree tile added at (${row}, ${col}) - decorational only`,
+      );
+      return; // Skip event listener setup for trees
     }
 
     // Listen for tile rotation events
@@ -226,7 +235,10 @@ export class CityGrid extends Container {
     }
 
     // RULE 2: Check if all road tiles are part of the landmark-to-turnpike network
-    const allTiles = this.getAllTiles();
+    // IMPORTANT: Exclude tree tiles - they're decorational and not part of the road network
+    const allTiles = this.getAllTiles().filter(
+      (tile) => tile.roadType !== RoadType.Tree,
+    );
     const tilesResult = PathValidator.validateAllTilesConnected(
       allTiles,
       this.landmarks,
@@ -281,67 +293,8 @@ export class CityGrid extends Container {
     this.highlightConnectedRoads(); // Highlight any initially connected roads
     this.validateLandmarkConnections();
 
-    // Add decorative trees to empty tiles
-    this.placeTreeDecorations();
-  }
-
-  /**
-   * Place decorative trees on empty grid tiles (max 2 per level)
-   */
-  private placeTreeDecorations(): void {
-    // Find empty tiles (positions with no road tile)
-    const emptyTiles: { row: number; col: number }[] = [];
-
-    for (let row = 0; row < this.config.rows; row++) {
-      for (let col = 0; col < this.config.cols; col++) {
-        if (!this.grid[row][col]) {
-          emptyTiles.push({ row, col });
-        }
-      }
-    }
-
-    if (emptyTiles.length === 0) {
-      return;
-    }
-
-    // Place max 2 trees randomly
-    const treeCount = Math.min(2, emptyTiles.length);
-    const shuffled = emptyTiles.sort(() => Math.random() - 0.5);
-
-    for (let i = 0; i < treeCount; i++) {
-      const pos = shuffled[i];
-      this.addTreeAt(pos.row, pos.col);
-    }
-  }
-
-  /**
-   * Add a tree decoration sprite at the specified grid position
-   */
-  private addTreeAt(row: number, col: number): void {
-    try {
-      const tree = Sprite.from("tree-1.png");
-
-      // Calculate world position from grid coordinates
-      const tileSize = this.calculatedTileSize || this.config.tileSize || 80;
-      const x = col * tileSize + tileSize / 2;
-      const y = row * tileSize + tileSize / 2;
-
-      tree.position.set(x, y);
-      tree.anchor.set(0.5);
-
-      // Scale to fit tile (80% of tile size for breathing room)
-      const scale = (tileSize * 0.8) / tree.width;
-      tree.scale.set(scale);
-
-      // Slight transparency and random rotation for variety
-      tree.alpha = 0.9;
-      tree.angle = Math.random() * 10 - 5; // ±5 degrees
-
-      // Add to background layer (behind road tiles)
-      this.backgroundGraphics.addChild(tree);
-    } catch (error) {
-      // Tree decoration not available - silently fail
-    }
+    // Note: Trees are now added by LevelGenerator as proper RoadTile entities
+    // No need for automatic tree placement here
   }
 
   /**

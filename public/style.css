@@ -31,6 +31,7 @@ canvas {
     display: block;
     margin: 0 auto;
     padding: 0;
+    cursor: default; /* Ensure cursor is visible, PixiJS will override with pointer when needed */
 }
 
 /* Ensure html and body also don't force height */

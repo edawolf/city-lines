@@ -47,6 +47,7 @@ export interface GeneratedLevel {
   turnpike: TileConfig;
   landmarks: TileConfig[];
   roadTiles: TileConfig[];
+  treeTiles: TileConfig[]; // Decorational trees
   solutionPaths: TilePosition[][]; // For debugging
 }
 
@@ -114,6 +115,7 @@ export class LevelGenerator {
   private turnpike!: TileConfig;
   private landmarks: TileConfig[] = [];
   private roadTiles: TileConfig[] = [];
+  private treeTiles: TileConfig[] = [];
   private solutionPaths: TilePosition[][] = [];
 
   constructor(params: DifficultyParams, seed: number) {
@@ -145,13 +147,17 @@ export class LevelGenerator {
     // Phase 4: Scramble rotations
     this.scrambleRotations();
 
-    // TODO: Phase 5: Validate
+    // Phase 5: Place decorational trees (FINAL STEP - after puzzle is complete)
+    this.placeTreeDecorations();
+
+    // TODO: Phase 6: Validate
 
     return {
       gridSize: { rows: this.gridSize, cols: this.gridSize },
       turnpike: this.turnpike,
       landmarks: this.landmarks,
       roadTiles: this.roadTiles,
+      treeTiles: this.treeTiles,
       solutionPaths: this.solutionPaths,
     };
   }
@@ -1045,5 +1051,71 @@ export class LevelGenerator {
 
       tile.rotation = this.rng.choice(validRotations);
     }
+  }
+
+  // ==========================================================================
+  // Phase 5: Tree Decorations
+  // ==========================================================================
+
+  /**
+   * Phase 5: Place decorational trees on empty tiles
+   *
+   * IMPORTANT: This runs AFTER scrambling, as the final step.
+   * Trees are placed only on completely empty grid positions (no roads, landmarks, or turnpikes).
+   * Trees are purely decorational and not part of gameplay or validation.
+   *
+   * Max 2 trees per level for visual variety without clutter.
+   */
+  private placeTreeDecorations(): void {
+    // Find all empty tiles (positions with no road, landmark, or turnpike)
+    const emptyTiles: TilePosition[] = [];
+
+    for (let row = 0; row < this.gridSize; row++) {
+      for (let col = 0; col < this.gridSize; col++) {
+        const pos: TilePosition = { row, col };
+        if (!this.getTile(pos)) {
+          emptyTiles.push(pos);
+        }
+      }
+    }
+
+    console.log(
+      `[LevelGenerator] Tree placement: ${emptyTiles.length} empty tiles available`,
+    );
+
+    if (emptyTiles.length === 0) {
+      console.log("[LevelGenerator] No empty tiles for trees - grid is full");
+      return; // No empty tiles to place trees
+    }
+
+    // Place max 2 trees randomly
+    const treeCount = Math.min(2, emptyTiles.length);
+    const shuffled = this.rng.shuffle([...emptyTiles]); // Shuffle copy
+
+    console.log(`[LevelGenerator] Placing ${treeCount} trees`);
+
+    for (let i = 0; i < treeCount; i++) {
+      const pos = shuffled[i];
+
+      const treeConfig: TileConfig = {
+        row: pos.row,
+        col: pos.col,
+        tileType: "tree",
+        roadType: RoadType.Tree,
+        rotation: 0,
+        solutionRotation: 0,
+        rotatable: false, // Trees cannot be rotated
+      };
+
+      this.setTile(pos, treeConfig);
+      this.treeTiles.push(treeConfig);
+      console.log(
+        `[LevelGenerator] 🌳 Tree placed at (${pos.row}, ${pos.col})`,
+      );
+    }
+
+    console.log(
+      `[LevelGenerator] Total trees in level: ${this.treeTiles.length}`,
+    );
   }
 }

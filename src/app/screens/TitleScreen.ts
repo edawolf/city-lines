@@ -34,6 +34,7 @@ export class TitleScreen extends Container {
   private puzzleTiles: RoadTile[] = [];
   private particleContainer!: Container;
   private particleManager!: ParticleManager;
+  private handHint?: Text;
 
   constructor() {
     super();
@@ -134,11 +135,15 @@ export class TitleScreen extends Container {
     this.puzzleTiles.forEach((tile) => {
       tile.on("tile_rotated", () => {
         this.updateTileHighlights();
+        this.hideHandHint(); // Hide hint after first interaction
       });
     });
 
     // Initial highlight check
     this.updateTileHighlights();
+
+    // Create animated hand hint pointing at middle tile
+    this.createHandHint();
 
     // Setup input listeners
     this.setupInputListeners();
@@ -409,6 +414,14 @@ export class TitleScreen extends Container {
       this.miniPuzzle.y =
         centerY + height * puzzleConfig.offsetFromCenterPercent;
     }
+
+    // Position hand hint below middle tile
+    if (this.handHint && this.puzzleTiles.length > 1) {
+      const middleTile = this.puzzleTiles[1]; // Middle road tile
+      const tileWorldPos = this.miniPuzzle.toGlobal(middleTile.position);
+      this.handHint.x = tileWorldPos.x + 20;
+      this.handHint.y = tileWorldPos.y + 30; // 100px below the tile
+    }
   }
 
   /**
@@ -436,6 +449,85 @@ export class TitleScreen extends Container {
 
     // Wait for all animations to complete
     await Promise.all(fadeOutPromises.map((anim) => anim.finished));
+  }
+
+  /**
+   * Create animated hand hint pointing at middle tile
+   */
+  private createHandHint(): void {
+    // Create hand emoji text
+    this.handHint = new Text({
+      text: "👆",
+      style: {
+        fontSize: 48,
+        fill: 0xffffff,
+      },
+    });
+    this.handHint.anchor.set(0.5);
+    this.handHint.alpha = 0;
+    this.addChild(this.handHint);
+
+    // Start pulsing animation after a delay
+    setTimeout(() => {
+      this.startHandHintAnimation();
+    }, 2000); // Wait 2 seconds after title screen loads
+  }
+
+  /**
+   * Animate hand hint - rotate left and back
+   */
+  private startHandHintAnimation(): void {
+    if (!this.handHint) return;
+
+    // Fade in
+    animate(this.handHint, { alpha: 1 }, { duration: 0.5 });
+
+    // Rotation animation loop - center to left, then left to center
+    const rotateLoop = () => {
+      if (!this.handHint || !this.handHint.parent) return;
+
+      // Start at center (0), rotate to left (-0.52 radians / -30 degrees)
+      animate(
+        this.handHint,
+        {
+          rotation: -0.52, // Rotate from center to left
+          alpha: 0.8
+        },
+        { duration: 0.75, ease: "easeInOut" }
+      ).finished.then(() => {
+        if (!this.handHint || !this.handHint.parent) return;
+
+        // Rotate back from left to center
+        animate(
+          this.handHint,
+          {
+            rotation: 0, // Rotate from left back to center
+            alpha: 1
+          },
+          { duration: 0.75, ease: "easeInOut" }
+        ).finished.then(() => {
+          if (this.handHint && this.handHint.parent) {
+            setTimeout(rotateLoop, 500); // Pause at center before next loop
+          }
+        });
+      });
+    };
+    rotateLoop();
+  }
+
+  /**
+   * Hide hand hint (called when user clicks a tile)
+   */
+  private hideHandHint(): void {
+    if (this.handHint) {
+      animate(this.handHint, { alpha: 0 }, { duration: 0.3 }).finished.then(() => {
+        if (this.handHint) {
+          this.removeChild(this.handHint);
+          this.handHint.destroy();
+          this.handHint = undefined;
+        }
+      });
+    }
   }
 
   /**
