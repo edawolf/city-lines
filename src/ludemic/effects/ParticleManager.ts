@@ -129,9 +129,17 @@ export class ParticleManager {
     // ParticleSystem expects coordinates relative to itself (which is at 0,0 in the container)
     // So we can use x,y directly
 
+    console.log("[ParticleManager] 🎨 Creating burst with config:", {
+      x, y, count, color, size, speed, lifetime,
+      textureName: particleConfig.textureName
+    });
+
     // Create the spawner (it will auto-emit and destroy itself)
     this.particleSystem
       .createSpawner(particleConfig, x, y, `Burst_${Date.now()}`)
+      .then(() => {
+        console.log("[ParticleManager] ✅ Burst spawner created successfully");
+      })
       .catch((err) => {
         console.error("[ParticleManager] ❌ Failed to create burst:", err);
       });

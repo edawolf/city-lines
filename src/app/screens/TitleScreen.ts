@@ -13,6 +13,7 @@ import {
   LandmarkType,
 } from "../../ludemic/entities/RoadTile";
 import { ParticleManager } from "../../ludemic/effects/ParticleManager";
+import { PathValidator } from "../../ludemic/grid/PathValidator";
 
 /**
  * TitleScreen
@@ -32,6 +33,7 @@ export class TitleScreen extends Container {
   private miniPuzzle!: Container;
   private puzzleTiles: RoadTile[] = [];
   private particleContainer!: Container;
+  private particleManager!: ParticleManager;
 
   constructor() {
     super();
@@ -57,7 +59,7 @@ export class TitleScreen extends Container {
     this.addChild(this.particleContainer);
 
     // Initialize ParticleManager for title screen
-    new ParticleManager(this.particleContainer);
+    this.particleManager = new ParticleManager(this.particleContainer);
 
     // Create title text (will be sized in resize())
     this.titleText = new Text({
@@ -114,8 +116,29 @@ export class TitleScreen extends Container {
 
     // Create mini puzzle (3x1 grid: House, Road, Turnpike)
     this.miniPuzzle = new Container();
+
+    // Add getTileParticleManager method so tiles can access particles
+    (this.miniPuzzle as any).getTileParticleManager = () => this.particleManager;
+    console.log("[TitleScreen] 🎯 Added getTileParticleManager to miniPuzzle:", {
+      hasMethod: !!(this.miniPuzzle as any).getTileParticleManager,
+      particleManager: this.particleManager
+    });
+
     await this.createMiniPuzzle();
     this.addChild(this.miniPuzzle);
+
+    // Move particle container ABOVE tiles so particles render on top
+    this.setChildIndex(this.particleContainer, this.children.length - 1);
+
+    // Listen for tile rotations to update highlights
+    this.puzzleTiles.forEach((tile) => {
+      tile.on("tile_rotated", () => {
+        this.updateTileHighlights();
+      });
+    });
+
+    // Initial highlight check
+    this.updateTileHighlights();
 
     // Setup input listeners
     this.setupInputListeners();
@@ -186,14 +209,14 @@ export class TitleScreen extends Container {
   private async createMiniPuzzle(): Promise<void> {
     const tileSize = 160; // Fixed tile size for title screen
 
-    // Create House tile (left)
+    // Create House tile (left) - rotation 90 for horizontal (East-West)
     const houseTile = new RoadTile({
       type: "RoadTile",
       position: { x: 0, y: 0 },
       config: {
         tileType: "straight",
         roadType: RoadType.House,
-        rotation: 0,
+        rotation: 90,
         rotatable: true,
         size: tileSize,
         gridPos: { row: 0, col: 0 },
@@ -203,7 +226,7 @@ export class TitleScreen extends Container {
     this.puzzleTiles.push(houseTile);
     this.miniPuzzle.addChild(houseTile);
 
-    // Create Road tile (middle)
+    // Create Road tile (middle) - rotation 0 (vertical, disconnected)
     const roadTile = new RoadTile({
       type: "RoadTile",
       position: { x: 0, y: 0 },
@@ -213,23 +236,23 @@ export class TitleScreen extends Container {
         rotation: 0,
         rotatable: true,
         size: tileSize,
-        gridPos: { row: 1, col: 0 },
+        gridPos: { row: 0, col: 1 },
       },
     });
     this.puzzleTiles.push(roadTile);
     this.miniPuzzle.addChild(roadTile);
 
-    // Create Turnpike tile (right)
+    // Create Turnpike tile (right) - rotation 90 for horizontal (East-West)
     const turnpikeTile = new RoadTile({
       type: "RoadTile",
       position: { x: 0, y: 0 },
       config: {
         tileType: "straight",
         roadType: RoadType.Turnpike,
-        rotation: 0,
+        rotation: 90,
         rotatable: true,
         size: tileSize,
-        gridPos: { row: 2, col: 0 },
+        gridPos: { row: 0, col: 2 },
       },
     });
     this.puzzleTiles.push(turnpikeTile);
@@ -416,16 +439,49 @@ export class TitleScreen extends Container {
   }
 
   /**
+   * Update tile highlights based on connections
+   */
+  private updateTileHighlights(): void {
+    // Build connection graph - tiles are in ONE ROW (horizontal)
+    const grid: (RoadTile | null)[][] = [[this.puzzleTiles[0], this.puzzleTiles[1], this.puzzleTiles[2]]];
+    const connectionGraph = PathValidator.buildConnectionGraph(grid);
+
+    // Find turnpike (last tile)
+    const turnpike = this.puzzleTiles[2];
+
+    // BFS from turnpike to find all connected tiles
+    const connectedTiles = new Set<RoadTile>();
+    const visited = new Set<RoadTile>();
+    const queue: RoadTile[] = [turnpike];
+
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      if (visited.has(current)) continue;
+
+      visited.add(current);
+      connectedTiles.add(current);
+
+      const neighbors = connectionGraph.get(current) || [];
+      neighbors.forEach((neighbor) => {
+        if (!visited.has(neighbor)) {
+          queue.push(neighbor);
+        }
+      });
+    }
+
+    // Update highlights for all tiles
+    this.puzzleTiles.forEach((tile) => {
+      tile.setHighlighted(connectedTiles.has(tile));
+    });
+  }
+
+  /**
    * Update loop - needed for particle animations
    */
   update(time: Ticker): void {
-    // Update particle system if it exists
-    if (this.particleContainer && this.particleContainer.children.length > 0) {
-      this.particleContainer.children.forEach((child: any) => {
-        if (child.update) {
-          child.update(time.deltaTime);
-        }
-      });
+    // Update particle manager (which handles ParticleSystem updates properly)
+    if (this.particleManager) {
+      this.particleManager.update(time.deltaTime / 60); // Convert from frame delta to seconds
     }
   }
 
