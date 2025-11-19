@@ -1102,7 +1102,7 @@ export class LevelGenerator {
       const pos = shuffled[i];
 
       // Randomly select a decoration type from the array
-      const randomDecoration = DECORATION_OPTIONS[Math.floor(this.rng.random() * DECORATION_OPTIONS.length)];
+      const randomDecoration = this.rng.choice(DECORATION_OPTIONS);
 
       const treeConfig: TileConfig = {
         row: pos.row,
