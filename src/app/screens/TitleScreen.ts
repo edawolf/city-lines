@@ -79,10 +79,10 @@ export class TitleScreen extends Container {
 
     // Create tagline text (will be sized in resize())
     this.taglineText = new Text({
-      text: "Build New Jersey roads and reveal top news from the week!",
+      text: "Tap to rotate and connect New Jersey Roads!",
       style: {
         fontSize: 20, // Placeholder, will be updated in resize()
-        fill: 0xcccccc,
+        fill: 0xffffff,
         fontFamily: '"Zain", sans-serif',
         fontWeight: 400,
         align: "center",
@@ -459,7 +459,7 @@ export class TitleScreen extends Container {
     this.handHint = new Text({
       text: "👆",
       style: {
-        fontSize: 48,
+        fontSize: 80,
         fill: 0xffffff,
       },
     });
@@ -467,10 +467,8 @@ export class TitleScreen extends Container {
     this.handHint.alpha = 0;
     this.addChild(this.handHint);
 
-    // Start pulsing animation after a delay
-    setTimeout(() => {
-      this.startHandHintAnimation();
-    }, 2000); // Wait 2 seconds after title screen loads
+    // Start animation immediately
+    this.startHandHintAnimation();
   }
 
   /**
