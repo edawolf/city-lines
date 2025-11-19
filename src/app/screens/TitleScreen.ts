@@ -57,6 +57,9 @@ export class TitleScreen extends Container {
 
     // Create particle container (behind other elements)
     this.particleContainer = new Container();
+    // CRITICAL: Make particle container non-interactive so it doesn't block button clicks
+    this.particleContainer.eventMode = "none";
+    this.particleContainer.interactiveChildren = false;
     this.addChild(this.particleContainer);
 
     // Initialize ParticleManager for title screen
