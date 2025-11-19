@@ -464,8 +464,54 @@ export class RoadTile extends Container {
           this.labelText.position.set(0, -this.tileSize * 0.1);
         }
       }
+    } else if (this.landmarkType === LandmarkType.Market) {
+      // Market - try to use market.png image
+      let marketTexture = null;
+      try {
+        marketTexture =
+          Assets.cache.get("market.png") ||
+          Assets.cache.get("main/images/market.png");
+      } catch (error) {
+        // Silently fail - will use emoji fallback
+      }
+
+      if (marketTexture) {
+        // Remove old landmark sprite if exists
+        if (this.landmarkSprite) {
+          this.removeChild(this.landmarkSprite);
+        }
+
+        // Create new market sprite
+        this.landmarkSprite = new Sprite(marketTexture);
+        this.landmarkSprite.anchor.set(0.5);
+
+        // Size the sprite to fit nicely in the tile (from ui-config)
+        const scale = UI_CONFIG.GRID.imageScales.landmark || 1.0;
+        const iconSize = this.tileSize * scale;
+        this.landmarkSprite.width = iconSize;
+        this.landmarkSprite.height = iconSize;
+
+        // Position slightly above center
+        this.landmarkSprite.position.set(0, -this.tileSize * 0.05);
+
+        this.addChild(this.landmarkSprite);
+
+        // Hide text label if we have the image
+        if (this.labelText) {
+          this.labelText.visible = false;
+        }
+      } else {
+        // Fallback to emoji
+        const icon = this.getLandmarkIcon();
+        if (this.labelText) {
+          this.labelText.visible = true;
+          this.labelText.text = icon;
+          this.labelText.style.fontSize = this.tileSize * 0.6;
+          this.labelText.position.set(0, -this.tileSize * 0.1);
+        }
+      }
     } else {
-      // Other landmark types (market) - use emoji
+      // Other landmark types - use emoji
       const icon = this.getLandmarkIcon();
       if (this.labelText) {
         this.labelText.text = icon;
