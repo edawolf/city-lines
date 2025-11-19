@@ -76,9 +76,6 @@ export class HeadlineReveal implements Primitive {
     // Listen for completion event
     this.game.onGame(this.config.triggerOn, this.handleCompletion);
 
-    console.log(
-      `[HeadlineReveal] 📰 Initialized with ${this.config.headlines.length} headlines`,
-    );
   }
 
   /**
@@ -87,19 +84,15 @@ export class HeadlineReveal implements Primitive {
   private handleCompletion = (data?: any) => {
     // Check if headline reveals are disabled
     if (this.config.enabled === false) {
-      console.log(`[HeadlineReveal] 📰 Headlines disabled, skipping reveal`);
+
       return;
     }
-
-    console.log(`[HeadlineReveal] 🎉 Puzzle completed! Revealing headline...`);
 
     // Validate landmark requirements if specified
     if (this.config.requiredLandmarks) {
       const valid = this.validateLandmarks(data);
       if (!valid) {
-        console.log(
-          `[HeadlineReveal] ⚠️ Required landmarks not all connected, skipping reveal`,
-        );
+
         return;
       }
     }
@@ -107,31 +100,24 @@ export class HeadlineReveal implements Primitive {
     // Get headline display from game
     this.headlineDisplay = this.game.getHeadlineDisplay();
     if (!this.headlineDisplay) {
-      console.warn(
-        `[HeadlineReveal] ⚠️ No HeadlineDisplay found in game, cannot reveal headline`,
-      );
+
       return;
     }
 
     // Get next headline
     const headline = this.getNextHeadline();
     if (!headline) {
-      console.log(
-        `[HeadlineReveal] 📰 All headlines revealed, no more to show`,
-      );
+
       return;
     }
 
     // Show headline
     this.headlineDisplay.show(headline);
-    console.log(`[HeadlineReveal] 📰 Revealing: "${headline}"`);
 
     // Play sound if configured
     if (this.config.soundId) {
       // TODO: Integrate with audio system
-      console.log(
-        `[HeadlineReveal] 🔊 Would play sound: ${this.config.soundId}`,
-      );
+
     }
 
     // Emit reveal event for other systems (e.g., particles)
@@ -174,7 +160,7 @@ export class HeadlineReveal implements Primitive {
    */
   public reset(): void {
     this.currentHeadlineIndex = 0;
-    console.log(`[HeadlineReveal] 🔄 Reset headline progression`);
+
   }
 
   /**
@@ -207,6 +193,5 @@ export class HeadlineReveal implements Primitive {
       this.game.offGame(this.config.triggerOn, this.handleCompletion);
     }
 
-    console.log(`[HeadlineReveal] 🗑️ Destroyed`);
   }
 }

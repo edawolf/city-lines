@@ -241,9 +241,7 @@ export class TuningDebugMenu extends Container {
       widget.eventMode = "static";
       widget.cursor = "pointer";
       widget.on("pointerdown", () => {
-        console.log(
-          `[TuningDebugMenu] Clicked ${control.label} - would open slider input`,
-        );
+
         // In a full implementation, this would open an input overlay
       });
     } else if (control.type === "toggle") {
@@ -351,16 +349,16 @@ export class TuningDebugMenu extends Container {
   private resetDefaults(): void {
     this.tuningSystem.resetToDefaults();
     this.showTab(this.currentTab); // Refresh display
-    console.log("[TuningDebugMenu] Reset to defaults");
+
   }
 
   private saveConfig(): void {
-    console.log("[TuningDebugMenu] Config auto-saved to localStorage");
+
   }
 
   private loadConfig(): void {
     // In a full implementation, this would open file picker
-    console.log("[TuningDebugMenu] Load config - would open file picker");
+
   }
 
   private downloadConfig(): void {

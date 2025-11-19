@@ -249,9 +249,7 @@ export class PathValidator {
     }
 
     if (turnpikes.length === 0) {
-      console.warn(
-        "⚠️ No turnpikes found! Every level must have at least one turnpike.",
-      );
+
       return { allConnected: false, disconnectedLandmarks: landmarks };
     }
 
@@ -343,7 +341,7 @@ export class PathValidator {
    * Debug: Print connection graph
    */
   public static debugPrintGraph(graph: Map<RoadTile, RoadTile[]>): void {
-    console.log("🗺️ Connection Graph:");
+
     graph.forEach((neighbors, tile) => {
       const pos = tile.gridPos;
       const neighborPos = neighbors
@@ -365,7 +363,7 @@ export class PathValidator {
         .join(" → ");
       console.log(`✅ Path found (length ${result.length}): ${pathStr}`);
     } else {
-      console.log(`❌ No path found`);
+
     }
   }
 }

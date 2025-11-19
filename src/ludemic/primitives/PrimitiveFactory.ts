@@ -40,7 +40,7 @@ export class PrimitiveFactory {
    */
   static register(name: string, primitiveClass: new () => Primitive): void {
     if (this.registry.has(name)) {
-      console.warn(`Primitive "${name}" is already registered. Overwriting...`);
+
     }
     this.registry.set(name, primitiveClass);
   }

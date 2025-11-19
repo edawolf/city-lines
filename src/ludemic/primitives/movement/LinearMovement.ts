@@ -69,13 +69,11 @@ export class LinearMovement extends Primitive {
             this.config.velocity.y *= scale;
           }
           this.initialSpeed = value;
-          console.log(`[LinearMovement] 🎛️ Ball speed updated to ${value}`);
+
         } else if (key === "ball_max_speed_multiplier") {
           if (this.config.maxSpeed) {
             this.config.maxSpeed = this.initialSpeed * value;
-            console.log(
-              `[LinearMovement] 🎛️ Ball max speed updated to ${this.config.maxSpeed}`,
-            );
+
           }
         }
       };

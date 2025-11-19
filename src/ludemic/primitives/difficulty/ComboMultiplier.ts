@@ -50,12 +50,6 @@ export class ComboMultiplier extends Primitive {
     // Listen for hit events
     this.game.onGame(this.config.listenForEvent, this.handleHit);
 
-    console.log(
-      `[ComboMultiplier] Initialized: listening for "${this.config.listenForEvent}"`,
-    );
-    console.log(
-      `[ComboMultiplier] Window: ${this.config.comboWindow}s, Base: ${this.config.baseMultiplier}x, Max: ${this.config.maxMultiplier}x`,
-    );
   }
 
   update(): void {
@@ -105,9 +99,7 @@ export class ComboMultiplier extends Primitive {
    */
   private resetCombo(): void {
     if (this.currentCombo > 0) {
-      console.log(
-        `[ComboMultiplier] Combo expired! Final: ${this.currentCombo}x`,
-      );
+
     }
 
     this.currentCombo = 0;

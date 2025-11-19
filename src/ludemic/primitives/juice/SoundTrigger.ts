@@ -50,7 +50,7 @@ export class SoundTrigger extends Primitive {
   private playSound = () => {
     const audioEngine = engine();
     if (!audioEngine || !audioEngine.audio) {
-      console.warn("[SoundTrigger] Audio engine not available");
+
       return;
     }
 
@@ -62,10 +62,7 @@ export class SoundTrigger extends Primitive {
         loop: this.config.loop ?? false,
       });
     } catch (error) {
-      console.warn(
-        `[SoundTrigger] Failed to play sound "${this.config.soundId}":`,
-        error,
-      );
+
     }
   };
 

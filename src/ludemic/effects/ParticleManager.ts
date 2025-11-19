@@ -53,9 +53,6 @@ export class ParticleManager {
       );
       particleContainer.addChild(ParticleManager.instance.particleSystem);
 
-      console.log(
-        "[ParticleManager] 🎨 Initialized with advanced ParticleSystem",
-      );
     }
     return ParticleManager.instance;
   }
@@ -98,7 +95,7 @@ export class ParticleManager {
     } = {},
   ): void {
     if (!this.particleSystem) {
-      console.warn("[ParticleManager] ParticleSystem not initialized");
+
       return;
     }
 
@@ -154,7 +151,7 @@ export class ParticleManager {
     this.particleSystem
       .createSpawner(particleConfig, x, y, `Burst_${Date.now()}`)
       .catch((err) => {
-        console.warn("[ParticleManager] Failed to create burst:", err);
+
       });
 
     console.log(
@@ -170,11 +167,9 @@ export class ParticleManager {
    */
   public createConfetti(viewportWidth: number, viewportHeight: number): void {
     if (!this.particleSystem) {
-      console.warn("[ParticleManager] ParticleSystem not initialized");
+
       return;
     }
-
-    console.log("[ParticleManager] 🎉 Creating FAST confetti celebration!");
 
     const confettiColors = [
       { r: 255, g: 107, b: 107 }, // Red
@@ -242,7 +237,7 @@ export class ParticleManager {
       this.particleSystem
         .createSpawner(particleConfig, x, y, `Confetti_${i}_${Date.now()}`)
         .catch((err) => {
-          console.warn("[ParticleManager] Failed to create confetti:", err);
+
         });
     }
   }
@@ -266,7 +261,7 @@ export class ParticleManager {
   public clear(): void {
     if (this.particleSystem) {
       this.particleSystem.clear();
-      console.log("[ParticleManager] 🧹 Cleared all particles");
+
     }
   }
 }

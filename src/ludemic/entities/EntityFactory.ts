@@ -34,7 +34,7 @@ export class EntityFactory {
     entityClass: new (config: EntityConfig) => Container,
   ): void {
     if (this.registry.has(name)) {
-      console.warn(`Entity "${name}" is already registered. Overwriting...`);
+
     }
     this.registry.set(name, entityClass);
   }

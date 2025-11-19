@@ -59,18 +59,13 @@ export class BounceCollision extends Primitive {
     // Lazily get game container (parent is set after init)
     if (!this.game && this.entity.parent) {
       this.game = this.entity.parent as unknown as GameContainer;
-      console.log(
-        "[BounceCollision] Game container acquired, targets:",
-        this.config.targets,
-      );
+
     }
 
     // Get movement primitive to access/modify velocity
     const movement = this.getMovementPrimitive();
     if (!movement) {
-      console.warn(
-        "BounceCollision requires LinearMovement primitive on same entity",
-      );
+
       return;
     }
 
@@ -118,9 +113,7 @@ export class BounceCollision extends Primitive {
             bounced = true;
           }
         } else {
-          console.warn(
-            `[BounceCollision] Target "${targetId}" not found in game`,
-          );
+
         }
       });
     }

@@ -127,19 +127,6 @@ export class CreationResizePlugin {
         app.resizeOptions.letterbox,
       );
 
-      console.log("🔄 RESIZE EVENT:", {
-        windowSize: { width: canvasWidth, height: canvasHeight },
-        computedSize: { width, height },
-        canvasStyles: {
-          width: app.renderer.canvas.style.width,
-          height: app.renderer.canvas.style.height,
-          position: app.renderer.canvas.style.position,
-          left: app.renderer.canvas.style.left,
-          top: app.renderer.canvas.style.top,
-          transform: app.renderer.canvas.style.transform,
-        },
-      });
-
       // CRITICAL: Use computed width/height to maintain aspect ratio, not raw window dimensions
       // Center the canvas using fixed positioning (per Ludemic documentation)
       app.renderer.canvas.style.width = `${width}px`;
@@ -149,15 +136,6 @@ export class CreationResizePlugin {
       app.renderer.canvas.style.top = "50%";
       app.renderer.canvas.style.transform = "translate(-50%, -50%)";
       window.scrollTo(0, 0);
-
-      console.log("✅ RESIZE APPLIED - New canvas styles:", {
-        width: app.renderer.canvas.style.width,
-        height: app.renderer.canvas.style.height,
-        position: app.renderer.canvas.style.position,
-        left: app.renderer.canvas.style.left,
-        top: app.renderer.canvas.style.top,
-        transform: app.renderer.canvas.style.transform,
-      });
 
       app.renderer.resize(width, height);
     };

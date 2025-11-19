@@ -68,25 +68,17 @@ export class ParticleEmitter extends Primitive {
       }) => {
         if (key === "particle_count") {
           this.config.particleCount = value;
-          console.log(
-            `[ParticleEmitter] 🎛️ Particle count updated to ${value}`,
-          );
+
         } else if (key === "particle_speed") {
           this.config.speed = value;
-          console.log(
-            `[ParticleEmitter] 🎛️ Particle speed updated to ${value}`,
-          );
+
         } else if (key === "particle_lifetime") {
           this.config.lifetime = value;
-          console.log(
-            `[ParticleEmitter] 🎛️ Particle lifetime updated to ${value}`,
-          );
+
         } else if (key === "enable_particles") {
           // Store enabled state in config
           (this.config as any).enabled = value;
-          console.log(
-            `[ParticleEmitter] 🎛️ Particles ${value ? "enabled" : "disabled"}`,
-          );
+
         }
       };
 

@@ -62,9 +62,6 @@ export class CityLinesLevelLoader {
     }
 
     const levelPath = this.levelPaths[levelIndex];
-    console.log(
-      `[CityLinesLevelLoader] Loading level ${levelIndex + 1} from ${levelPath}`,
-    );
 
     const response = await fetch(levelPath);
     if (!response.ok) {
@@ -162,10 +159,6 @@ export class CityLinesLevelLoader {
 
     // Add gridTiles to the config (needed by GameBuilder)
     (gameConfig as any).gridTiles = gridTiles;
-
-    console.log(
-      `[CityLinesLevelLoader] Converted level ${levelNumber}: ${gridDimensions.rows}x${gridDimensions.cols} grid, ${gridTiles.length} tiles`,
-    );
 
     return gameConfig;
   }

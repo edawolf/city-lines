@@ -213,7 +213,6 @@ export class RoadTile extends Container {
    * Draw house icon (🏠 or house.png image)
    */
   private drawHouseIcon(): void {
-    console.log("[RoadTile] 🏠 drawHouseIcon() called");
     const halfSize = this.tileSize / 2;
     const roadWidth = this.tileSize * 0.3;
 
@@ -224,14 +223,8 @@ export class RoadTile extends Container {
       houseTexture =
         Assets.cache.get("house.png") ||
         Assets.cache.get("main/images/house.png");
-
-      console.log("[RoadTile] House texture lookup:", {
-        "house.png": Assets.cache.has("house.png"),
-        "main/images/house.png": Assets.cache.has("main/images/house.png"),
-        found: !!houseTexture,
-      });
     } catch (error) {
-      console.warn("[RoadTile] Failed to get house texture:", error);
+      // Silently fail - will use emoji fallback
     }
 
     if (houseTexture) {
@@ -259,8 +252,6 @@ export class RoadTile extends Container {
       if (this.labelText) {
         this.labelText.visible = false;
       }
-
-      console.log("[RoadTile] ✅ House sprite created successfully");
     } else {
       // Fallback to emoji icon if image not loaded
       if (this.labelText) {
@@ -269,9 +260,6 @@ export class RoadTile extends Container {
         this.labelText.style.fontSize = this.tileSize * 0.6;
         this.labelText.position.set(0, -this.tileSize * 0.1);
       }
-      console.log(
-        "[RoadTile] ⚠️ Using emoji fallback - house texture not found",
-      );
     }
 
     // Draw connection road in the direction of opening (after rotation)
@@ -326,10 +314,6 @@ export class RoadTile extends Container {
    * Draw landmark icon (service destinations: diner, gas station, market)
    */
   private drawLandmarkIcon(): void {
-    console.log(
-      "[RoadTile] 🏛️ drawLandmarkIcon() called, type:",
-      this.landmarkType,
-    );
     const halfSize = this.tileSize / 2;
     const roadWidth = this.tileSize * 0.3;
 
@@ -340,14 +324,8 @@ export class RoadTile extends Container {
         houseTexture =
           Assets.cache.get("house.png") ||
           Assets.cache.get("main/images/house.png");
-
-        console.log("[RoadTile] Home landmark texture lookup:", {
-          "house.png": Assets.cache.has("house.png"),
-          "main/images/house.png": Assets.cache.has("main/images/house.png"),
-          found: !!houseTexture,
-        });
       } catch (error) {
-        console.warn("[RoadTile] Failed to get house texture:", error);
+        // Silently fail - will use emoji fallback
       }
 
       if (houseTexture) {
@@ -375,8 +353,6 @@ export class RoadTile extends Container {
         if (this.labelText) {
           this.labelText.visible = false;
         }
-
-        console.log("[RoadTile] ✅ Home landmark sprite created successfully");
       } else {
         // Fallback to emoji
         const icon = this.getLandmarkIcon();
@@ -386,7 +362,6 @@ export class RoadTile extends Container {
           this.labelText.style.fontSize = this.tileSize * 0.6;
           this.labelText.position.set(0, -this.tileSize * 0.1);
         }
-        console.log("[RoadTile] ⚠️ Using emoji fallback for home");
       }
     } else if (this.landmarkType === LandmarkType.GasStation) {
       // Gas station - try to use gas.png image
@@ -395,14 +370,8 @@ export class RoadTile extends Container {
         gasTexture =
           Assets.cache.get("gas.png") ||
           Assets.cache.get("main/images/gas.png");
-
-        console.log("[RoadTile] Gas station texture lookup:", {
-          "gas.png": Assets.cache.has("gas.png"),
-          "main/images/gas.png": Assets.cache.has("main/images/gas.png"),
-          found: !!gasTexture,
-        });
       } catch (error) {
-        console.warn("[RoadTile] Failed to get gas texture:", error);
+        // Silently fail - will use emoji fallback
       }
 
       if (gasTexture) {
@@ -430,8 +399,6 @@ export class RoadTile extends Container {
         if (this.labelText) {
           this.labelText.visible = false;
         }
-
-        console.log("[RoadTile] ✅ Gas station sprite created successfully");
       } else {
         // Fallback to emoji
         const icon = this.getLandmarkIcon();
@@ -441,7 +408,6 @@ export class RoadTile extends Container {
           this.labelText.style.fontSize = this.tileSize * 0.6;
           this.labelText.position.set(0, -this.tileSize * 0.1);
         }
-        console.log("[RoadTile] ⚠️ Using emoji fallback for gas station");
       }
     } else if (this.landmarkType === LandmarkType.Diner) {
       // Diner - try to use diner.png image
@@ -450,14 +416,8 @@ export class RoadTile extends Container {
         dinerTexture =
           Assets.cache.get("diner.png") ||
           Assets.cache.get("main/images/diner.png");
-
-        console.log("[RoadTile] Diner texture lookup:", {
-          "diner.png": Assets.cache.has("diner.png"),
-          "main/images/diner.png": Assets.cache.has("main/images/diner.png"),
-          found: !!dinerTexture,
-        });
       } catch (error) {
-        console.warn("[RoadTile] Failed to get diner texture:", error);
+        // Silently fail - will use emoji fallback
       }
 
       if (dinerTexture) {
@@ -485,8 +445,6 @@ export class RoadTile extends Container {
         if (this.labelText) {
           this.labelText.visible = false;
         }
-
-        console.log("[RoadTile] ✅ Diner sprite created successfully");
       } else {
         // Fallback to emoji
         const icon = this.getLandmarkIcon();
@@ -496,7 +454,6 @@ export class RoadTile extends Container {
           this.labelText.style.fontSize = this.tileSize * 0.6;
           this.labelText.position.set(0, -this.tileSize * 0.1);
         }
-        console.log("[RoadTile] ⚠️ Using emoji fallback for diner");
       }
     } else {
       // Other landmark types (market) - use emoji
@@ -584,8 +541,6 @@ export class RoadTile extends Container {
    * Draw turnpike gate icon (🚧)
    */
   private drawTurnpikeIcon(): void {
-    console.log("[RoadTile] 🚧 drawTurnpikeIcon() called");
-
     // No road graphics - just show the turnpike icon on empty tile
 
     // Try to load and use turnpike.png image
@@ -594,16 +549,8 @@ export class RoadTile extends Container {
       turnpikeTexture =
         Assets.cache.get("turnpike.png") ||
         Assets.cache.get("main/images/turnpike.png");
-
-      console.log("[RoadTile] Turnpike texture lookup:", {
-        "turnpike.png": Assets.cache.has("turnpike.png"),
-        "main/images/turnpike.png": Assets.cache.has(
-          "main/images/turnpike.png",
-        ),
-        found: !!turnpikeTexture,
-      });
     } catch (error) {
-      console.warn("[RoadTile] Failed to get turnpike texture:", error);
+      // Silently fail - will use emoji fallback
     }
 
     if (turnpikeTexture) {
@@ -631,8 +578,6 @@ export class RoadTile extends Container {
       if (this.labelText) {
         this.labelText.visible = false;
       }
-
-      console.log("[RoadTile] ✅ Turnpike sprite created successfully");
     } else {
       // Fallback to emoji icon for toll gate
       if (this.labelText) {
@@ -641,7 +586,6 @@ export class RoadTile extends Container {
         this.labelText.style.fontSize = this.tileSize * 0.5;
         this.labelText.position.set(0, 0);
       }
-      console.log("[RoadTile] ⚠️ Using emoji fallback for turnpike");
     }
   }
 
@@ -878,16 +822,11 @@ export class RoadTile extends Container {
    * Handle pointer down (click/tap)
    */
   private handlePointerDown = (event: FederatedPointerEvent) => {
-    console.log(`[RoadTile] 🖱️ CLICKED at (${this.gridPos.row}, ${this.gridPos.col}), current rotation: ${this.rotationDegrees}°`);
-
     // Prevent event propagation
     event.stopPropagation();
 
     // Only rotate if tile is rotatable
     if (!this.rotatable) {
-      console.log(
-        `[RoadTile] ⚠️ Tile at (${this.gridPos.row}, ${this.gridPos.col}) is not rotatable`,
-      );
       return;
     }
 
@@ -899,16 +838,13 @@ export class RoadTile extends Container {
 
     // Create particle burst effect ONLY when rotation reaches 90 degrees
     if (this.rotationDegrees === 90) {
-      console.log("[RoadTile] 🎆 ROTATION REACHED 90 DEGREES - TRIGGERING PARTICLES");
       try {
         const particleManager = ParticleManager.getInstance();
-        console.log("[RoadTile] ParticleManager instance:", particleManager);
 
         // Get position relative to the particle container
         // Particle container is a child of CityGrid (this tile's grandparent)
         const particleContainer = particleManager.getContainer();
         const localPos = particleContainer.toLocal(this.position, this.parent);
-        console.log("[RoadTile] Particle position (relative to particle container):", localPos);
 
         particleManager.createBurst(localPos.x, localPos.y, 50, {
           color: 0x2d5016, // Dark green
@@ -916,15 +852,10 @@ export class RoadTile extends Container {
           speed: 8,
           lifetime: 0.5,
         });
-        console.log("[RoadTile] ✅ Particle burst created successfully");
       } catch (error) {
-        console.error("[RoadTile] ❌ ParticleManager error:", error);
+        // Particle system not available - silently fail
       }
     }
-
-    console.log(
-      `[RoadTile] 🔄 Tile rotated to ${this.rotation}° at (${this.gridPos.row}, ${this.gridPos.col})`,
-    );
 
     // Emit event for path validation
     const eventData = {

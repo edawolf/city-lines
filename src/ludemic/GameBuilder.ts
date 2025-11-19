@@ -315,7 +315,6 @@ export class GameContainer extends Container {
   setHeadlines(headlines: string[]): void {
     this.headlines = headlines;
     this.currentHeadlineIndex = 0;
-    console.log(`[GameContainer] Loaded ${headlines.length} headlines`);
   }
 
   /**
@@ -397,7 +396,6 @@ export class GameContainer extends Container {
 
     // Wire ball out of bounds to player damage
     this.on("ball_out_of_bounds", () => {
-      console.log("[GameContainer] Ball out of bounds! Player takes damage.");
       this.emitGame("player_hit", 1); // Damage amount
     });
 
@@ -422,13 +420,11 @@ export class GameContainer extends Container {
     if (this.gameState === "game_over") return;
 
     this.gameState = "game_over";
-    console.log("[GameContainer] Game Over!");
 
     // Update high score
     if (this.score > this.highScore) {
       this.highScore = this.score;
       this.saveHighScore();
-      console.log(`[GameContainer] New high score: ${this.highScore}`);
     }
 
     // Show game over screen with current viewport dimensions
@@ -451,16 +447,12 @@ export class GameContainer extends Container {
 
     this.gameState = "level_complete";
     this.currentLevel = level + 1;
-    console.log(
-      `[GameContainer] Level ${level} complete! Advancing to level ${this.currentLevel}`,
-    );
 
     // Show headline instead of level complete screen
     if (this.headlineDisplay) {
       const headline = this.getNextHeadline();
       const formattedHeadline = `This week: ${headline}`;
       this.headlineDisplay.show(formattedHeadline);
-      console.log(`[GameContainer] Showing headline: ${formattedHeadline}`);
     } else if (this.levelCompleteScreen) {
       // Fallback to level complete screen if no headline display
       this.levelCompleteScreen.show(
@@ -485,10 +477,6 @@ export class GameContainer extends Container {
   private regenerateLevel(): void {
     if (!this.gameConfig) return;
 
-    console.log(
-      `[GameContainer] Level ${this.currentLevel} - progression not implemented`,
-    );
-
     // Resume playing
     this.gameState = "playing";
   }
@@ -497,7 +485,6 @@ export class GameContainer extends Container {
    * Restart the entire game
    */
   restart(width: number, height: number): void {
-    console.log("[GameContainer] Restarting game");
 
     // Update viewport dimensions
     this.viewportWidth = width;
@@ -568,10 +555,9 @@ export class GameContainer extends Container {
       const saved = localStorage.getItem("ludemic_high_score");
       if (saved) {
         this.highScore = parseInt(saved, 10);
-        console.log(`[GameContainer] Loaded high score: ${this.highScore}`);
       }
     } catch (e) {
-      console.warn("[GameContainer] Could not load high score:", e);
+      // LocalStorage not available - silently fail
     }
   }
 
@@ -581,9 +567,8 @@ export class GameContainer extends Container {
   private saveHighScore(): void {
     try {
       localStorage.setItem("ludemic_high_score", this.highScore.toString());
-      console.log(`[GameContainer] Saved high score: ${this.highScore}`);
     } catch (e) {
-      console.warn("[GameContainer] Could not save high score:", e);
+      // LocalStorage not available - silently fail
     }
   }
 
@@ -636,9 +621,6 @@ export class GameBuilder {
     if ((config as any).gridTiles) {
       const cityGrid = game.getEntityById("city_grid") as any;
       if (cityGrid && cityGrid.addTile) {
-        console.log(
-          `[GameBuilder] Adding ${(config as any).gridTiles.length} grid tiles`,
-        );
         (config as any).gridTiles.forEach((tileConfig: any) => {
           const tileEntityConfig: EntityConfig = {
             type: "RoadTile",
@@ -654,14 +636,8 @@ export class GameBuilder {
 
     // Generate entities from layouts (without primitives first)
     if (config.layouts) {
-      console.log(
-        `[GameBuilder] Processing ${config.layouts.length} layout(s)`,
-      );
       config.layouts.forEach((layoutConfig) => {
         const entities = this.createLayout(layoutConfig);
-        console.log(
-          `[GameBuilder] Layout "${layoutConfig.type}" generated ${entities.length} entities`,
-        );
         entities.forEach((entityConfig) => {
           const entity = this.createEntity(entityConfig, false); // Don't attach primitives yet
           game.addEntity(entity, entityConfig.id, entityConfig.type);

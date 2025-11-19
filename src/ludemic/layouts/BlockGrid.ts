@@ -93,9 +93,6 @@ export class BlockGrid {
       }
     }
 
-    console.log(
-      `[BlockGrid] Generated ${blocks.length} blocks (${config.rows}x${config.cols})`,
-    );
     return blocks;
   }
 }

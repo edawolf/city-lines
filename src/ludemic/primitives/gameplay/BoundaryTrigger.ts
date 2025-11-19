@@ -35,9 +35,6 @@ export class BoundaryTrigger extends Primitive {
       emitGame: (event: string, ...args: unknown[]) => void;
     };
 
-    console.log(
-      `[BoundaryTrigger] Initialized: watching ${this.config.boundary} boundary at ${this.config.threshold}`,
-    );
   }
 
   update(): void {
@@ -47,9 +44,6 @@ export class BoundaryTrigger extends Primitive {
     if (crossed) {
       // Only trigger once unless continuous mode
       if (!this.hasTriggered || this.config.continuous) {
-        console.log(
-          `[BoundaryTrigger] Boundary crossed! Emitting "${this.config.triggerEvent}"`,
-        );
 
         this.game.emitGame(this.config.triggerEvent, this.entity);
         this.hasTriggered = true;

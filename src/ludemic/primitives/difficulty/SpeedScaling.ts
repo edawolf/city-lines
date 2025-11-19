@@ -44,10 +44,6 @@ export class SpeedScaling extends Primitive {
 
     // Listen for trigger event
     this.game.onGame(this.config.triggerOn, this.escalate);
-
-    console.log(
-      `[SpeedScaling] Initialized: ${this.config.targetEntityTypes.join(", ")} will scale on "${this.config.triggerOn}"`,
-    );
   }
 
   update(): void {
@@ -69,14 +65,7 @@ export class SpeedScaling extends Primitive {
     // Cap at max speed
     if (this.currentSpeedMultiplier > this.config.maxSpeed) {
       this.currentSpeedMultiplier = this.config.maxSpeed;
-      console.log(
-        `[SpeedScaling] Max speed reached: ${this.currentSpeedMultiplier.toFixed(2)}x`,
-      );
     }
-
-    console.log(
-      `[SpeedScaling] Speed increased to ${this.currentSpeedMultiplier.toFixed(2)}x`,
-    );
 
     // Apply speed to target entities
     this.config.targetEntityTypes.forEach((entityType) => {
@@ -123,10 +112,6 @@ export class SpeedScaling extends Primitive {
       movement.setVelocity(
         Math.cos(angle) * cappedSpeed,
         Math.sin(angle) * cappedSpeed,
-      );
-
-      console.log(
-        `[SpeedScaling] Applied ${this.currentSpeedMultiplier.toFixed(2)}x to entity (speed: ${cappedSpeed.toFixed(1)})`,
       );
     }
   }

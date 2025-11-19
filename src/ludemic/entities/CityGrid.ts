@@ -132,7 +132,6 @@ export class CityGrid extends Container {
       col < 0 ||
       col >= this.config.cols
     ) {
-      console.warn(`[CityGrid] Invalid grid position: (${row}, ${col})`);
       return;
     }
 
@@ -157,15 +156,11 @@ export class CityGrid extends Container {
     // Track landmarks (service destinations: diner, gas station, market)
     if (tile.roadType === RoadType.Landmark) {
       this.landmarks.push(tile);
-      console.log(
-        `[CityGrid] 🏛️ Landmark added at (${row}, ${col}): ${tile.landmarkType || "unknown"}`,
-      );
     }
 
     // Track turnpikes (highway gates - REQUIRED!)
     if (tile.roadType === RoadType.Turnpike) {
       this.turnpikes.push(tile);
-      console.log(`[CityGrid] 🚧 Turnpike added at (${row}, ${col})`);
     }
 
     // Listen for tile rotation events
@@ -191,10 +186,6 @@ export class CityGrid extends Container {
    * Handle tile rotation - rebuild graph and validate paths
    */
   private handleTileRotated(data: any): void {
-    console.log(
-      `[CityGrid] 🔄 Tile rotated at (${data.gridPos.row}, ${data.gridPos.col})`,
-    );
-
     // Rebuild connection graph
     this.rebuildConnectionGraph();
 
@@ -212,24 +203,13 @@ export class CityGrid extends Container {
     this.connectionGraph = PathValidator.buildConnectionGraph(
       this.grid as RoadTile[][],
     );
-    console.log(`[CityGrid] 🗺️ Connection graph rebuilt`);
-
-    // Debug: print graph
-    if (this.connectionGraph) {
-      PathValidator.debugPrintGraph(this.connectionGraph);
-    }
   }
 
   /**
    * Validate if all landmarks connect to turnpikes (NEW RULE!)
    */
   private validateLandmarkConnections(): void {
-    console.log(`[CityGrid] 🔍 Validating landmark → turnpike connections...`);
-    console.log(`[CityGrid] 🏛️ Landmarks: ${this.landmarks.length}`);
-    console.log(`[CityGrid] 🚧 Turnpikes: ${this.turnpikes.length}`);
-
     if (!this.connectionGraph) {
-      console.log(`[CityGrid] ⚠️ Skipping validation - no connection graph`);
       return;
     }
 
@@ -240,19 +220,7 @@ export class CityGrid extends Container {
       this.connectionGraph,
     );
 
-    console.log(
-      `[CityGrid] Landmark validation: ${landmarkResult.allConnected ? "CONNECTED ✅" : "NOT CONNECTED ❌"}`,
-    );
-
     if (!landmarkResult.allConnected) {
-      console.log("❌ [CityGrid] Some landmarks not connected to turnpikes");
-      if (landmarkResult.disconnectedLandmarks) {
-        landmarkResult.disconnectedLandmarks.forEach((landmark) => {
-          console.log(
-            `   ❌ Landmark at (${landmark.gridPos.row},${landmark.gridPos.col}) cannot reach any turnpike`,
-          );
-        });
-      }
       return; // Don't check tiles if landmarks aren't connected
     }
 
@@ -265,26 +233,11 @@ export class CityGrid extends Container {
       this.connectionGraph,
     );
 
-    console.log(
-      `[CityGrid] Tiles validation: ${tilesResult.allConnected ? "ALL CONNECTED ✅" : "DISCONNECTED ROADS ❌"}`,
-    );
-
     if (!tilesResult.allConnected && tilesResult.disconnectedTiles) {
-      console.log(
-        "❌ [CityGrid] Some road tiles are not part of any landmark-to-turnpike path:",
-      );
-      tilesResult.disconnectedTiles.forEach((tile) => {
-        console.log(
-          `   ❌ Dead-end road at (${tile.gridPos.row},${tile.gridPos.col}) - ${tile.roadType}`,
-        );
-      });
       return; // Level not complete if there are dead-end roads
     }
 
     // BOTH validations passed - level complete!
-    console.log("✅ [CityGrid] All landmarks connected to turnpikes!");
-    console.log("✅ [CityGrid] All road tiles are part of valid paths!");
-    console.log("🎉 LEVEL COMPLETE!");
 
     // Play level complete sound
     audioManager.playLevelCompleteSound();
@@ -311,18 +264,11 @@ export class CityGrid extends Container {
     }
 
     if (this.game && typeof this.game.emit === "function") {
-      console.log("📢 [CityGrid] Emitting path_complete on game container");
-      console.log("[CityGrid] 🎯 EMITTING path_complete EVENT NOW");
       this.game.emitGame("path_complete", {
         landmarks: this.landmarks,
         turnpikes: this.turnpikes,
         graph: this.connectionGraph,
       });
-      console.log("[CityGrid] ✅ path_complete EVENT EMITTED");
-    } else {
-      console.warn(
-        "[CityGrid] ⚠️ Cannot emit path_complete - game container not available",
-      );
     }
   }
 
@@ -330,7 +276,6 @@ export class CityGrid extends Container {
    * Initial validation (call after all tiles added)
    */
   public performInitialValidation(): void {
-    console.log("[CityGrid] 🔍 Performing initial validation...");
     this.rebuildConnectionGraph();
     this.highlightConnectedRoads(); // Highlight any initially connected roads
     this.validateLandmarkConnections();
@@ -355,7 +300,6 @@ export class CityGrid extends Container {
     }
 
     if (emptyTiles.length === 0) {
-      console.log("[CityGrid] 🌳 No empty tiles for tree decorations");
       return;
     }
 
@@ -367,8 +311,6 @@ export class CityGrid extends Container {
       const pos = shuffled[i];
       this.addTreeAt(pos.row, pos.col);
     }
-
-    console.log(`[CityGrid] 🌳 Placed ${treeCount} tree(s) on empty tiles`);
   }
 
   /**
@@ -397,9 +339,7 @@ export class CityGrid extends Container {
       // Add to background layer (behind road tiles)
       this.backgroundGraphics.addChild(tree);
     } catch (error) {
-      console.warn(
-        `[CityGrid] Could not load tree decoration: ${error instanceof Error ? error.message : "Unknown error"}`,
-      );
+      // Tree decoration not available - silently fail
     }
   }
 
@@ -429,7 +369,6 @@ export class CityGrid extends Container {
    */
   private highlightConnectedRoads(): void {
     if (!this.connectionGraph) {
-      console.warn("[CityGrid] Cannot highlight - no connection graph");
       return;
     }
 
@@ -474,9 +413,7 @@ export class CityGrid extends Container {
       const particleManager = ParticleManager.getInstance();
       particleManager.createConfetti(this.viewportWidth, this.viewportHeight);
     } catch (_error) {
-      console.warn(
-        "[CityGrid] Could not create confetti - ParticleManager not available",
-      );
+      // ParticleManager not available - silently fail
     }
   }
 
@@ -485,16 +422,10 @@ export class CityGrid extends Container {
    * Each landmark (except turnpike) scales up sequentially with 0.3s delay
    */
   public celebratePuzzleSolved(): void {
-    console.log("[CityGrid] 🎉 Starting landmark celebration animation");
-
     // Filter out turnpikes - only animate landmarks
     const landmarksToAnimate = this.landmarks.filter((landmark) => {
       return landmark.roadType === RoadType.Landmark;
     });
-
-    console.log(
-      `[CityGrid] Animating ${landmarksToAnimate.length} landmarks (excluding turnpikes)`,
-    );
 
     // Animate each landmark with 0.3s delay between them
     landmarksToAnimate.forEach((landmark, index) => {
@@ -514,9 +445,6 @@ export class CityGrid extends Container {
     const sprite = landmark.getLandmarkImageSprite();
 
     if (!sprite) {
-      console.warn(
-        `[CityGrid] No sprite found for landmark at (${landmark.gridPos.row},${landmark.gridPos.col})`,
-      );
       return;
     }
 
@@ -524,10 +452,6 @@ export class CityGrid extends Container {
     const originalScale = sprite.scale.x;
     const scaleUpAmount = 0.25; // Scale up by 0.25 (e.g., 1.0 -> 1.25) - more exaggerated!
     const targetScale = originalScale + scaleUpAmount;
-
-    console.log(
-      `[CityGrid] Animating landmark sprite at (${landmark.gridPos.row},${landmark.gridPos.col}): ${originalScale} -> ${targetScale} -> ${originalScale}`,
-    );
 
     // Scale up duration: 200ms
     const scaleUpDuration = 200;
@@ -565,9 +489,6 @@ export class CityGrid extends Container {
         } else {
           // Ensure we end at exactly the original scale
           sprite.scale.set(originalScale);
-          console.log(
-            `[CityGrid] ✅ Landmark sprite animation complete at (${landmark.gridPos.row},${landmark.gridPos.col})`,
-          );
         }
       }
     };
@@ -672,10 +593,6 @@ export class CityGrid extends Container {
       });
 
       this.drawBackground();
-
-      console.log(
-        `[CityGrid] 📐 Resized to ${width}x${height}, safe area: ${safeViewport.width}x${safeViewport.height}, tile size: ${this.calculatedTileSize}px`,
-      );
     } else {
       // Fallback: center grid in viewport using old config
       const tileSize = this.config.tileSize ?? 80;
@@ -683,10 +600,6 @@ export class CityGrid extends Container {
       const totalHeight = this.config.rows * tileSize;
 
       this.position.set((width - totalWidth) / 2, (height - totalHeight) / 2);
-
-      console.log(
-        `[CityGrid] 📐 Resized to ${width}x${height} (fallback mode)`,
-      );
     }
   }
 

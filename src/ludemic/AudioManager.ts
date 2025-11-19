@@ -31,15 +31,9 @@ export class AudioManager {
    */
   public playSFX(alias: string, volume = 1.0): void {
     try {
-      console.log(
-        `[AudioManager] 🎵 Playing SFX: ${alias} at volume ${volume}`,
-      );
       engine().audio.sfx.play(alias, { volume });
-      console.log(
-        `[AudioManager] ✅ Successfully called engine.audio.sfx.play`,
-      );
     } catch (error) {
-      console.error(`[AudioManager] ❌ Failed to play SFX: ${alias}`, error);
+      // Audio not available - silently fail
     }
   }
 
@@ -52,7 +46,7 @@ export class AudioManager {
     try {
       await engine().audio.bgm.play(alias, { volume });
     } catch (error) {
-      console.warn(`[AudioManager] Failed to play BGM: ${alias}`, error);
+      // Audio not available - silently fail
     }
   }
 
@@ -137,7 +131,6 @@ export class AudioManager {
    * @param volume - Volume (0.0 to 1.0), default 0.25
    */
   public playRotateSound(volume = 0.25): void {
-    console.log("[AudioManager] 🔊 Playing random tile tap sound");
     this.playRandomSFX(this.tileTapSounds, volume);
   }
 
@@ -146,7 +139,6 @@ export class AudioManager {
    * @param volume - Volume (0.0 to 1.0), default 0.8
    */
   public playLevelCompleteSound(volume = 0.8): void {
-    console.log("[AudioManager] 🎉 Attempting to play honk.wav");
     this.playSFX("main/sounds/honk.wav", volume);
   }
 
@@ -156,14 +148,9 @@ export class AudioManager {
    */
   public async playBGMusic(volume = 0.5): Promise<void> {
     try {
-      console.log("[AudioManager] 🎵 Starting background music: traffic.mp3");
       await engine().audio.bgm.play("main/sounds/traffic.mp3", { volume });
-      console.log("[AudioManager] ✅ Background music playing (looped)");
     } catch (error) {
-      console.error(
-        "[AudioManager] ❌ Failed to play background music:",
-        error,
-      );
+      // Audio not available - silently fail
     }
   }
 
@@ -173,14 +160,12 @@ export class AudioManager {
    */
   public playBGLayer(volume = 0.3): void {
     try {
-      console.log("[AudioManager] 🎵 Starting BG layer: bg-06.wav");
       engine().audio.sfx.play("main/sounds/bg-06.wav", {
         volume,
         loop: true,
       });
-      console.log("[AudioManager] ✅ BG layer playing (looped)");
     } catch (error) {
-      console.error("[AudioManager] ❌ Failed to play BG layer:", error);
+      // Audio not available - silently fail
     }
   }
 }

@@ -45,9 +45,6 @@ export class HealthSystem extends Primitive {
     // Listen for damage events
     this.game.onGame(this.config.damageEvent, this.takeDamage);
 
-    console.log(
-      `[HealthSystem] Initialized: ${this.currentHealth}/${this.config.maxHealth} health`,
-    );
   }
 
   update(): void {
@@ -61,10 +58,6 @@ export class HealthSystem extends Primitive {
     const previousHealth = this.currentHealth;
     this.currentHealth = Math.max(0, this.currentHealth - amount);
 
-    console.log(
-      `[HealthSystem] Damage taken: ${previousHealth} → ${this.currentHealth}`,
-    );
-
     // Emit health changed event
     this.game.emitGame("health_changed", {
       current: this.currentHealth,
@@ -74,7 +67,7 @@ export class HealthSystem extends Primitive {
 
     // Check for death
     if (this.currentHealth <= 0 && previousHealth > 0) {
-      console.log(`[HealthSystem] Death! Emitting "${this.config.deathEvent}"`);
+
       this.game.emitGame(this.config.deathEvent);
     }
   };

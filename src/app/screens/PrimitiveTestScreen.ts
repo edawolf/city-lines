@@ -49,9 +49,6 @@ export class PrimitiveTestScreen extends Container {
   async show(): Promise<void> {
     // Reset to level 1 when screen is shown
     this.currentLevelIndex = 0;
-    console.log(
-      `[PrimitiveTestScreen] show() called - Reset to level ${this.currentLevelIndex + 1}`,
-    );
 
     // Start background music (loop)
     audioManager.playBGMusic(0.15);
@@ -110,14 +107,6 @@ export class PrimitiveTestScreen extends Container {
     // Load first level
     try {
       await this.loadLevel(this.currentLevelIndex);
-      console.log("🏙️ CITY LINES GAME CREATED");
-
-      console.log("✅ Level loaded successfully");
-      console.log("🔄 Click tiles to rotate them!");
-      console.log("🗺️ Watch console for path validation");
-      console.log(
-        `⬅️➡️ Press LEFT/RIGHT arrows to change levels (Level ${this.currentLevelIndex + 1})`,
-      );
     } catch (error) {
       console.error("❌ Failed to load game config:", error);
 
@@ -220,7 +209,7 @@ export class PrimitiveTestScreen extends Container {
         typeof cityGrid.resize === "function"
       ) {
         (cityGrid as any).resize(width, height);
-        console.log(`🏙️ City Lines resized to ${width}x${height}`);
+
       }
 
       // Resize HeadlineDisplay
@@ -280,48 +269,29 @@ export class PrimitiveTestScreen extends Container {
         typeof headlineDisplay.setLevel === "function"
       ) {
         (headlineDisplay as any).setLevel(levelIndex + 1);
-        console.log(
-          `[PrimitiveTestScreen] Set HeadlineDisplay level to ${levelIndex + 1}`,
-        );
+
       }
 
       // Update level info display
       this.levelInfoText.text = `Level ${levelIndex + 1} - ${(levelConfig as any).name || "Procedurally Generated"}`;
 
       // Listen for path complete event to auto-advance after 6 seconds
-      console.log(
-        `[PrimitiveTestScreen] Attaching path_complete listener for level ${levelIndex + 1}`,
-      );
 
       // Create one-time handler for path_complete
       const pathCompleteHandler = () => {
-        console.log("[PrimitiveTestScreen] 🎯 PATH_COMPLETE EVENT RECEIVED!");
-        console.log(
-          "[PrimitiveTestScreen] ✅ Path complete detected, advancing to next level in 6 seconds...",
-        );
 
         // Wait 6 seconds, then advance to next level automatically
         setTimeout(() => {
-          console.log("[PrimitiveTestScreen] ⏰ 6 second timeout triggered");
+
           const maxLevel = this.MAX_LEVEL - 1;
           if (this.currentLevelIndex < maxLevel) {
-            console.log(
-              `[PrimitiveTestScreen] 6 seconds elapsed, calling nextLevel() from ${this.currentLevelIndex + 1} to ${this.currentLevelIndex + 2}`,
-            );
             this.nextLevel();
-          } else {
-            console.log("🎉 All levels complete!");
           }
         }, 6000); // 6 seconds
       };
 
       // Use onGame() to listen to GameContainer's internal event emitter
       this.game.onGame("path_complete", pathCompleteHandler);
-      console.log(
-        `[PrimitiveTestScreen] ✅ path_complete listener attached for level ${levelIndex + 1}`,
-      );
-
-      console.log(`✅ Loaded: ${(levelConfig as any).name}`);
     } catch (error) {
       console.error(`❌ Failed to load level ${levelIndex + 1}:`, error);
       this.levelInfoText.text = `Error loading level ${levelIndex + 1}`;
@@ -336,9 +306,9 @@ export class PrimitiveTestScreen extends Container {
     if (this.currentLevelIndex < maxLevel) {
       this.currentLevelIndex++;
       this.loadLevel(this.currentLevelIndex);
-      console.log(`➡️ Next level: ${this.currentLevelIndex + 1}`);
+
     } else {
-      console.log("Already at last level!");
+
     }
   }
 
@@ -349,9 +319,9 @@ export class PrimitiveTestScreen extends Container {
     if (this.currentLevelIndex > 0) {
       this.currentLevelIndex--;
       this.loadLevel(this.currentLevelIndex);
-      console.log(`⬅️ Previous level: ${this.currentLevelIndex + 1}`);
+
     } else {
-      console.log("Already at first level!");
+
     }
   }
 
@@ -360,7 +330,7 @@ export class PrimitiveTestScreen extends Container {
    */
   private reloadLevel(): void {
     this.loadLevel(this.currentLevelIndex);
-    console.log(`🔄 Reloaded level ${this.currentLevelIndex + 1}`);
+
   }
 
   /**
@@ -371,9 +341,9 @@ export class PrimitiveTestScreen extends Container {
     if (levelIndex >= 0 && levelIndex <= maxLevel) {
       this.currentLevelIndex = levelIndex;
       this.loadLevel(this.currentLevelIndex);
-      console.log(`🎯 Jumped to level ${this.currentLevelIndex + 1}`);
+
     } else {
-      console.log(`❌ Level ${levelIndex + 1} does not exist!`);
+
     }
   }
 
@@ -383,7 +353,6 @@ export class PrimitiveTestScreen extends Container {
   async hide(): Promise<void> {
     // Stop background music
     audioManager.stopBGM();
-    console.log("🎵 Background music stopped");
 
     // Remove keyboard listener
     if (this.keydownListener) {

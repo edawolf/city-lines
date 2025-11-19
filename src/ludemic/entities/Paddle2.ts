@@ -31,14 +31,6 @@ export class Paddle2 extends Container {
       .stroke({ width: 3, color: 0xffff00 }); // Yellow stroke
 
     this.addChild(this.graphics);
-
-    console.log(`🟢 Paddle2 created (circle):`, {
-      radius,
-      color,
-      bounds: this.graphics.getBounds(),
-      visible: this.visible,
-      alpha: this.alpha,
-    });
   }
 
   addPrimitive(type: string, primitive: Primitive, config: any): void {

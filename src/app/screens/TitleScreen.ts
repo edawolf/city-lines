@@ -37,8 +37,6 @@ export class TitleScreen extends Container {
    * Called when screen is shown
    */
   async show(): Promise<void> {
-    console.log("[TitleScreen] show() called");
-
     // Create dark background
     this.background = new Graphics();
     this.addChild(this.background);
@@ -178,18 +176,15 @@ export class TitleScreen extends Container {
 
     // Create House tile (left)
     const houseTile = new RoadTile({
-      row: 0,
-      col: 0,
-      tileType: "straight",
-      imageKey: "home",
-      roadType: RoadType.House,
-      landmarkType: LandmarkType.Home,
+      type: "RoadTile",
+      position: { x: 0, y: 0 },
       config: {
         tileType: "straight",
         roadType: RoadType.House,
         rotation: 0,
         rotatable: true,
         size: tileSize,
+        gridPos: { row: 0, col: 0 },
         landmarkType: LandmarkType.Home,
       },
     });
@@ -198,17 +193,15 @@ export class TitleScreen extends Container {
 
     // Create Road tile (middle)
     const roadTile = new RoadTile({
-      row: 1,
-      col: 0,
-      tileType: "straight",
-      imageKey: "straight",
-      roadType: RoadType.LocalRoad,
+      type: "RoadTile",
+      position: { x: 0, y: 0 },
       config: {
         tileType: "straight",
         roadType: RoadType.LocalRoad,
         rotation: 0,
         rotatable: true,
         size: tileSize,
+        gridPos: { row: 1, col: 0 },
       },
     });
     this.puzzleTiles.push(roadTile);
@@ -216,17 +209,15 @@ export class TitleScreen extends Container {
 
     // Create Turnpike tile (right)
     const turnpikeTile = new RoadTile({
-      row: 2,
-      col: 0,
-      tileType: "straight",
-      imageKey: "turnpike",
-      roadType: RoadType.Turnpike,
+      type: "RoadTile",
+      position: { x: 0, y: 0 },
       config: {
         tileType: "straight",
         roadType: RoadType.Turnpike,
         rotation: 0,
         rotatable: true,
         size: tileSize,
+        gridPos: { row: 2, col: 0 },
       },
     });
     this.puzzleTiles.push(turnpikeTile);
@@ -250,7 +241,6 @@ export class TitleScreen extends Container {
    * Start the game (transition to level 1)
    */
   private async startGame(): Promise<void> {
-    console.log("[TitleScreen] Starting game...");
 
     // Play a sound effect if available
     // audioManager.playRotateSound(); // Optional: add a "start" sound
@@ -271,8 +261,7 @@ export class TitleScreen extends Container {
     this.screenHeight = height;
 
     const config = UI_CONFIG.TITLE_SCREEN;
-    console.log("[TitleScreen] Full config:", config);
-    console.log("[TitleScreen] Tagline config:", config.tagline);
+
     const centerX = width / 2;
     const centerY = height / 2;
 
@@ -321,7 +310,6 @@ export class TitleScreen extends Container {
         config.tagline.maxFontSize,
       );
       const wrapWidth = width * config.tagline.wordWrapPercent;
-      console.log(`[TitleScreen] Tagline wordWrapWidth: ${wrapWidth}px (${config.tagline.wordWrapPercent * 100}% of ${width}px)`);
 
       this.taglineText.style.fontSize = taglineFontSize;
       this.taglineText.style.wordWrap = true;
@@ -380,8 +368,6 @@ export class TitleScreen extends Container {
    * Hide screen with animations
    */
   async hide(): Promise<void> {
-    console.log("[TitleScreen] hide() called");
-
     // Fade out all elements
     const fadeOutPromises: AnimationPlaybackControls[] = [];
 
@@ -411,7 +397,7 @@ export class TitleScreen extends Container {
   update(time: Ticker): void {
     // Update particle system if it exists
     if (this.particleContainer && this.particleContainer.children.length > 0) {
-      console.log(`[TitleScreen] 🔄 Updating ${this.particleContainer.children.length} particle systems`);
+
       this.particleContainer.children.forEach((child: any) => {
         if (child.update) {
           child.update(time.deltaTime);
@@ -424,11 +410,6 @@ export class TitleScreen extends Container {
    * Cleanup when screen is destroyed
    */
   destroy(): void {
-    // Remove event listeners
-    if (this.clickListener && this.background) {
-      this.background.off("pointerdown", this.clickListener);
-    }
-
     super.destroy();
   }
 }

@@ -194,10 +194,6 @@ export class InfiniteLevelManager {
     // Add gridTiles to config
     (gameConfig as any).gridTiles = gridTiles;
 
-    console.log(
-      `[InfiniteLevelManager] Generated level ${levelNumber}: ${gridSize.rows}x${gridSize.cols} grid, ${gridTiles.length} tiles`,
-    );
-
     return gameConfig;
   }
 }

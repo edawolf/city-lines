@@ -60,8 +60,6 @@ export class TuningSystem extends EventEmitter {
     // Emit update event for listeners
     this.emit("parameterChanged", { key, value, oldValue });
 
-    console.log(`[TuningSystem] ${key}: ${oldValue} → ${value}`);
-
     // Auto-save to localStorage
     this.saveConfig();
   }
@@ -70,7 +68,7 @@ export class TuningSystem extends EventEmitter {
    * Reset to default configuration
    */
   resetToDefaults(): void {
-    console.log("[TuningSystem] Resetting to default configuration");
+
     this.config = JSON.parse(JSON.stringify(DEFAULT_TUNING));
     this.saveConfig();
     this.emit("configReset");
@@ -84,14 +82,13 @@ export class TuningSystem extends EventEmitter {
       const stored = localStorage.getItem("ludemic_tuning_config");
       if (stored) {
         const parsed = JSON.parse(stored);
-        console.log("[TuningSystem] Loaded config from localStorage:", parsed);
+
         return parsed;
       }
     } catch (error) {
       console.error("[TuningSystem] Failed to load config:", error);
     }
 
-    console.log("[TuningSystem] Using default configuration");
     return JSON.parse(JSON.stringify(DEFAULT_TUNING));
   }
 
@@ -125,7 +122,7 @@ export class TuningSystem extends EventEmitter {
       this.config = imported;
       this.saveConfig();
       this.emit("configImported");
-      console.log("[TuningSystem] Configuration imported successfully");
+
     } catch (error) {
       console.error("[TuningSystem] Failed to import config:", error);
       throw new Error("Invalid JSON format");
@@ -155,6 +152,6 @@ export class TuningSystem extends EventEmitter {
     document.body.removeChild(link);
 
     URL.revokeObjectURL(url);
-    console.log("[TuningSystem] Config downloaded");
+
   }
 }
