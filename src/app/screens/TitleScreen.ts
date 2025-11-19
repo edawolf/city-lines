@@ -468,6 +468,7 @@ export class TitleScreen extends Container {
     });
     this.handHint.anchor.set(0.5);
     this.handHint.alpha = 0;
+    this.handHint.eventMode = "none"; // Don't block clicks on button
     this.addChild(this.handHint);
 
     // Start animation immediately
