@@ -1067,6 +1067,9 @@ export class LevelGenerator {
    * Max 2 trees per level for visual variety without clutter.
    */
   private placeTreeDecorations(): void {
+    // Array of decoration options to randomly select from
+    const DECORATION_OPTIONS = ["tree-1", "tree-2", "bush-1"];
+
     // Find all empty tiles (positions with no road, landmark, or turnpike)
     const emptyTiles: TilePosition[] = [];
 
@@ -1097,6 +1100,9 @@ export class LevelGenerator {
     for (let i = 0; i < treeCount; i++) {
       const pos = shuffled[i];
 
+      // Randomly select a decoration type from the array
+      const randomDecoration = DECORATION_OPTIONS[Math.floor(this.rng.random() * DECORATION_OPTIONS.length)];
+
       const treeConfig: TileConfig = {
         row: pos.row,
         col: pos.col,
@@ -1105,12 +1111,13 @@ export class LevelGenerator {
         rotation: 0,
         solutionRotation: 0,
         rotatable: false, // Trees cannot be rotated
+        decorationType: randomDecoration, // Randomly selected decoration
       };
 
       this.setTile(pos, treeConfig);
       this.treeTiles.push(treeConfig);
       console.log(
-        `[LevelGenerator] 🌳 Tree placed at (${pos.row}, ${pos.col})`,
+        `[LevelGenerator] 🌳 ${randomDecoration} placed at (${pos.row}, ${pos.col})`,
       );
     }
 

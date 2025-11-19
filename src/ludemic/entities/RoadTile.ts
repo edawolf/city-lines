@@ -93,6 +93,7 @@ export interface RoadTileConfig {
   gridPos?: { row: number; col: number }; // Grid position
   landmarkType?: LandmarkType; // Type of landmark (diner, gas_station, market)
   icon?: string; // Custom emoji icon override
+  decorationType?: string; // Type of decoration (tree-1, tree-2, bush-1, etc.)
 }
 
 /**
@@ -124,6 +125,7 @@ export class RoadTile extends Container {
   private tileSize: number; // Changed from readonly to allow resize
   public readonly landmarkType?: LandmarkType; // Type of landmark (diner, gas_station, market)
   public readonly customIcon?: string; // Custom emoji override
+  public readonly decorationType?: string; // Type of decoration (tree-1, tree-2, bush-1, etc.)
 
   constructor(config: EntityConfig) {
     super();
@@ -138,6 +140,7 @@ export class RoadTile extends Container {
     this.tileSize = roadConfig.size ?? 80;
     this.landmarkType = (roadConfig as any).landmarkType;
     this.customIcon = (roadConfig as any).icon;
+    this.decorationType = (roadConfig as any).decorationType;
 
     // Create visual representation
     this.graphics = new Graphics();
@@ -649,12 +652,15 @@ export class RoadTile extends Container {
    * Trees are purely decorational - no rotation, no gameplay interaction
    */
   private drawTreeIcon(): void {
-    // Try to load and use tree-1.png image
+    // Use decorationType if provided, otherwise default to tree-1
+    const decorationName = this.decorationType || "tree-1";
+
+    // Try to load and use the specified decoration image
     let treeTexture = null;
     try {
       treeTexture =
-        Assets.cache.get("tree-1.png") ||
-        Assets.cache.get("main/images/tree-1.png");
+        Assets.cache.get(`${decorationName}.png`) ||
+        Assets.cache.get(`main/images/${decorationName}.png`);
     } catch (error) {
       // Silently fail - will use emoji fallback
     }
