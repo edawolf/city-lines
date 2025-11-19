@@ -41,6 +41,13 @@ export class TitleScreen extends Container {
    * Called when screen is shown
    */
   async show(): Promise<void> {
+    // Load the custom fonts before creating text
+    await Promise.all([
+      document.fonts.load('400 72px "Protest Guerrilla"'),
+      document.fonts.load('400 20px "Zain"'),
+      document.fonts.load('700 24px "Zain"')
+    ]);
+
     // Create dark background
     this.background = new Graphics();
     this.addChild(this.background);
@@ -49,8 +56,8 @@ export class TitleScreen extends Container {
     this.particleContainer = new Container();
     this.addChild(this.particleContainer);
 
-    // Initialize ParticleManager for title screen (force reinit since we're on a new screen)
-    ParticleManager.initialize(this.particleContainer, true);
+    // Initialize ParticleManager for title screen
+    new ParticleManager(this.particleContainer);
 
     // Create title text (will be sized in resize())
     this.titleText = new Text({
@@ -58,8 +65,8 @@ export class TitleScreen extends Container {
       style: {
         fontSize: 72, // Placeholder, will be updated in resize()
         fill: 0xffffff,
-        fontFamily: "Arial, sans-serif",
-        fontWeight: "bold",
+        fontFamily: '"Protest Guerrilla", sans-serif',
+        fontWeight: 400,
         align: "center",
       },
     });
@@ -73,7 +80,8 @@ export class TitleScreen extends Container {
       style: {
         fontSize: 20, // Placeholder, will be updated in resize()
         fill: 0xcccccc,
-        fontFamily: "Arial, sans-serif",
+        fontFamily: '"Zain", sans-serif',
+        fontWeight: 400,
         align: "center",
         wordWrap: true,
         wordWrapWidth: 600, // Placeholder, will be updated in resize()
@@ -89,8 +97,8 @@ export class TitleScreen extends Container {
       style: {
         fontSize: 24,
         fill: 0xffffff,
-        fontFamily: "Arial, sans-serif",
-        fontWeight: "bold",
+        fontFamily: '"Zain", sans-serif',
+        fontWeight: 700,
       },
     });
 

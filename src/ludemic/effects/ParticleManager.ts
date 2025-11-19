@@ -24,58 +24,24 @@ export interface ParticleConfig {
 }
 
 export class ParticleManager {
-  private static instance: ParticleManager;
   private particleContainer: Container;
   private particleSystem?: ParticleSystem;
 
-  private constructor(particleContainer: Container) {
+  constructor(particleContainer: Container) {
     this.particleContainer = particleContainer;
-  }
 
-  /**
-   * Initialize the ParticleManager singleton
-   * @param particleContainer - Container to add particles to (should be behind game objects)
-   * @param forceReinit - Force re-initialization even if instance exists (for level transitions)
-   */
-  public static initialize(
-    particleContainer: Container,
-    forceReinit = false,
-  ): ParticleManager {
-    if (!ParticleManager.instance || forceReinit) {
-      // Clear old particles if reinitializing
-      if (ParticleManager.instance) {
-        ParticleManager.instance.clear();
-      }
-      ParticleManager.instance = new ParticleManager(particleContainer);
+    // Initialize the advanced particle system
+    this.particleSystem = new ParticleSystem("/assets/vfx/");
 
-      // Initialize the advanced particle system
-      ParticleManager.instance.particleSystem = new ParticleSystem(
-        "/assets/vfx/",
-      );
+    // CRITICAL: Make ParticleSystem non-interactive so it doesn't block clicks
+    this.particleSystem.eventMode = "none";
+    this.particleSystem.interactiveChildren = false;
 
-      // CRITICAL: Make ParticleSystem non-interactive so it doesn't block clicks
-      ParticleManager.instance.particleSystem.eventMode = "none";
-      ParticleManager.instance.particleSystem.interactiveChildren = false;
+    particleContainer.addChild(this.particleSystem);
 
-      particleContainer.addChild(ParticleManager.instance.particleSystem);
-
-      console.log(
-        "[ParticleManager] 🎨 Initialized with advanced ParticleSystem (non-interactive)",
-      );
-    }
-    return ParticleManager.instance;
-  }
-
-  /**
-   * Get the ParticleManager singleton instance
-   */
-  public static getInstance(): ParticleManager {
-    if (!ParticleManager.instance) {
-      throw new Error(
-        "ParticleManager not initialized. Call initialize() first.",
-      );
-    }
-    return ParticleManager.instance;
+    console.log(
+      "[ParticleManager] 🎨 Initialized with advanced ParticleSystem (non-interactive)",
+    );
   }
 
   /**
@@ -174,27 +140,32 @@ export class ParticleManager {
   /**
    * Create fast confetti effect across the screen (for level complete celebration)
    * More energetic and faster than the burst effect
-   * @param viewportWidth - Width of the viewport
-   * @param viewportHeight - Height of the viewport
+   * @param screenWidth - Width of the screen/viewport
+   * @param screenHeight - Height of the screen/viewport
    */
-  public createConfetti(viewportWidth: number, viewportHeight: number): void {
+  public createConfetti(screenWidth: number, screenHeight: number): void {
     if (!this.particleSystem) {
       console.warn("[ParticleManager] ⚠️ ParticleSystem not initialized!");
       return;
     }
 
+    console.log(
+      `[ParticleManager] 🎉 Creating confetti! Screen: ${screenWidth}x${screenHeight}`,
+    );
+
     // Use centralized confetti config
     const confettiConfig = PARTICLE_CONFIG.WIN_CONFETTI;
     const confettiColors = PARTICLE_CONFIG.CONFETTI_COLORS;
 
-    // Create multiple spawners across the top of the screen
-    const spawnerCount = confettiConfig.spawnerCount;
-    const spacing = viewportWidth / (spawnerCount + 1);
+    // Calculate spawn position from config percentages
+    const spawnX = screenWidth * confettiConfig.spawnX;
+    const spawnY = screenHeight * confettiConfig.spawnY;
 
-    for (let i = 0; i < spawnerCount; i++) {
-      const x = spacing * (i + 1);
-      const y = -50;
+    console.log(
+      `[ParticleManager] Creating ${confettiConfig.spawnerCount} spawners at (${spawnX}, ${spawnY})`,
+    );
 
+    for (let i = 0; i < confettiConfig.spawnerCount; i++) {
       // Random color for this spawner
       const color =
         confettiColors[Math.floor(Math.random() * confettiColors.length)];
@@ -223,8 +194,8 @@ export class ParticleManager {
       particleConfig.sizeStartPixels = confettiConfig.sizeStart;
       particleConfig.sizeEndPixels = confettiConfig.sizeEnd;
 
-      // Movement - fall down with horizontal spread
-      particleConfig.angle = 90; // Down
+      // Movement - use angle from config
+      particleConfig.angle = confettiConfig.angle;
       particleConfig.angleVariance = confettiConfig.angleSpread;
       particleConfig.speed = confettiConfig.speed;
       particleConfig.speedVariance = confettiConfig.speedVariance;
@@ -236,10 +207,15 @@ export class ParticleManager {
       particleConfig.rotationSpeed = confettiConfig.rotationSpeed;
       particleConfig.rotationDirection = "random";
 
-      // Create the spawner
+      // Create the spawner at the configured position
       this.particleSystem
-        .createSpawner(particleConfig, x, y, `Confetti_${i}_${Date.now()}`)
-        .catch((err) => {});
+        .createSpawner(
+          particleConfig,
+          spawnX,
+          spawnY,
+          `Confetti_${i}_${Date.now()}`,
+        )
+        .catch(() => {});
     }
   }
 

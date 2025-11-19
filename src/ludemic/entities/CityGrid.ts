@@ -57,7 +57,8 @@ export class CityGrid extends Container {
   private landmarks: RoadTile[] = [];
   private turnpikes: RoadTile[] = []; // Track turnpikes separately
   private backgroundGraphics: Graphics;
-  private particleContainer: Container; // Particle layer between background and tiles
+  private particleContainer: Container; // Container for tile rotation particles (LOCAL space)
+  private tileParticleManager: ParticleManager; // Separate manager for tile effects
   private connectionGraph?: Map<RoadTile, RoadTile[]>;
   private titleText?: Text;
   private viewportWidth = 0; // Will be set by resize() - no hardcoded default
@@ -85,12 +86,12 @@ export class CityGrid extends Container {
     this.backgroundGraphics = new Graphics();
     this.addChild(this.backgroundGraphics);
 
-    // Create particle container (middle layer - between background and tiles)
+    // Create particle container for tile rotation effects (LOCAL space, behind tiles)
     this.particleContainer = new Container();
     this.addChild(this.particleContainer);
 
-    // Initialize ParticleManager with this container (force reinit for new levels)
-    ParticleManager.initialize(this.particleContainer, true);
+    // Initialize ParticleManager for tile effects (local coordinate space)
+    this.tileParticleManager = new ParticleManager(this.particleContainer);
 
     // Initialize empty grid
     for (let row = 0; row < this.config.rows; row++) {
@@ -149,8 +150,8 @@ export class CityGrid extends Container {
     this.grid[row][col] = tile;
     this.addChild(tile);
 
-    // Keep particle container between background and tiles
-    // Index 0 = background, Index 1 = particles, Index 2+ = tiles
+    // CRITICAL: Keep particle container BEHIND tiles (at index 1, after background)
+    // This ensures tile rotation particles render behind the tiles
     this.setChildIndex(this.particleContainer, 1);
 
     // Track landmarks (service destinations: diner, gas station, market)
@@ -364,6 +365,13 @@ export class CityGrid extends Container {
   }
 
   /**
+   * Get the tile particle manager (for tile rotation effects in LOCAL space)
+   */
+  public getTileParticleManager(): ParticleManager {
+    return this.tileParticleManager;
+  }
+
+  /**
    * Highlight all roads connected to turnpikes (updates in real-time)
    * Changes road color to show successful connections as player rotates tiles
    */
@@ -410,8 +418,14 @@ export class CityGrid extends Container {
    */
   private createConfettiCelebration(): void {
     try {
-      const particleManager = ParticleManager.getInstance();
-      particleManager.createConfetti(this.viewportWidth, this.viewportHeight);
+      // Get confetti particle manager from game container (screen-level particles)
+      if (this.game && this.game.particleManager) {
+        const particleManager = this.game.particleManager;
+
+        // Pass screen dimensions (not grid dimensions)
+        // Particle spawn positions are configured in particle-config.ts as percentages
+        particleManager.createConfetti(this.viewportWidth, this.viewportHeight);
+      }
     } catch (_error) {
       // ParticleManager not available - silently fail
     }
@@ -607,10 +621,9 @@ export class CityGrid extends Container {
    * Update - particle system and visual effects
    */
   update(deltaTime: number): void {
-    // Update particle system
+    // Update tile particle system (local effects)
     try {
-      const particleManager = ParticleManager.getInstance();
-      particleManager.update(deltaTime);
+      this.tileParticleManager.update(deltaTime);
     } catch (error) {
       // ParticleManager not initialized yet - silently ignore
     }

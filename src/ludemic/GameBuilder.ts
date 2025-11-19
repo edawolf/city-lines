@@ -38,7 +38,8 @@ export class GameContainer extends Container {
 
   // Juice systems
   private particles: Particle[] = [];
-  private particleManager?: ParticleManager; // ParticleManager (initialized by CityGrid)
+  private particleContainer?: Container; // Container for screen-wide particle effects
+  private particleManager?: ParticleManager; // ParticleManager (initialized at GameContainer level)
   private shakeOffset = { x: 0, y: 0 };
   private shakeIntensity = 0;
   private shakeDuration = 0;
@@ -706,6 +707,14 @@ export class GameBuilder {
     if ((config as any).headlines) {
       game.setHeadlines((config as any).headlines);
     }
+
+    // Initialize particle container at game root level (for screen-wide effects like confetti)
+    // IMPORTANT: Add LAST so particles render on top of everything
+    game.particleContainer = new Container();
+    game.addChild(game.particleContainer);
+
+    // Initialize ParticleManager for screen-level effects (confetti)
+    game.particleManager = new ParticleManager(game.particleContainer);
 
     return game;
   }

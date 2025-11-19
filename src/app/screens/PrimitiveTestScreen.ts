@@ -34,7 +34,6 @@ export class PrimitiveTestScreen extends Container {
   private tuningSystem: TuningSystem;
   private tuningControls!: TuningControls;
   private currentLevelIndex = 0; // Track current level (0-based)
-  private levelInfoText!: Text; // Display current level info
   private readonly MAX_LEVEL = 999; // Infinite levels (show 999+ for display)
 
   constructor() {
@@ -91,18 +90,6 @@ export class PrimitiveTestScreen extends Container {
     this.instructions.position.set(20, 20);
     this.instructions.visible = false; // Hide instructions - game is self-explanatory
     this.addChild(this.instructions);
-
-    // Add level info display at top
-    this.levelInfoText = new Text({
-      text: "Loading level...",
-      style: {
-        fontSize: 20,
-        fill: 0xffffff,
-        fontWeight: "bold",
-      },
-    });
-    this.levelInfoText.anchor.set(0.5, 0);
-    this.addChild(this.levelInfoText);
 
     // Load first level
     try {
@@ -191,11 +178,6 @@ export class PrimitiveTestScreen extends Container {
         .fill(UI_CONFIG.COLORS.screenBackground);
     }
 
-    // Position level info at top center
-    if (this.levelInfoText) {
-      this.levelInfoText.position.set(width / 2, 20);
-    }
-
     if (this.game) {
       // Update game container viewport dimensions (for modals)
       this.game.updateViewport(width, height);
@@ -270,9 +252,6 @@ export class PrimitiveTestScreen extends Container {
         (headlineDisplay as any).setLevel(levelIndex + 1);
       }
 
-      // Update level info display
-      this.levelInfoText.text = `Level ${levelIndex + 1} - ${(levelConfig as any).name || "Procedurally Generated"}`;
-
       // Listen for path complete event to auto-advance after 6 seconds
 
       // Create one-time handler for path_complete
@@ -290,7 +269,6 @@ export class PrimitiveTestScreen extends Container {
       this.game.onGame("path_complete", pathCompleteHandler);
     } catch (error) {
       console.error(`❌ Failed to load level ${levelIndex + 1}:`, error);
-      this.levelInfoText.text = `Error loading level ${levelIndex + 1}`;
     }
   }
 

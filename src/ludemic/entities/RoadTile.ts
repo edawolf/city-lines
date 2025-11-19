@@ -839,21 +839,25 @@ export class RoadTile extends Container {
 
     // Create particle burst effect on every rotation
     try {
-      const particleManager = ParticleManager.getInstance();
+      // Get particle manager from parent CityGrid
+      const cityGrid = this.parent as any; // CityGrid is the parent
+      if (cityGrid && cityGrid.getTileParticleManager) {
+        const particleManager = cityGrid.getTileParticleManager();
 
-      // Get position relative to the particle container
-      // Particle container is a child of CityGrid (this tile's grandparent)
-      const particleContainer = particleManager.getContainer();
-      const localPos = particleContainer.toLocal(this.position, this.parent);
+        // Get position relative to the particle container
+        // Particle container is a child of CityGrid (same parent as this tile)
+        const particleContainer = particleManager.getContainer();
+        const localPos = particleContainer.toLocal(this.position, this.parent);
 
-      // Use centralized particle config
-      const config = PARTICLE_CONFIG.TILE_ROTATION;
-      particleManager.createBurst(localPos.x, localPos.y, config.count, {
-        color: config.color,
-        size: config.size,
-        speed: config.speed,
-        lifetime: config.lifetime,
-      });
+        // Use centralized particle config
+        const config = PARTICLE_CONFIG.TILE_ROTATION;
+        particleManager.createBurst(localPos.x, localPos.y, config.count, {
+          color: config.color,
+          size: config.size,
+          speed: config.speed,
+          lifetime: config.lifetime,
+        });
+      }
     } catch (error) {
       // Particle system not available - silently fail
     }

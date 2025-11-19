@@ -35,6 +35,9 @@ export interface ParticleConfettiConfig {
   angleSpread: number; // Spread angle (degrees)
   rotationSpeed: number; // Spin speed
   textureName: string; // Particle sprite to use
+  spawnX: number; // Spawn X position as percent of screen width (0.0-1.0)
+  spawnY: number; // Spawn Y position as percent of screen height (0.0-1.0)
+  angle: number; // Base emission angle (270 = up, 90 = down, 0 = right, 180 = left)
 }
 
 /**
@@ -45,18 +48,18 @@ export const PARTICLE_CONFIG = {
    * TILE ROTATION - Small sparkle burst when rotating a tile
    */
   TILE_ROTATION: {
-    count: 70,
-    color: 0x4caf50, // Green (matches road theme)
-    size: 50,
-    speed: 8,
-    lifetime: 0.6,
+    count: 50,
+    color: 0x95d395, // Green (matches road theme)
+    size: 90,
+    speed: 20,
+    lifetime: 0.9,
     textureName: "light_puff.png",
     angleVariance: 360, // Full circle burst
-    speedVariance: 0.3, // 30% speed variation
-    accelerationFactor: 0.1, // Gentle slowdown
+    speedVariance: 0.2, // 30% speed variation
+    accelerationFactor: 0.4, // Gentle slowdown
     gravity: 0, // No gravity
-    blendMode: "screen" as const,
-    alphaStart: 1.0,
+    blendMode: "normal" as const,
+    alphaStart: 0.2,
     alphaEnd: 0.0,
   } as ParticleBurstConfig,
 
@@ -66,17 +69,20 @@ export const PARTICLE_CONFIG = {
   WIN_CONFETTI: {
     spawnerCount: 5,
     particlesPerSpawner: 200,
-    particleLifetime: 2.0,
-    emitterLifetime: 0.5,
-    spawnRate: 80,
-    sizeStart: 8,
-    sizeEnd: 4,
-    speed: 8,
-    speedVariance: 3,
-    gravity: 0.5,
-    angleSpread: 30,
-    rotationSpeed: 5,
+    particleLifetime: 3.0,
+    emitterLifetime: 1.0,
+    spawnRate: 100,
+    sizeStart: 100,
+    sizeEnd: 10,
+    speed: 12,
+    speedVariance: 5,
+    gravity: 1.0,
+    angleSpread: 45,
+    rotationSpeed: 8,
     textureName: "circle_05.png",
+    spawnX: 0.5, // Middle of screen (50%)
+    spawnY: 1.0, // Bottom of screen (100%)
+    angle: 270, // Shoot upward
   } as ParticleConfettiConfig,
 
   /**
