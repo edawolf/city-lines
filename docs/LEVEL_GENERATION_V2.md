@@ -482,11 +482,77 @@ scrambleRotations(tiles, rng): ScrambledTiles[] {
 
 ## 4. Validation
 
-After generation, validate the level before returning:
+After generation, validate the level before returning. Validation happens in **Phase 3** (after tile assignment, before scrambling).
+
+### 4.1 Crossroads Detection (validateNoFourWayIntersections)
+
+**Purpose:** Detect if any tile requires 4+ connections, which would need a crossroad tile (not available in the game).
+
+**When Called:** After Phase 3 (tile type assignment), before Phase 4 (scrambling).
+
+**Algorithm:**
+
+```typescript
+validateNoFourWayIntersections(): void {
+  // Build connection map from solution paths
+  const pathConnections = new Map<string, Set<string>>()
+
+  // For each path, record all tile-to-tile connections
+  for (const path of solutionPaths) {
+    const landmark = landmarks[pathIndex]
+
+    // Landmark → first tile connection
+    if (path.length > 0) {
+      addBidirectionalConnection(pathConnections, landmark, path[0])
+    }
+
+    // Tile → tile connections along path
+    for (i = 0; i < path.length - 1; i++) {
+      addBidirectionalConnection(pathConnections, path[i], path[i + 1])
+    }
+
+    // Last tile → turnpike connection
+    if (path.length > 0) {
+      addBidirectionalConnection(pathConnections, path[path.length - 1], turnpike)
+    }
+  }
+
+  // Check each tile's connection count
+  for (const [tilePos, connections] of pathConnections.entries()) {
+    if (connections.size >= 4) {
+      // This tile needs 4+ openings (crossroad) - INVALID!
+      throw Error(
+        `Tile at ${tilePos} requires ${connections.size} connections ` +
+        `(4-way crossroad), but max tile type is T-junction (3 connections)`
+      )
+    }
+  }
+}
+```
+
+**Why This Matters:**
+
+- The game only has 3 tile types: **straight** (2 openings), **corner** (2 openings), **T-junction** (3 openings)
+- If paths converge to create a 4-way intersection, the level is **unsolvable**
+- This validation catches these cases and triggers seed retry
+
+**Error Triggering:**
+
+When this validation throws an error:
+1. The error is caught by `LevelGenerator.generate()` retry loop
+2. The bad seed is marked in `badSeeds` Set
+3. Next seed (baseSeed + 1) is tried
+4. Up to 10 attempts before giving up
+
+---
+
+### 4.2 Full Level Validation (Optional - Not Currently Used)
+
+The following validation checks are available but **not currently enabled** in the implementation. They can be added if needed:
 
 ```typescript
 validateLevel(tiles, landmarks, turnpike): boolean {
-  // 1. No crossroads (4 neighbors)
+  // 1. No crossroads (4 neighbors) - HANDLED by validateNoFourWayIntersections
   for (tile of tiles) {
     const neighbors = getConnectedNeighbors(tile, tiles)
     if (neighbors.length > 3) {
