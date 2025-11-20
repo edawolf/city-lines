@@ -15,7 +15,7 @@ export const UI_CONFIG = {
     levelFontSizePercent: 0.025, // 2.5% of viewport width
     levelMinFontSize: 18, // Minimum font size in pixels
     levelMaxFontSize: 32, // Maximum font size in pixels
-    levelPaddingTopPercent: 0.15, // 15% padding from top of screen
+    levelPaddingTopPercent: 0.13, // 15% padding from top of screen
 
     // Headline positioning (from top of screen)
     headlinePaddingTopPercent: 0.001, // 20% padding from top of screen
