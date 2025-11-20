@@ -83,7 +83,7 @@ export class HeadlineDisplay extends Container {
         fontSize: 20, // Will be updated in resize()
         fill: 0xffffff, // White text (same as level text)
         fontFamily: '"Zain", sans-serif',
-        fontWeight: 400,
+        fontWeight: "normal",
         align: "center",
         wordWrap: true,
         wordWrapWidth: 700, // Will be updated in resize()
@@ -136,7 +136,7 @@ export class HeadlineDisplay extends Container {
         fontSize: 24,
         fill: 0xffffff, // White text
         fontFamily: '"Zain", sans-serif',
-        fontWeight: 700,
+        fontWeight: "bold",
         align: "center",
       },
     });

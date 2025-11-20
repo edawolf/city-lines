@@ -130,8 +130,14 @@ export class ParticleManager {
     // So we can use x,y directly
 
     console.log("[ParticleManager] 🎨 Creating burst with config:", {
-      x, y, count, color, size, speed, lifetime,
-      textureName: particleConfig.textureName
+      x,
+      y,
+      count,
+      color,
+      size,
+      speed,
+      lifetime,
+      textureName: particleConfig.textureName,
     });
 
     // Create the spawner (it will auto-emit and destroy itself)
@@ -225,10 +231,15 @@ export class ParticleManager {
           `Confetti_${i}_${Date.now()}`,
         )
         .then(() => {
-          console.log(`[ParticleManager] ✅ Confetti spawner ${i} created successfully`);
+          console.log(
+            `[ParticleManager] ✅ Confetti spawner ${i} created successfully`,
+          );
         })
         .catch((err) => {
-          console.error(`[ParticleManager] ❌ Failed to create confetti spawner ${i}:`, err);
+          console.error(
+            `[ParticleManager] ❌ Failed to create confetti spawner ${i}:`,
+            err,
+          );
         });
     }
   }

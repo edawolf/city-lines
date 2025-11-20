@@ -280,8 +280,8 @@ export class PrimitiveTestScreen extends Container {
     if (this.currentLevelIndex < maxLevel) {
       this.currentLevelIndex++;
       this.loadLevel(this.currentLevelIndex);
-    } else {
     }
+    // Already at max level - do nothing
   }
 
   /**
@@ -291,8 +291,8 @@ export class PrimitiveTestScreen extends Container {
     if (this.currentLevelIndex > 0) {
       this.currentLevelIndex--;
       this.loadLevel(this.currentLevelIndex);
-    } else {
     }
+    // Already at min level - do nothing
   }
 
   /**
@@ -310,8 +310,8 @@ export class PrimitiveTestScreen extends Container {
     if (levelIndex >= 0 && levelIndex <= maxLevel) {
       this.currentLevelIndex = levelIndex;
       this.loadLevel(this.currentLevelIndex);
-    } else {
     }
+    // Invalid level index - do nothing
   }
 
   /**

@@ -405,7 +405,7 @@ export class ParticleEditorScreen extends Container {
     `;
 
     // Add spawners as children
-    this.spawners.forEach((spawner, index) => {
+    this.spawners.forEach((spawner) => {
       const isSelected =
         this.sceneExplorerState.selectedSpawnerId === spawner.id;
       const icon = spawner.enabled ? "💫" : "⭕";

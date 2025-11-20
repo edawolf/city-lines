@@ -48,7 +48,7 @@ export class TitleScreen extends Container {
     await Promise.all([
       document.fonts.load('400 72px "Protest Guerrilla"'),
       document.fonts.load('400 20px "Zain"'),
-      document.fonts.load('700 24px "Zain"')
+      document.fonts.load('700 24px "Zain"'),
     ]);
 
     // Create dark background
@@ -72,7 +72,7 @@ export class TitleScreen extends Container {
         fontSize: 72, // Placeholder, will be updated in resize()
         fill: 0xffffff,
         fontFamily: '"Protest Guerrilla", sans-serif',
-        fontWeight: 400,
+        fontWeight: "normal",
         align: "center",
       },
     });
@@ -87,7 +87,7 @@ export class TitleScreen extends Container {
         fontSize: 20, // Placeholder, will be updated in resize()
         fill: 0xffffff,
         fontFamily: '"Zain", sans-serif',
-        fontWeight: 400,
+        fontWeight: "normal",
         align: "center",
         wordWrap: true,
         wordWrapWidth: 600, // Placeholder, will be updated in resize()
@@ -104,7 +104,7 @@ export class TitleScreen extends Container {
         fontSize: 24,
         fill: 0xffffff,
         fontFamily: '"Zain", sans-serif',
-        fontWeight: 700,
+        fontWeight: "bold",
       },
     });
 
@@ -122,11 +122,15 @@ export class TitleScreen extends Container {
     this.miniPuzzle = new Container();
 
     // Add getTileParticleManager method so tiles can access particles
-    (this.miniPuzzle as any).getTileParticleManager = () => this.particleManager;
-    console.log("[TitleScreen] 🎯 Added getTileParticleManager to miniPuzzle:", {
-      hasMethod: !!(this.miniPuzzle as any).getTileParticleManager,
-      particleManager: this.particleManager
-    });
+    (this.miniPuzzle as any).getTileParticleManager = () =>
+      this.particleManager;
+    console.log(
+      "[TitleScreen] 🎯 Added getTileParticleManager to miniPuzzle:",
+      {
+        hasMethod: !!(this.miniPuzzle as any).getTileParticleManager,
+        particleManager: this.particleManager,
+      },
+    );
 
     await this.createMiniPuzzle();
     this.addChild(this.miniPuzzle);
@@ -359,7 +363,9 @@ export class TitleScreen extends Container {
       this.taglineText.style.fontSize = taglineFontSize;
       this.taglineText.style.wordWrap = true;
       this.taglineText.style.wordWrapWidth = wrapWidth;
-      this.taglineText.text = this.taglineText.text; // Force text update
+      // Force text layout update by setting text again
+      const currentText = this.taglineText.text;
+      this.taglineText.text = currentText;
       this.taglineText.x = centerX;
 
       // Calculate desired Y position
@@ -493,9 +499,9 @@ export class TitleScreen extends Container {
         this.handHint,
         {
           rotation: -0.52, // Rotate from center to left
-          alpha: 0.8
+          alpha: 0.8,
         },
-        { duration: 0.75, ease: "easeInOut" }
+        { duration: 0.75, ease: "easeInOut" },
       ).finished.then(() => {
         if (!this.handHint || !this.handHint.parent) return;
 
@@ -504,9 +510,9 @@ export class TitleScreen extends Container {
           this.handHint,
           {
             rotation: 0, // Rotate from left back to center
-            alpha: 1
+            alpha: 1,
           },
-          { duration: 0.75, ease: "easeInOut" }
+          { duration: 0.75, ease: "easeInOut" },
         ).finished.then(() => {
           if (this.handHint && this.handHint.parent) {
             setTimeout(rotateLoop, 500); // Pause at center before next loop
@@ -522,13 +528,15 @@ export class TitleScreen extends Container {
    */
   private hideHandHint(): void {
     if (this.handHint) {
-      animate(this.handHint, { alpha: 0 }, { duration: 0.3 }).finished.then(() => {
-        if (this.handHint) {
-          this.removeChild(this.handHint);
-          this.handHint.destroy();
-          this.handHint = undefined;
-        }
-      });
+      animate(this.handHint, { alpha: 0 }, { duration: 0.3 }).finished.then(
+        () => {
+          if (this.handHint) {
+            this.removeChild(this.handHint);
+            this.handHint.destroy();
+            this.handHint = undefined;
+          }
+        },
+      );
     }
   }
 
@@ -537,7 +545,9 @@ export class TitleScreen extends Container {
    */
   private updateTileHighlights(): void {
     // Build connection graph - tiles are in ONE ROW (horizontal)
-    const grid: (RoadTile | null)[][] = [[this.puzzleTiles[0], this.puzzleTiles[1], this.puzzleTiles[2]]];
+    const grid: (RoadTile | null)[][] = [
+      [this.puzzleTiles[0], this.puzzleTiles[1], this.puzzleTiles[2]],
+    ];
     const connectionGraph = PathValidator.buildConnectionGraph(grid);
 
     // Find turnpike (last tile)

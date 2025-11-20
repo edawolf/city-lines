@@ -32,7 +32,7 @@ export class AudioManager {
   public playSFX(alias: string, volume = 1.0): void {
     try {
       engine().audio.sfx.play(alias, { volume });
-    } catch (error) {
+    } catch (_error) {
       // Audio not available - silently fail
     }
   }
@@ -45,7 +45,7 @@ export class AudioManager {
   public async playBGM(alias: string, volume = 1.0): Promise<void> {
     try {
       await engine().audio.bgm.play(alias, { volume });
-    } catch (error) {
+    } catch (_error) {
       // Audio not available - silently fail
     }
   }
@@ -149,7 +149,7 @@ export class AudioManager {
   public async playBGMusic(volume = 0.5): Promise<void> {
     try {
       await engine().audio.bgm.play("main/sounds/traffic.mp3", { volume });
-    } catch (error) {
+    } catch (_error) {
       // Audio not available - silently fail
     }
   }
@@ -164,7 +164,7 @@ export class AudioManager {
         volume,
         loop: true,
       });
-    } catch (error) {
+    } catch (_error) {
       // Audio not available - silently fail
     }
   }

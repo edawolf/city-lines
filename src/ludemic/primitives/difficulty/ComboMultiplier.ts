@@ -98,6 +98,7 @@ export class ComboMultiplier extends Primitive {
    */
   private resetCombo(): void {
     if (this.currentCombo > 0) {
+      // Combo is active - will be reset below
     }
 
     this.currentCombo = 0;

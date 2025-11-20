@@ -360,7 +360,7 @@ export class PathValidator {
         .map((tile) => `(${tile.gridPos.row},${tile.gridPos.col})`)
         .join(" → ");
       console.log(`✅ Path found (length ${result.length}): ${pathStr}`);
-    } else {
     }
+    // No path - do nothing
   }
 }

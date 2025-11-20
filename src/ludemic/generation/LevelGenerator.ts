@@ -1070,7 +1070,10 @@ export class LevelGenerator {
   private placeTreeDecorations(): void {
     // Array of decoration options to randomly select from
     const DECORATION_OPTIONS = ["tree-1", "tree-2", "bush-1"];
-    console.log("[LevelGenerator] 🌳 Decoration options available:", DECORATION_OPTIONS);
+    console.log(
+      "[LevelGenerator] 🌳 Decoration options available:",
+      DECORATION_OPTIONS,
+    );
 
     // Find all empty tiles (positions with no road, landmark, or turnpike)
     const emptyTiles: TilePosition[] = [];

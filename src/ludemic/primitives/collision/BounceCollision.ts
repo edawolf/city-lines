@@ -110,8 +110,8 @@ export class BounceCollision extends Primitive {
             this.bounceOffTarget(target, movement);
             bounced = true;
           }
-        } else {
         }
+        // Target not found - skip
       });
     }
 

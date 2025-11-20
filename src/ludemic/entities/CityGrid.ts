@@ -195,7 +195,7 @@ export class CityGrid extends Container {
   /**
    * Handle tile rotation - rebuild graph and validate paths
    */
-  private handleTileRotated(data: any): void {
+  private handleTileRotated(_data: unknown): void {
     // Rebuild connection graph
     this.rebuildConnectionGraph();
 
@@ -374,7 +374,12 @@ export class CityGrid extends Container {
     console.log("[CityGrid] 🎉 Attempting to create confetti...");
     console.log("[CityGrid] - this.game:", this.game);
     console.log("[CityGrid] - particleManager:", this.game?.particleManager);
-    console.log("[CityGrid] - viewport:", this.viewportWidth, "x", this.viewportHeight);
+    console.log(
+      "[CityGrid] - viewport:",
+      this.viewportWidth,
+      "x",
+      this.viewportHeight,
+    );
 
     if (!this.game) {
       console.error("[CityGrid] ❌ Game reference not set!");
@@ -387,15 +392,25 @@ export class CityGrid extends Container {
     }
 
     if (this.viewportWidth === 0 || this.viewportHeight === 0) {
-      console.warn("[CityGrid] ⚠️ Viewport dimensions are zero! Using fallback 800x600");
+      console.warn(
+        "[CityGrid] ⚠️ Viewport dimensions are zero! Using fallback 800x600",
+      );
       this.game.particleManager.createConfetti(800, 600);
       return;
     }
 
     // Pass screen dimensions (not grid dimensions)
     // Particle spawn positions are configured in particle-config.ts as percentages
-    console.log("[CityGrid] ✅ Creating confetti with viewport:", this.viewportWidth, "x", this.viewportHeight);
-    this.game.particleManager.createConfetti(this.viewportWidth, this.viewportHeight);
+    console.log(
+      "[CityGrid] ✅ Creating confetti with viewport:",
+      this.viewportWidth,
+      "x",
+      this.viewportHeight,
+    );
+    this.game.particleManager.createConfetti(
+      this.viewportWidth,
+      this.viewportHeight,
+    );
   }
 
   /**
@@ -591,7 +606,7 @@ export class CityGrid extends Container {
     // Update tile particle system (local effects)
     try {
       this.tileParticleManager.update(deltaTime);
-    } catch (error) {
+    } catch (_error) {
       // ParticleManager not initialized yet - silently ignore
     }
   }

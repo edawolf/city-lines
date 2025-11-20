@@ -21,5 +21,17 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": [
+    "src/app",
+    "src/engine",
+    "src/ludemic",
+    "src/main.ts",
+    "src/pixi-mixins.d.ts",
+    "src/vite-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "pixi-scaffold-particle-editor"
+  ]
 }

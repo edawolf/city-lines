@@ -40,6 +40,7 @@ export class PrimitiveFactory {
    */
   static register(name: string, primitiveClass: new () => Primitive): void {
     if (this.registry.has(name)) {
+      // Already registered - overwrite
     }
     this.registry.set(name, primitiveClass);
   }

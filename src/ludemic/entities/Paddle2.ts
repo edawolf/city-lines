@@ -33,7 +33,7 @@ export class Paddle2 extends Container {
     this.addChild(this.graphics);
   }
 
-  addPrimitive(type: string, primitive: Primitive, config: any): void {
+  addPrimitive(type: string, primitive: Primitive, config: unknown): void {
     primitive.init(this, config);
     this.primitives.set(type, primitive);
   }

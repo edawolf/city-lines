@@ -38,8 +38,8 @@ export class GameContainer extends Container {
 
   // Juice systems
   private particles: Particle[] = [];
-  private particleContainer?: Container; // Container for screen-wide particle effects
-  private particleManager?: ParticleManager; // ParticleManager (initialized at GameContainer level)
+  public particleContainer?: Container; // Container for screen-wide particle effects
+  public particleManager?: ParticleManager; // ParticleManager (initialized at GameContainer level)
   private shakeOffset = { x: 0, y: 0 };
   private shakeIntensity = 0;
   private shakeDuration = 0;
@@ -559,7 +559,7 @@ export class GameContainer extends Container {
       if (saved) {
         this.highScore = parseInt(saved, 10);
       }
-    } catch (e) {
+    } catch (_e) {
       // LocalStorage not available - silently fail
     }
   }
@@ -570,7 +570,7 @@ export class GameContainer extends Container {
   private saveHighScore(): void {
     try {
       localStorage.setItem("ludemic_high_score", this.highScore.toString());
-    } catch (e) {
+    } catch (_e) {
       // LocalStorage not available - silently fail
     }
   }

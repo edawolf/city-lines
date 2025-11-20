@@ -60,7 +60,9 @@ export class SoundTrigger extends Primitive {
         speed: this.config.pitch ?? 1.0,
         loop: this.config.loop ?? false,
       });
-    } catch (error) {}
+    } catch (_error) {
+      // Silently fail if sound cannot be played
+    }
   };
 
   destroy(): void {

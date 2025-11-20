@@ -11,7 +11,6 @@ import type { EntityConfig } from "../config/types";
 import { UI_CONFIG } from "../config/ui-config";
 import { PARTICLE_CONFIG } from "../config/particle-config";
 import { audioManager } from "../AudioManager";
-import { ParticleManager } from "../effects/ParticleManager";
 
 /**
  * Direction enum for road connections
@@ -235,7 +234,7 @@ export class RoadTile extends Container {
       houseTexture =
         Assets.cache.get("house.png") ||
         Assets.cache.get("main/images/house.png");
-    } catch (error) {
+    } catch (_error) {
       // Silently fail - will use emoji fallback
     }
 
@@ -336,7 +335,7 @@ export class RoadTile extends Container {
         houseTexture =
           Assets.cache.get("house.png") ||
           Assets.cache.get("main/images/house.png");
-      } catch (error) {
+      } catch (_error) {
         // Silently fail - will use emoji fallback
       }
 
@@ -382,7 +381,7 @@ export class RoadTile extends Container {
         gasTexture =
           Assets.cache.get("gas.png") ||
           Assets.cache.get("main/images/gas.png");
-      } catch (error) {
+      } catch (_error) {
         // Silently fail - will use emoji fallback
       }
 
@@ -428,7 +427,7 @@ export class RoadTile extends Container {
         dinerTexture =
           Assets.cache.get("diner.png") ||
           Assets.cache.get("main/images/diner.png");
-      } catch (error) {
+      } catch (_error) {
         // Silently fail - will use emoji fallback
       }
 
@@ -474,7 +473,7 @@ export class RoadTile extends Container {
         marketTexture =
           Assets.cache.get("market.png") ||
           Assets.cache.get("main/images/market.png");
-      } catch (error) {
+      } catch (_error) {
         // Silently fail - will use emoji fallback
       }
 
@@ -607,7 +606,7 @@ export class RoadTile extends Container {
       turnpikeTexture =
         Assets.cache.get("turnpike.png") ||
         Assets.cache.get("main/images/turnpike.png");
-    } catch (error) {
+    } catch (_error) {
       // Silently fail - will use emoji fallback
     }
 
@@ -665,10 +664,15 @@ export class RoadTile extends Container {
 
       // If not in cache, load it
       if (!treeTexture) {
-        treeTexture = await Assets.load(`/assets/main/images/${decorationName}.png`);
+        treeTexture = await Assets.load(
+          `/assets/main/images/${decorationName}.png`,
+        );
       }
-    } catch (error) {
-      console.warn(`[RoadTile] Failed to load decoration ${decorationName}:`, error);
+    } catch (_error) {
+      console.warn(
+        `[RoadTile] Failed to load decoration ${decorationName}:`,
+        _error,
+      );
       // Silently fail - will use emoji fallback
     }
 
@@ -965,7 +969,7 @@ export class RoadTile extends Container {
       console.log("[RoadTile] 🎯 Checking for particle manager...", {
         hasParent: !!this.parent,
         parentType: this.parent?.constructor?.name,
-        hasMethod: !!(cityGrid && cityGrid.getTileParticleManager)
+        hasMethod: !!(cityGrid && cityGrid.getTileParticleManager),
       });
 
       if (cityGrid && cityGrid.getTileParticleManager) {
@@ -990,9 +994,9 @@ export class RoadTile extends Container {
       } else {
         console.warn("[RoadTile] ⚠️ No particle manager found on parent");
       }
-    } catch (error) {
+    } catch (_error) {
       // Particle system not available - silently fail
-      console.error("[RoadTile] ❌ Particle error:", error);
+      console.error("[RoadTile] ❌ Particle error:", _error);
     }
 
     // Emit event for path validation

@@ -34,6 +34,7 @@ export class EntityFactory {
     entityClass: new (config: EntityConfig) => Container,
   ): void {
     if (this.registry.has(name)) {
+      // Already registered - overwrite
     }
     this.registry.set(name, entityClass);
   }

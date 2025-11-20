@@ -3,7 +3,16 @@ import prettier from "eslint-plugin-prettier/recommended";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "scripts/**", "src/app/debug/**", "src/app/layout/**"] },
+  {
+    ignores: [
+      "dist",
+      "scripts/**",
+      "src/app/debug/**",
+      "src/app/layout/**",
+      "pixi-scaffold-particle-editor/**",
+      "src/packages/pixi-particle-editor/**",
+    ],
+  },
   {
     extends: [
       js.configs.recommended,

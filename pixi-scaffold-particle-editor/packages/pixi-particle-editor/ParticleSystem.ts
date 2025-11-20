@@ -1,10 +1,5 @@
 import { Container, Sprite, Texture, Ticker, Graphics } from "pixi.js";
-import type {
-  ParticleConfig,
-  VFXData,
-  Spawner,
-  ParticleInstance,
-} from "./types";
+import type { ParticleConfig, VFXData, Spawner } from "./types";
 import { deepCloneConfig } from "./types";
 
 /**
