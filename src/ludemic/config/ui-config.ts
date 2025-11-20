@@ -172,6 +172,37 @@ export const UI_CONFIG = {
   },
 
   /**
+   * Next Level Button (Level completion)
+   */
+  NEXT_LEVEL_BUTTON: {
+    // Button sizing
+    width: 180,
+    height: 60,
+
+    // Font styling
+    fontSizePercent: 0.02, // 2% of viewport width
+    minFontSize: 18,
+    maxFontSize: 28,
+
+    // Positioning
+    offsetFromBottomPercent: 0.12, // 15% from bottom of screen
+
+    // Animation timing
+    fadeInDuration: 0.5, // Seconds to fade in
+    fadeOutDuration: 0.3, // Seconds to fade out
+    pulseDuration: 2.0, // Seconds for pulse animation cycle
+    delayAfterComplete: 2.0, // Seconds to wait after level complete before showing
+
+    // Colors (white button with green text)
+    colors: {
+      default: 0xffffff, // White
+      hover: 0xf5f5f5, // Light gray (slightly darker white)
+      pressed: 0xe0e0e0, // Gray (pressed state)
+      text: 0x4caf50, // Green text
+    },
+  },
+
+  /**
    * Grid and Tile Settings
    */
   GRID: {

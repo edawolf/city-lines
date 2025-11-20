@@ -1,5 +1,7 @@
 import { Container, Graphics, Text } from "pixi.js";
 import type { Ticker } from "pixi.js";
+import { FancyButton } from "@pixi/ui";
+import { animate } from "motion";
 
 import { GameBuilder, type GameContainer } from "../../ludemic/GameBuilder";
 import { LayoutIntentCompiler } from "../layout/LayoutIntent";
@@ -35,6 +37,7 @@ export class PrimitiveTestScreen extends Container {
   private tuningControls!: TuningControls;
   private currentLevelIndex = 0; // Track current level (0-based)
   private readonly MAX_LEVEL = 999; // Infinite levels (show 999+ for display)
+  private nextLevelButton?: FancyButton;
 
   constructor() {
     super();
@@ -170,6 +173,117 @@ export class PrimitiveTestScreen extends Container {
   }
 
   /**
+   * Create "Next Level" button (reads from UI_CONFIG)
+   */
+  private createNextLevelButton(): void {
+    const config = UI_CONFIG.NEXT_LEVEL_BUTTON;
+
+    // Create button text (green color from config)
+    const buttonText = new Text({
+      text: "Next",
+      style: {
+        fontSize: 24, // Will be updated in resize()
+        fill: config.colors.text,
+        fontFamily: '"Zain", sans-serif',
+        fontWeight: "bold",
+      },
+    });
+
+    // Create FancyButton with three states (colors from config)
+    this.nextLevelButton = new FancyButton({
+      defaultView: new Graphics()
+        .rect(0, 0, config.width, config.height)
+        .fill(config.colors.default),
+      hoverView: new Graphics()
+        .rect(0, 0, config.width, config.height)
+        .fill(config.colors.hover),
+      pressedView: new Graphics()
+        .rect(0, 0, config.width, config.height)
+        .fill(config.colors.pressed),
+      text: buttonText,
+    });
+    this.nextLevelButton.anchor.set(0.5);
+    this.nextLevelButton.alpha = 0; // Start invisible
+    this.nextLevelButton.eventMode = "static"; // Make it clickable
+    this.addChild(this.nextLevelButton);
+
+    // Setup click listener
+    this.nextLevelButton.onPress.connect(() => {
+      this.hideNextLevelButton();
+      this.nextLevel();
+    });
+
+    // Position will be set in resize()
+  }
+
+  /**
+   * Show next level button with fade-in animation (reads from UI_CONFIG)
+   */
+  private showNextLevelButton(): void {
+    const config = UI_CONFIG.NEXT_LEVEL_BUTTON;
+
+    if (!this.nextLevelButton) {
+      this.createNextLevelButton();
+    }
+
+    if (this.nextLevelButton) {
+      // Position at bottom center (using config)
+      this.nextLevelButton.x = this.screenWidth / 2;
+      this.nextLevelButton.y =
+        this.screenHeight - this.screenHeight * config.offsetFromBottomPercent;
+
+      // Fade in (duration from config)
+      animate(
+        this.nextLevelButton,
+        { alpha: 1 },
+        { duration: config.fadeInDuration },
+      );
+
+      // Start pulsing animation
+      this.startButtonPulse();
+    }
+  }
+
+  /**
+   * Hide next level button with fade-out animation (reads from UI_CONFIG)
+   */
+  private hideNextLevelButton(): void {
+    if (this.nextLevelButton) {
+      const config = UI_CONFIG.NEXT_LEVEL_BUTTON;
+      animate(
+        this.nextLevelButton,
+        { alpha: 0 },
+        { duration: config.fadeOutDuration },
+      );
+    }
+  }
+
+  /**
+   * Start pulsing animation on next level button (reads from UI_CONFIG)
+   */
+  private startButtonPulse(): void {
+    if (!this.nextLevelButton) return;
+
+    const config = UI_CONFIG.NEXT_LEVEL_BUTTON;
+
+    const pulse = () => {
+      if (!this.nextLevelButton || !this.nextLevelButton.parent) return;
+
+      animate(
+        this.nextLevelButton.scale,
+        { x: [1, 1.05, 1], y: [1, 1.05, 1] },
+        { duration: config.pulseDuration, ease: "easeInOut" },
+      ).finished.then(() => {
+        // Loop pulse animation
+        if (this.nextLevelButton && this.nextLevelButton.parent) {
+          pulse();
+        }
+      });
+    };
+    pulse();
+  }
+
+  /**
    * Handle window resize - responsive layout for City Lines
    */
   resize(width: number, height: number): void {
@@ -182,6 +296,14 @@ export class PrimitiveTestScreen extends Container {
         .clear()
         .rect(0, 0, width, height)
         .fill(UI_CONFIG.COLORS.screenBackground);
+    }
+
+    // Reposition next level button if it exists (using config)
+    if (this.nextLevelButton && this.nextLevelButton.alpha > 0) {
+      const buttonConfig = UI_CONFIG.NEXT_LEVEL_BUTTON;
+      this.nextLevelButton.x = width / 2;
+      this.nextLevelButton.y =
+        height - height * buttonConfig.offsetFromBottomPercent;
     }
 
     if (this.game) {
@@ -215,6 +337,9 @@ export class PrimitiveTestScreen extends Container {
    * Load a specific level
    */
   private async loadLevel(levelIndex: number): Promise<void> {
+    // Hide next level button when loading new level
+    this.hideNextLevelButton();
+
     // Remove existing game
     if (this.game) {
       this.removeChild(this.game);
@@ -258,17 +383,18 @@ export class PrimitiveTestScreen extends Container {
         (headlineDisplay as any).setLevel(levelIndex + 1);
       }
 
-      // Listen for path complete event to auto-advance after 6 seconds
+      // Listen for path complete event to show Next Level button
 
       // Create one-time handler for path_complete
       const pathCompleteHandler = () => {
-        // Wait 6 seconds, then advance to next level automatically
+        const buttonConfig = UI_CONFIG.NEXT_LEVEL_BUTTON;
+        // Wait (config delay) after completion, then show Next Level button
         setTimeout(() => {
           const maxLevel = this.MAX_LEVEL - 1;
           if (this.currentLevelIndex < maxLevel) {
-            this.nextLevel();
+            this.showNextLevelButton();
           }
-        }, 6000); // 6 seconds
+        }, buttonConfig.delayAfterComplete * 1000); // Convert seconds to milliseconds
       };
 
       // Use onGame() to listen to GameContainer's internal event emitter
