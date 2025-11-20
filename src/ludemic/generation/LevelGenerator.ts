@@ -1237,7 +1237,7 @@ export class LevelGenerator {
       if (connections.size >= 4) {
         const [rowStr, colStr] = tileKey.split(",");
         throw new Error(
-          `Tile at (${rowStr},${colStr}) requires ${connections.size} connections (4-way crossroad), but max tile type is T-junction (3 connections)`
+          `Tile at (${rowStr},${colStr}) requires ${connections.size} connections (4-way crossroad), but max tile type is T-junction (3 connections)`,
         );
       }
     }
@@ -1253,8 +1253,12 @@ export class LevelGenerator {
       const path = this.solutionPaths[i];
       const landmark = this.landmarks[i];
 
-      console.log(`  Path ${i}: Landmark at (${landmark.row},${landmark.col}) → Turnpike at (${this.turnpike.row},${this.turnpike.col})`);
-      console.log(`    Path tiles: ${path.map(p => `(${p.row},${p.col})`).join(' → ')}`);
+      console.log(
+        `  Path ${i}: Landmark at (${landmark.row},${landmark.col}) → Turnpike at (${this.turnpike.row},${this.turnpike.col})`,
+      );
+      console.log(
+        `    Path tiles: ${path.map((p) => `(${p.row},${p.col})`).join(" → ")}`,
+      );
 
       if (path.length === 0) {
         console.warn(`    ⚠️  EMPTY PATH!`);
@@ -1264,10 +1268,14 @@ export class LevelGenerator {
       // Check if last tile is adjacent to turnpike
       const lastTile = path[path.length - 1];
       const distToTurnpike = this.manhattanDistance(lastTile, this.turnpike);
-      console.log(`    Last tile: (${lastTile.row},${lastTile.col}), distance to turnpike: ${distToTurnpike}`);
+      console.log(
+        `    Last tile: (${lastTile.row},${lastTile.col}), distance to turnpike: ${distToTurnpike}`,
+      );
 
       if (distToTurnpike > 1) {
-        console.warn(`    ⚠️  PATH DOESN'T REACH TURNPIKE! Last tile is ${distToTurnpike} tiles away`);
+        console.warn(
+          `    ⚠️  PATH DOESN'T REACH TURNPIKE! Last tile is ${distToTurnpike} tiles away`,
+        );
       }
     }
   }

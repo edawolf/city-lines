@@ -954,7 +954,88 @@ interface GenerationStats {
 
 ---
 
-## 12. Future Enhancements
+## 12. Level Complete Celebration
+
+### 12.1 Traffic Light Animation
+
+When a level is completed (all landmarks connected to turnpike, no dead-end roads), a traffic light animation plays alongside confetti particles.
+
+**Animation Sequence:**
+
+```typescript
+playTrafficLightAnimation(): void {
+  // 1. Add traffic light to game container (top layer)
+  if (!this.trafficLight.parent) {
+    this.game.addChild(this.trafficLight);
+  }
+
+  // 2. Play animation sequence
+  this.trafficLight.play();
+}
+```
+
+**Animation Phases:**
+
+1. **Phase 1: Red Light Slides Up** (500ms)
+   - Red traffic light slides from below screen to center position
+   - Position: `centerY = viewportHeight / 1.2` (83% down screen)
+
+2. **Phase 2: Instant Swap to Green** (0ms)
+   - Red light disappears
+   - Green light appears at same position
+
+3. **Phase 3: Green Light Holds** (400ms)
+   - Green light remains visible at center
+   - Signals "GO!" to player
+
+4. **Phase 4: Green Light Slides Down** (700ms)
+   - Green light slides 300px below screen
+   - Smooth exit animation
+
+**Configuration:**
+
+```typescript
+const centerX = this.viewportWidth / 2;     // Horizontal center
+const centerY = this.viewportHeight / 1.2;  // 83% down screen
+const startY = this.viewportHeight + 100;   // Start 100px below
+const endY = this.viewportHeight + 300;     // End 300px below
+```
+
+**Timing Adjustments:**
+
+| Parameter | Location | Purpose |
+|-----------|----------|---------|
+| Slide up speed | Line 92 | `500` = red slide duration |
+| Hold time | Line 100 | `400` = green pause duration |
+| Slide down speed | Line 103 | `700` = green exit duration |
+| Stop position | Line 84 | `/1.2` = 83% down screen |
+| End position | Line 86 | `+300` = how far below screen |
+
+**Easing Function:**
+
+Uses ease-out cubic for smooth deceleration:
+```typescript
+const eased = 1 - Math.pow(1 - progress, 3);
+```
+
+**Integration:**
+
+The traffic light animation is triggered in `CityGrid.validateLandmarkConnections()` when both validation rules pass:
+
+```typescript
+// Play traffic light animation
+this.playTrafficLightAnimation();
+
+// Also triggers:
+// - Confetti particles (createConfettiCelebration)
+// - Landmark scale animations (celebratePuzzleSolved)
+// - Level complete sound (audioManager.playLevelCompleteSound)
+// - Headline reveal (via path_complete event)
+```
+
+---
+
+## 13. Future Enhancements
 
 ### Post-V2 Improvements:
 

@@ -86,7 +86,7 @@ export class InfiniteLevelManager {
         landmarkCount: 3,
         difficulty: "hard",
         minPathLength: 5,
-        detourProbability: 0.5,
+        detourProbability: 0.6,
       };
     }
   }

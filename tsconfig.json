@@ -32,6 +32,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "pixi-scaffold-particle-editor"
+    "pixi-scaffold-particle-editor",
+    "src/packages"
   ]
 }
