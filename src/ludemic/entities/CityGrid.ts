@@ -14,6 +14,7 @@ import {
 import { UI_CONFIG } from "../config/ui-config";
 import { ParticleManager } from "../effects/ParticleManager";
 import { audioManager } from "../AudioManager";
+import { TrafficLightAnimation } from "../ui/TrafficLightAnimation";
 
 /**
  * CityGrid Configuration
@@ -65,6 +66,7 @@ export class CityGrid extends Container {
   private viewportHeight = 0; // Will be set by resize() - no hardcoded default
   private calculatedTileSize = 80;
   private game?: any; // Reference to GameContainer for event emission
+  private trafficLight?: TrafficLightAnimation; // Traffic light animation for level complete
 
   constructor(config: EntityConfig) {
     super();
@@ -92,6 +94,10 @@ export class CityGrid extends Container {
 
     // Initialize ParticleManager for tile effects (local coordinate space)
     this.tileParticleManager = new ParticleManager(this.particleContainer);
+
+    // Initialize traffic light animation (will be added to parent container)
+    this.trafficLight = new TrafficLightAnimation();
+    this.trafficLight.loadAssets();
 
     // Initialize empty grid
     for (let row = 0; row < this.config.rows; row++) {
@@ -267,6 +273,9 @@ export class CityGrid extends Container {
     // Create confetti celebration effect
     this.createConfettiCelebration();
 
+    // Play traffic light animation
+    this.playTrafficLightAnimation();
+
     // Celebrate with landmark animation
     this.celebratePuzzleSolved();
 
@@ -365,6 +374,30 @@ export class CityGrid extends Container {
       const shouldBeHighlighted = connectedTiles.has(tile);
       tile.setHighlighted(shouldBeHighlighted);
     });
+  }
+
+  /**
+   * Play traffic light animation (red -> green)
+   */
+  private playTrafficLightAnimation(): void {
+    if (!this.trafficLight) {
+      console.warn("[CityGrid] ⚠️ Traffic light not initialized");
+      return;
+    }
+
+    if (!this.game) {
+      console.warn("[CityGrid] ⚠️ Game reference not set for traffic light");
+      return;
+    }
+
+    // Add traffic light to game container (top layer, above everything)
+    if (!this.trafficLight.parent) {
+      this.game.addChild(this.trafficLight);
+      console.log("[CityGrid] 🚦 Traffic light added to game container");
+    }
+
+    // Play the animation
+    this.trafficLight.play();
   }
 
   /**
@@ -518,6 +551,11 @@ export class CityGrid extends Container {
   resize(width: number, height: number): void {
     this.viewportWidth = width;
     this.viewportHeight = height;
+
+    // Update traffic light viewport dimensions
+    if (this.trafficLight) {
+      this.trafficLight.resize(width, height);
+    }
 
     if (this.config.uiConfig) {
       // Get safe viewport area (respects notches, status bars, etc.)
