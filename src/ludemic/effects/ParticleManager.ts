@@ -31,7 +31,8 @@ export class ParticleManager {
     this.particleContainer = particleContainer;
 
     // Initialize the advanced particle system
-    this.particleSystem = new ParticleSystem("/assets/vfx/");
+    // Use the AssetPack processed path from main{m}/vfx
+    this.particleSystem = new ParticleSystem("/assets/main/vfx/");
 
     // CRITICAL: Make ParticleSystem non-interactive so it doesn't block clicks
     this.particleSystem.eventMode = "none";
