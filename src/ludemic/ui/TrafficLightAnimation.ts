@@ -49,8 +49,6 @@ export class TrafficLightAnimation extends Container {
       // Add to container
       this.addChild(this.redSprite);
       this.addChild(this.greenSprite);
-
-      console.log("[TrafficLightAnimation] ✅ Assets loaded successfully");
     } catch (error) {
       console.error("[TrafficLightAnimation] ❌ Failed to load assets:", error);
     }

@@ -135,28 +135,28 @@ export class PrimitiveTestScreen extends Container {
       }
 
       // Number keys 1-4: Jump to specific level
-      if (e.code === "Digit1") {
-        e.preventDefault();
-        this.jumpToLevel(0);
-      }
-      if (e.code === "Digit2") {
-        e.preventDefault();
-        this.jumpToLevel(1);
-      }
-      if (e.code === "Digit3") {
-        e.preventDefault();
-        this.jumpToLevel(2);
-      }
-      if (e.code === "Digit4") {
-        e.preventDefault();
-        this.jumpToLevel(3);
-      }
+      // if (e.code === "Digit1") {
+      //   e.preventDefault();
+      //   this.jumpToLevel(0);
+      // }
+      // if (e.code === "Digit2") {
+      //   e.preventDefault();
+      //   this.jumpToLevel(1);
+      // }
+      // if (e.code === "Digit3") {
+      //   e.preventDefault();
+      //   this.jumpToLevel(2);
+      // }
+      // if (e.code === "Digit4") {
+      //   e.preventDefault();
+      //   this.jumpToLevel(3);
+      // }
 
       // Number key 6: Jump to level 16
-      if (e.code === "Digit6") {
-        e.preventDefault();
-        this.jumpToLevel(15); // Level 16 is index 15 (0-based)
-      }
+      // if (e.code === "Digit6") {
+      //   e.preventDefault();
+      //   this.jumpToLevel(15); // Level 16 is index 15 (0-based)
+      // }
     };
     window.addEventListener("keydown", this.keydownListener);
   }

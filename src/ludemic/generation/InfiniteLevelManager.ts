@@ -96,7 +96,7 @@ export class InfiniteLevelManager {
    */
   private static convertToGameConfig(
     generated: GeneratedLevel,
-    levelNumber: number,
+    _levelNumber: number,
   ): GameConfig {
     const { gridSize, turnpike, landmarks, roadTiles, treeTiles } = generated;
 
@@ -182,10 +182,18 @@ export class InfiniteLevelManager {
               config: {
                 enabled: true,
                 triggerOn: "path_complete",
+                currentHeadlineIndex: Math.floor(Math.random() * 10),
                 headlines: [
-                  `🎉 LEVEL ${levelNumber} COMPLETE!`,
-                  "🏗️ Procedurally Generated Road Network Restored",
-                  "🚦 All Landmarks Successfully Connected",
+                  "🏗️ BREAKING: New Road Connection Restores East Side Access",
+                  "🚦 City Council Approves $2M for Traffic Light Restoration",
+                  "🏘️ Residents Celebrate as Neighborhood Routes Reconnect",
+                  "🚌 Public Transit Service Returns After 6-Month Delay",
+                  "🏛️ Historic Landmark Now Accessible Via Newly Opened Route",
+                  "📰 Mayor Announces Phase 2 of Infrastructure Revival Plan",
+                  "🚗 Morning Commute Times Drop 40% Thanks to Road Repairs",
+                  "🏪 Local Businesses Report Sales Surge After Route Opens",
+                  "🌳 New Bike Lanes Added Along Restored Arterial Roads",
+                  "🎉 City Marks Milestone: 50% of Grid Network Operational",
                 ],
               },
             },
@@ -196,7 +204,22 @@ export class InfiniteLevelManager {
         {
           type: "HeadlineDisplay",
           position: { x: 0, y: 0 },
-          config: {},
+          config: {
+            uiConfig: {
+              position: { x: 50, y: 10 },
+              text: "",
+              fontSizePercent: 3,
+              color: "0xFFFFFF",
+              align: "center",
+              anchor: { x: 0.5, y: 0.5 },
+            },
+            backgroundAlpha: 0.9,
+            padding: 2,
+            typewriterSpeed: 30,
+            displayDuration: 5,
+            fadeInDuration: 0.5,
+            fadeOutDuration: 0.5,
+          },
         },
       ],
     } as any;

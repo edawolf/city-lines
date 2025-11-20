@@ -257,7 +257,6 @@ export class CityGrid extends Container {
     }
 
     // BOTH validations passed - level complete!
-    console.log("[CityGrid] 🎉🎉🎉 LEVEL COMPLETE! All validations passed!");
 
     // Set game reference FIRST (needed for confetti)
     if (!this.game && this.parent) {
@@ -396,7 +395,6 @@ export class CityGrid extends Container {
     // Add traffic light to game container (top layer, above everything)
     if (!this.trafficLight.parent) {
       this.game.addChild(this.trafficLight);
-      console.log("[CityGrid] 🚦 Traffic light added to game container");
     }
 
     // Play the animation
@@ -407,16 +405,6 @@ export class CityGrid extends Container {
    * Create confetti particle effect for level completion
    */
   private createConfettiCelebration(): void {
-    console.log("[CityGrid] 🎉 Attempting to create confetti...");
-    console.log("[CityGrid] - this.game:", this.game);
-    console.log("[CityGrid] - particleManager:", this.game?.particleManager);
-    console.log(
-      "[CityGrid] - viewport:",
-      this.viewportWidth,
-      "x",
-      this.viewportHeight,
-    );
-
     if (!this.game) {
       console.error("[CityGrid] ❌ Game reference not set!");
       return;
@@ -437,12 +425,6 @@ export class CityGrid extends Container {
 
     // Pass screen dimensions (not grid dimensions)
     // Particle spawn positions are configured in particle-config.ts as percentages
-    console.log(
-      "[CityGrid] ✅ Creating confetti with viewport:",
-      this.viewportWidth,
-      "x",
-      this.viewportHeight,
-    );
     this.game.particleManager.createConfetti(
       this.viewportWidth,
       this.viewportHeight,

@@ -966,22 +966,13 @@ export class RoadTile extends Container {
     try {
       // Get particle manager from parent CityGrid
       const cityGrid = this.parent as any; // CityGrid is the parent
-      console.log("[RoadTile] 🎯 Checking for particle manager...", {
-        hasParent: !!this.parent,
-        parentType: this.parent?.constructor?.name,
-        hasMethod: !!(cityGrid && cityGrid.getTileParticleManager),
-      });
-
       if (cityGrid && cityGrid.getTileParticleManager) {
         const particleManager = cityGrid.getTileParticleManager();
-        console.log("[RoadTile] ✅ Got particle manager:", particleManager);
 
         // Get position relative to the particle container
         // Particle container is a child of CityGrid (same parent as this tile)
         const particleContainer = particleManager.getContainer();
         const localPos = particleContainer.toLocal(this.position, this.parent);
-
-        console.log("[RoadTile] 🎨 Creating burst at:", localPos);
 
         // Use centralized particle config
         const config = PARTICLE_CONFIG.TILE_ROTATION;

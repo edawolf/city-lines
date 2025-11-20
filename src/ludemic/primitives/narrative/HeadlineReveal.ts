@@ -73,6 +73,8 @@ export class HeadlineReveal implements Primitive {
     this.game = entity.parent as unknown as GameContainer;
     this.currentHeadlineIndex = config.currentHeadlineIndex ?? 0;
 
+    console.log("[HeadlineReveal] Init with headlines:", this.config.headlines);
+
     // Listen for completion event
     this.game.onGame(this.config.triggerOn, this.handleCompletion);
   }
@@ -125,11 +127,19 @@ export class HeadlineReveal implements Primitive {
    * Get next headline in sequence
    */
   private getNextHeadline(): string | null {
+    console.log(
+      "[HeadlineReveal] getNextHeadline - index:",
+      this.currentHeadlineIndex,
+      "total:",
+      this.config.headlines.length,
+    );
     if (this.currentHeadlineIndex >= this.config.headlines.length) {
+      console.log("[HeadlineReveal] No more headlines");
       return null; // All headlines revealed
     }
 
     const headline = this.config.headlines[this.currentHeadlineIndex];
+    console.log("[HeadlineReveal] Returning headline:", headline);
     this.currentHeadlineIndex++;
     return headline;
   }

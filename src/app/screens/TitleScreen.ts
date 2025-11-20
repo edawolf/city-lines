@@ -124,13 +124,6 @@ export class TitleScreen extends Container {
     // Add getTileParticleManager method so tiles can access particles
     (this.miniPuzzle as any).getTileParticleManager = () =>
       this.particleManager;
-    console.log(
-      "[TitleScreen] 🎯 Added getTileParticleManager to miniPuzzle:",
-      {
-        hasMethod: !!(this.miniPuzzle as any).getTileParticleManager,
-        particleManager: this.particleManager,
-      },
-    );
 
     await this.createMiniPuzzle();
     this.addChild(this.miniPuzzle);

@@ -39,10 +39,6 @@ export class ParticleManager {
     this.particleSystem.interactiveChildren = false;
 
     particleContainer.addChild(this.particleSystem);
-
-    console.log(
-      "[ParticleManager] 🎨 Initialized with advanced ParticleSystem (non-interactive)",
-    );
   }
 
   /**
@@ -130,17 +126,6 @@ export class ParticleManager {
     // ParticleSystem expects coordinates relative to itself (which is at 0,0 in the container)
     // So we can use x,y directly
 
-    console.log("[ParticleManager] 🎨 Creating burst with config:", {
-      x,
-      y,
-      count,
-      color,
-      size,
-      speed,
-      lifetime,
-      textureName: particleConfig.textureName,
-    });
-
     // Create the spawner (it will auto-emit and destroy itself)
     this.particleSystem
       .createSpawner(particleConfig, x, y, `Burst_${Date.now()}`)
@@ -156,17 +141,12 @@ export class ParticleManager {
    * Create fast confetti effect across the screen (for level complete celebration)
    * More energetic and faster than the burst effect
    * @param screenWidth - Width of the screen/viewport
-   * @param screenHeight - Height of the screen/viewport
    */
   public createConfetti(screenWidth: number, screenHeight: number): void {
     if (!this.particleSystem) {
       console.warn("[ParticleManager] ⚠️ ParticleSystem not initialized!");
       return;
     }
-
-    console.log(
-      `[ParticleManager] 🎉 Creating confetti! Screen: ${screenWidth}x${screenHeight}`,
-    );
 
     // Use centralized confetti config
     const confettiConfig = PARTICLE_CONFIG.WIN_CONFETTI;
@@ -175,10 +155,6 @@ export class ParticleManager {
     // Calculate spawn position from config percentages
     const spawnX = screenWidth * confettiConfig.spawnX;
     const spawnY = screenHeight * confettiConfig.spawnY;
-
-    console.log(
-      `[ParticleManager] Creating ${confettiConfig.spawnerCount} spawners at (${spawnX}, ${spawnY})`,
-    );
 
     for (let i = 0; i < confettiConfig.spawnerCount; i++) {
       // Random color for this spawner
@@ -232,9 +208,7 @@ export class ParticleManager {
           `Confetti_${i}_${Date.now()}`,
         )
         .then(() => {
-          console.log(
-            `[ParticleManager] ✅ Confetti spawner ${i} created successfully`,
-          );
+          // Confetti spawner created
         })
         .catch((err) => {
           console.error(
