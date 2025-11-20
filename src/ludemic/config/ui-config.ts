@@ -217,7 +217,7 @@ export const UI_CONFIG = {
     tileBackground: 0x95d395, // Tile background (bright medium green)
     tileRotationIndicator: 0xb8e6b8, // Rotation indicator dot (very light green)
     tileGridLine: 0x6fae6f, // Tile grid border (bright medium green)
-    roadColor: 0x4a5a4a, // Road surface color (darker gray-green)
+    roadColor: 0x95d395, // Road surface color (matches tile background - invisible under landmarks)
     roadMarkings: 0xe4f4e4, // Road markings/dashes (very light cream-green)
 
     // Road type colors (different road hierarchy levels)
