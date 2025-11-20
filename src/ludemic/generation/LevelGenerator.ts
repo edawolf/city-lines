@@ -107,6 +107,9 @@ export class XORShift32 {
 // ============================================================================
 
 export class LevelGenerator {
+  // Track bad seeds for retry logic
+  private static badSeeds = new Set<number>();
+
   private rng: XORShift32;
   private params: DifficultyParams;
   private gridSize: number;
@@ -127,11 +130,44 @@ export class LevelGenerator {
   }
 
   /**
-   * Main generation entry point
+   * Main generation entry point with retry logic
    */
   static generate(params: DifficultyParams, seed: number): GeneratedLevel {
-    const generator = new LevelGenerator(params, seed);
-    return generator.generateInternal();
+    const MAX_ATTEMPTS = 10;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const attemptSeed = seed + attempt;
+
+      // Skip known bad seeds
+      if (this.badSeeds.has(attemptSeed)) {
+        console.warn(`⚠️ Skipping known bad seed: ${attemptSeed}`);
+        continue;
+      }
+
+      try {
+        console.log(
+          `🎲 Generating level with seed ${attemptSeed} (attempt ${attempt + 1}/${MAX_ATTEMPTS})`,
+        );
+
+        const generator = new LevelGenerator(params, attemptSeed);
+        const level = generator.generateInternal();
+
+        console.log(`✅ Level generated successfully with seed ${attemptSeed}`);
+        return level;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.error(`❌ Seed ${attemptSeed} failed: ${errorMessage}`);
+        this.badSeeds.add(attemptSeed);
+        continue;
+      }
+    }
+
+    // All attempts exhausted
+    throw new Error(
+      `Failed to generate level after ${MAX_ATTEMPTS} attempts. ` +
+        `Bad seeds: [${Array.from(this.badSeeds).slice(-MAX_ATTEMPTS).join(", ")}]`,
+    );
   }
 
   private generateInternal(): GeneratedLevel {
@@ -145,13 +181,14 @@ export class LevelGenerator {
     // Phase 3: Assign tile types and rotations
     this.assignTileTypesAndRotations();
 
+    // Validate: Check if any tile requires 4+ connections (unsolvable)
+    this.validateNoFourWayIntersections();
+
     // Phase 4: Scramble rotations
     this.scrambleRotations();
 
     // Phase 5: Place decorational trees (FINAL STEP - after puzzle is complete)
     this.placeTreeDecorations();
-
-    // TODO: Phase 6: Validate
 
     return {
       gridSize: { rows: this.gridSize, cols: this.gridSize },
@@ -611,7 +648,8 @@ export class LevelGenerator {
       }
     }
 
-    // Would THIS tile have 4 connections?
+    // Would THIS tile have 4 or more connections?
+    // We only have tiles with max 3 openings (T-junction), so prevent 4+
     return thisConnectionCount >= 4;
   }
 
@@ -1105,8 +1143,8 @@ export class LevelGenerator {
     for (let i = 0; i < treeCount; i++) {
       const pos = shuffled[i];
 
-      // Randomly select a decoration type from the array
-      const randomDecoration = this.rng.choice(DECORATION_OPTIONS);
+      // Use index-based cycling for variety (same pattern as landmarks)
+      const decorationType = DECORATION_OPTIONS[i % DECORATION_OPTIONS.length];
 
       const treeConfig: TileConfig = {
         row: pos.row,
@@ -1116,18 +1154,297 @@ export class LevelGenerator {
         rotation: 0,
         solutionRotation: 0,
         rotatable: false, // Trees cannot be rotated
-        decorationType: randomDecoration, // Randomly selected decoration
+        decorationType: decorationType, // Cycles through decoration types
       };
 
       this.setTile(pos, treeConfig);
       this.treeTiles.push(treeConfig);
       console.log(
-        `[LevelGenerator] 🌳 ${randomDecoration} placed at (${pos.row}, ${pos.col})`,
+        `[LevelGenerator] 🌳 ${decorationType} placed at (${pos.row}, ${pos.col})`,
       );
     }
 
     console.log(
       `[LevelGenerator] Total trees in level: ${this.treeTiles.length}`,
     );
+  }
+
+  // ==========================================================================
+  // Phase 3 Validation
+  // ==========================================================================
+
+  /**
+   * Validate that no tile requires 4+ connections (which would need a crossroad)
+   * Throws error if validation fails (triggers seed retry)
+   */
+  private validateNoFourWayIntersections(): void {
+    // Build connection map from solution paths
+    const pathConnections = new Map<string, Set<string>>();
+
+    this.solutionPaths.forEach((path, landmarkIndex) => {
+      const landmark = this.landmarks[landmarkIndex];
+      const landmarkKey = this.posKey(landmark);
+
+      // Landmark connects to first tile
+      if (path.length > 0) {
+        const firstTileKey = this.posKey(path[0]);
+        if (!pathConnections.has(landmarkKey)) {
+          pathConnections.set(landmarkKey, new Set());
+        }
+        pathConnections.get(landmarkKey)!.add(firstTileKey);
+
+        if (!pathConnections.has(firstTileKey)) {
+          pathConnections.set(firstTileKey, new Set());
+        }
+        pathConnections.get(firstTileKey)!.add(landmarkKey);
+      }
+
+      // Connections between path tiles
+      for (let i = 0; i < path.length - 1; i++) {
+        const currentKey = this.posKey(path[i]);
+        const nextKey = this.posKey(path[i + 1]);
+
+        if (!pathConnections.has(currentKey)) {
+          pathConnections.set(currentKey, new Set());
+        }
+        pathConnections.get(currentKey)!.add(nextKey);
+
+        if (!pathConnections.has(nextKey)) {
+          pathConnections.set(nextKey, new Set());
+        }
+        pathConnections.get(nextKey)!.add(currentKey);
+      }
+
+      // Last tile connects to turnpike
+      if (path.length > 0) {
+        const lastTileKey = this.posKey(path[path.length - 1]);
+        const turnpikeKey = this.posKey(this.turnpike);
+
+        if (!pathConnections.has(lastTileKey)) {
+          pathConnections.set(lastTileKey, new Set());
+        }
+        pathConnections.get(lastTileKey)!.add(turnpikeKey);
+
+        if (!pathConnections.has(turnpikeKey)) {
+          pathConnections.set(turnpikeKey, new Set());
+        }
+        pathConnections.get(turnpikeKey)!.add(lastTileKey);
+      }
+    });
+
+    // Check each tile's connection count
+    for (const [tileKey, connections] of pathConnections.entries()) {
+      if (connections.size >= 4) {
+        const [rowStr, colStr] = tileKey.split(",");
+        throw new Error(
+          `Tile at (${rowStr},${colStr}) requires ${connections.size} connections (4-way crossroad), but max tile type is T-junction (3 connections)`
+        );
+      }
+    }
+  }
+
+  /**
+   * Debug: Log path validation issues without throwing errors
+   */
+  private debugValidatePaths(): void {
+    console.log("🔍 [DEBUG] Validating solution paths...");
+
+    for (let i = 0; i < this.solutionPaths.length; i++) {
+      const path = this.solutionPaths[i];
+      const landmark = this.landmarks[i];
+
+      console.log(`  Path ${i}: Landmark at (${landmark.row},${landmark.col}) → Turnpike at (${this.turnpike.row},${this.turnpike.col})`);
+      console.log(`    Path tiles: ${path.map(p => `(${p.row},${p.col})`).join(' → ')}`);
+
+      if (path.length === 0) {
+        console.warn(`    ⚠️  EMPTY PATH!`);
+        continue;
+      }
+
+      // Check if last tile is adjacent to turnpike
+      const lastTile = path[path.length - 1];
+      const distToTurnpike = this.manhattanDistance(lastTile, this.turnpike);
+      console.log(`    Last tile: (${lastTile.row},${lastTile.col}), distance to turnpike: ${distToTurnpike}`);
+
+      if (distToTurnpike > 1) {
+        console.warn(`    ⚠️  PATH DOESN'T REACH TURNPIKE! Last tile is ${distToTurnpike} tiles away`);
+      }
+    }
+  }
+
+  /**
+   * Validate solution state after Phase 3
+   * Throws error if validation fails (triggers seed retry)
+   */
+  private validateSolutionState(): void {
+    console.log("🔍 Validating solution state...");
+
+    const pathValidation = this.validateSolutionPaths();
+    if (!pathValidation.valid) {
+      throw new Error(`Path validation failed: ${pathValidation.error}`);
+    }
+
+    console.log("✅ Solution state validation passed");
+  }
+
+  /**
+   * Validate that solution paths actually connect
+   * Uses stored solutionPaths from Phase 2
+   */
+  private validateSolutionPaths(): { valid: boolean; error?: string } {
+    for (let i = 0; i < this.solutionPaths.length; i++) {
+      const path = this.solutionPaths[i];
+      const landmark = this.landmarks[i];
+
+      // Check landmark → first path tile
+      if (path.length > 0) {
+        const firstTile = this.getTile(path[0]);
+        if (!firstTile) {
+          return {
+            valid: false,
+            error: `Path ${i}: First tile at (${path[0].row},${path[0].col}) not found`,
+          };
+        }
+
+        const direction = this.getDirection(landmark, path[0]);
+        if (!this.tilesConnect(landmark, firstTile, direction)) {
+          return {
+            valid: false,
+            error: `Path ${i}: Landmark at (${landmark.row},${landmark.col}) doesn't connect to first tile`,
+          };
+        }
+      }
+
+      // Check consecutive tiles in path
+      for (let j = 0; j < path.length - 1; j++) {
+        const currentTile = this.getTile(path[j]);
+        const nextTile = this.getTile(path[j + 1]);
+
+        if (!currentTile || !nextTile) {
+          return {
+            valid: false,
+            error: `Path ${i}: Tile not found in path segment ${j}`,
+          };
+        }
+
+        const direction = this.getDirection(path[j], path[j + 1]);
+        if (!this.tilesConnect(currentTile, nextTile, direction)) {
+          return {
+            valid: false,
+            error: `Path ${i}: Broken connection at (${path[j].row},${path[j].col}) → (${path[j + 1].row},${path[j + 1].col})`,
+          };
+        }
+      }
+
+      // Check last tile → turnpike
+      if (path.length > 0) {
+        const lastTile = this.getTile(path[path.length - 1]);
+        const direction = this.getDirection(
+          path[path.length - 1],
+          this.turnpike,
+        );
+
+        if (!this.tilesConnect(lastTile!, this.turnpike, direction)) {
+          return {
+            valid: false,
+            error: `Path ${i}: Last tile doesn't connect to turnpike`,
+          };
+        }
+      }
+    }
+
+    return { valid: true };
+  }
+
+  /**
+   * Check if two tiles connect in the given direction
+   * Uses solution rotations
+   */
+  private tilesConnect(
+    tileA: TileConfig,
+    tileB: TileConfig,
+    direction: Direction,
+  ): boolean {
+    const openingsA = this.getOpeningsForTile(tileA);
+    const openingsB = this.getOpeningsForTile(tileB);
+
+    // Check if tileA has opening in direction
+    if (!openingsA.includes(direction)) {
+      return false;
+    }
+
+    // Check if tileB has opening in opposite direction
+    const oppositeDir = this.getOppositeDirection(direction);
+    if (!openingsB.includes(oppositeDir)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Get openings for a tile based on its type and solution rotation
+   * Replicates RoadTile.getOpenings() logic without instantiating
+   */
+  private getOpeningsForTile(tile: TileConfig): Direction[] {
+    const baseOpenings: { [key: string]: Direction[] } = {
+      straight: [Direction.North, Direction.South],
+      corner: [Direction.North, Direction.East],
+      t_junction: [Direction.North, Direction.East, Direction.West],
+      landmark: [
+        Direction.North,
+        Direction.East,
+        Direction.South,
+        Direction.West,
+      ],
+      turnpike: [
+        Direction.North,
+        Direction.East,
+        Direction.South,
+        Direction.West,
+      ],
+    };
+
+    const base = baseOpenings[tile.tileType] || [];
+    return base.map((dir) => this.rotateDirection(dir, tile.solutionRotation));
+  }
+
+  /**
+   * Rotate a direction by given angle (0, 90, 180, 270)
+   */
+  private rotateDirection(dir: Direction, rotation: number): Direction {
+    const rotationSteps = (rotation / 90) % 4;
+    const dirMap = [
+      Direction.North,
+      Direction.East,
+      Direction.South,
+      Direction.West,
+    ];
+    const currentIndex = dirMap.indexOf(dir);
+    const newIndex = (currentIndex + rotationSteps) % 4;
+    return dirMap[newIndex];
+  }
+
+  /**
+   * Get direction from posA to posB (must be adjacent)
+   */
+  private getDirection(posA: TilePosition, posB: TilePosition): Direction {
+    if (posB.row < posA.row) return Direction.North;
+    if (posB.row > posA.row) return Direction.South;
+    if (posB.col > posA.col) return Direction.East;
+    return Direction.West;
+  }
+
+  /**
+   * Get opposite direction
+   */
+  private getOppositeDirection(dir: Direction): Direction {
+    const opposites = {
+      [Direction.North]: Direction.South,
+      [Direction.South]: Direction.North,
+      [Direction.East]: Direction.West,
+      [Direction.West]: Direction.East,
+    };
+    return opposites[dir];
   }
 }

@@ -148,6 +148,12 @@ export class PrimitiveTestScreen extends Container {
         e.preventDefault();
         this.jumpToLevel(3);
       }
+
+      // Number key 6: Jump to level 16
+      if (e.code === "Digit6") {
+        e.preventDefault();
+        this.jumpToLevel(15); // Level 16 is index 15 (0-based)
+      }
     };
     window.addEventListener("keydown", this.keydownListener);
   }
