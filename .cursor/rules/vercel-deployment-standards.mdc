@@ -34,12 +34,20 @@ npm run build
 - **MUST complete successfully**
 - If build fails, **DO NOT PROCEED** - fix errors first
 
-### Step 5: Only After ALL Checks Pass
+### Step 5: Commit and Push to Git
 ```bash
-git add .
-git commit -m "your commit message"
-git push origin main
+git add . && git commit -m "$(cat <<'EOF'
+your commit message
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)" && git push origin main
 ```
+- Only execute after ALL previous checks pass
+- Use the heredoc format for proper commit message formatting
+- This triggers Vercel deployment
 
 ### 🚨 FAILURE PROTOCOL:
 If ANY step fails:

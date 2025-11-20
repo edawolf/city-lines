@@ -279,6 +279,9 @@ export class CityGrid extends Container {
     // Celebrate with landmark animation
     this.celebratePuzzleSolved();
 
+    // Lock tiles after puzzle is solved
+    this.setTilesInteractive(false);
+
     // Emit on both self and game container for compatibility
     this.emit("path_complete", {
       landmarks: this.landmarks,
@@ -541,6 +544,16 @@ export class CityGrid extends Container {
   public clearHighlights(): void {
     this.getAllTiles().forEach((tile) => {
       tile.alpha = 1.0;
+    });
+  }
+
+  /**
+   * Enable or disable tile interaction
+   * Used to lock tiles after puzzle is solved
+   */
+  public setTilesInteractive(interactive: boolean): void {
+    this.getAllTiles().forEach((tile) => {
+      tile.eventMode = interactive ? "static" : "none";
     });
   }
 

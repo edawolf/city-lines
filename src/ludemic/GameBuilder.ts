@@ -662,6 +662,10 @@ export class GameBuilder {
       if (cityGrid && cityGrid.performInitialValidation) {
         // RoadTiles now handle click interaction directly (no primitives needed)
         cityGrid.performInitialValidation();
+        // Enable tile interaction for new level
+        if (cityGrid.setTilesInteractive) {
+          cityGrid.setTilesInteractive(true);
+        }
       }
     }
 
